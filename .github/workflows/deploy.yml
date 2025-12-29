@@ -22,22 +22,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          sparse-checkout: false
+          fetch-depth: 0
       
       - name: Configure Git for long paths
         run: |
           git config --global core.longpaths true
           git config core.longpaths true
-          git checkout . || true
 
       - name: Verify files exist
         run: |
           echo "Checking project structure..."
+          pwd
           ls -la
           echo "Checking src directory..."
           ls -la src/ | head -20
           echo "Checking if main.tsx exists..."
-          test -f src/main.tsx && echo "✓ main.tsx exists" || echo "✗ main.tsx NOT FOUND"
+          test -f src/main.tsx && echo "✓ main.tsx exists" || (echo "✗ main.tsx NOT FOUND" && find . -name "main.tsx" 2>/dev/null || echo "File not found anywhere")
           test -f index.html && echo "✓ index.html exists" || echo "✗ index.html NOT FOUND"
 
       - name: Setup Node.js
