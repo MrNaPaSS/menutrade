@@ -1,5 +1,25 @@
 // Тестовый скрипт для проверки OpenRouter API
-const API_KEY = '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';
+const fs = require('fs');
+const path = require('path');
+
+// Чтение API ключа из .env файла
+const envPath = path.join(__dirname, '.env');
+let API_KEY = '';
+
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  const match = envContent.match(/VITE_OPENROUTER_API_KEY=(.+)/);
+  if (match) {
+    API_KEY = match[1].trim();
+  }
+}
+
+if (!API_KEY) {
+  console.error('❌ Ошибка: API ключ не найден в файле .env');
+  console.error('Создайте файл .env с содержимым: VITE_OPENROUTER_API_KEY=ваш_ключ');
+  process.exit(1);
+}
+
 const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 async function testAPI() {
