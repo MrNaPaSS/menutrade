@@ -1,25 +1,50 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>NO MONEY - NO HONEY - Академия здравого трейдера</title>
-    <meta name="description" content="Обучение торговле бинарными опционами. Пройдите курсы и станьте успешным трейдером." />
-    <meta name="author" content="NO MONEY - NO HONEY" />
 
-    <meta property="og:title" content="NO MONEY - NO HONEY - Академия здравого трейдера" />
-    <meta property="og:description" content="Обучение торговле бинарными опционами. Пройдите курсы и станьте успешным трейдером." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>NO MONEY - NO HONEY - Академия здравого трейдера</title>
+  <meta name="description"
+    content="Обучение торговле бинарными опционами. Пройдите курсы и станьте успешным трейдером." />
+  <meta name="author" content="NO MONEY - NO HONEY" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="NO MONEY - NO HONEY - Академия здравого трейдера" />
-    <meta name="twitter:description" content="Обучение торговле бинарными опционами" />
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  </head>
+  <meta property="og:title" content="NO MONEY - NO HONEY - Академия здравого трейдера" />
+  <meta property="og:description"
+    content="Обучение торговле бинарными опционами. Пройдите курсы и станьте успешным трейдером." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NO MONEY - NO HONEY - Академия здравого трейдера" />
+  <meta name="twitter:description" content="Обучение торговле бинарными опционами" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    // Инициализация Telegram Web App
+    (function () {
+      const tg = window.Telegram.WebApp;
+      if (tg) {
+        tg.ready();
+
+        // Разворачиваем на весь экран (стандартный API)
+        tg.expand();
+
+        // Настройка цветов
+        // #070e0b - это точный цвет фона из темы (hsl 140 35% 4%)
+        tg.setHeaderColor('#070e0b');
+        tg.setBackgroundColor('#070e0b');
+
+        // Включаем подтверждение закрытия, чтобы случайно не свайпнуть
+        tg.enableClosingConfirmation();
+      }
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
