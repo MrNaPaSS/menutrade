@@ -1,0 +1,462 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Глобальная оптимизация переноса текста */
+  * {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  
+  /* Для элементов с текстом */
+  p, span, div, h1, h2, h3, h4, h5, h6, li, td, th, label {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  
+  /* Для длинных слов и URL */
+  code, pre {
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+  
+  /* Для flex контейнеров с текстом */
+  .flex {
+    min-width: 0;
+  }
+  
+  /* Для элементов с текстом в flex */
+  .flex > * {
+    min-width: 0;
+  }
+}
+
+/* Глобальные стили для переноса текста */
+* {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.prose {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.prose p,
+.prose li,
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
+.prose strong,
+.prose blockquote {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* Premium Neon Pepe Matrix Design System - Enterprise Grade */
+
+@layer base {
+  :root {
+    /* Matrix neon colors - refined */
+    --background: 140 35% 4%;
+    --foreground: 142 70% 75%;
+
+    --card: 140 30% 7%;
+    --card-foreground: 142 70% 75%;
+
+    --popover: 140 30% 7%;
+    --popover-foreground: 142 70% 75%;
+
+    --primary: 142 76% 52%;
+    --primary-foreground: 140 35% 4%;
+
+    --secondary: 165 70% 38%;
+    --secondary-foreground: 140 35% 4%;
+
+    --muted: 140 20% 14%;
+    --muted-foreground: 142 30% 55%;
+
+    --accent: 75 80% 55%;
+    --accent-foreground: 140 35% 4%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 142 40% 18%;
+    --input: 140 25% 12%;
+    --ring: 142 76% 52%;
+
+    --radius: 1rem;
+
+    /* Premium neon effects */
+    --neon-glow: 142 76% 52%;
+    --neon-soft: 142 70% 45%;
+    --neon-intense: 120 100% 60%;
+    --neon-cyan: 175 90% 50%;
+    --neon-yellow: 55 95% 55%;
+    --matrix-green: 142 80% 45%;
+    --pepe-green: 115 65% 48%;
+
+    /* Premium gradients */
+    --gradient-neon: linear-gradient(135deg, hsl(142, 76%, 52%), hsl(165, 70%, 38%));
+    --gradient-glass: linear-gradient(135deg, hsl(140, 30%, 10%, 0.9), hsl(140, 30%, 6%, 0.95));
+    --gradient-shine: linear-gradient(90deg, transparent, hsl(142, 76%, 52%, 0.1), transparent);
+    --gradient-radial: radial-gradient(ellipse at 50% 0%, hsl(142, 76%, 52%, 0.15) 0%, transparent 60%);
+
+    /* Premium shadows */
+    --shadow-sm: 0 2px 8px -2px hsl(142, 76%, 52%, 0.2);
+    --shadow-md: 0 8px 24px -8px hsl(142, 76%, 52%, 0.25);
+    --shadow-lg: 0 16px 48px -12px hsl(142, 76%, 52%, 0.3);
+    --shadow-glow: 0 0 40px -10px hsl(142, 76%, 52%, 0.5);
+    --shadow-intense: 0 0 60px -5px hsl(142, 76%, 52%, 0.4), 0 0 100px -10px hsl(142, 76%, 52%, 0.2);
+
+    --sidebar-background: 140 30% 6%;
+    --sidebar-foreground: 142 70% 75%;
+    --sidebar-primary: 142 76% 52%;
+    --sidebar-primary-foreground: 140 35% 4%;
+    --sidebar-accent: 140 25% 12%;
+    --sidebar-accent-foreground: 142 70% 75%;
+    --sidebar-border: 142 40% 18%;
+    --sidebar-ring: 142 76% 52%;
+  }
+
+  .dark {
+    --background: 140 35% 4%;
+    --foreground: 142 70% 75%;
+    --card: 140 30% 7%;
+    --card-foreground: 142 70% 75%;
+    --popover: 140 30% 7%;
+    --popover-foreground: 142 70% 75%;
+    --primary: 142 76% 52%;
+    --primary-foreground: 140 35% 4%;
+    --secondary: 165 70% 38%;
+    --secondary-foreground: 140 35% 4%;
+    --muted: 140 20% 14%;
+    --muted-foreground: 142 30% 55%;
+    --accent: 75 80% 55%;
+    --accent-foreground: 140 35% 4%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 142 40% 18%;
+    --input: 140 25% 12%;
+    --ring: 142 76% 52%;
+    --sidebar-background: 140 30% 6%;
+    --sidebar-foreground: 142 70% 75%;
+    --sidebar-primary: 142 76% 52%;
+    --sidebar-primary-foreground: 140 35% 4%;
+    --sidebar-accent: 140 25% 12%;
+    --sidebar-accent-foreground: 142 70% 75%;
+    --sidebar-border: 142 40% 18%;
+    --sidebar-ring: 142 76% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-image: 
+      var(--gradient-radial),
+      radial-gradient(ellipse at 80% 80%, hsl(165, 70%, 38%, 0.05) 0%, transparent 50%),
+      linear-gradient(180deg, hsl(140, 35%, 4%) 0%, hsl(140, 40%, 6%) 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Скрытие скроллбара везде */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE и Edge */
+  }
+
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  code, .font-mono {
+    font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  }
+
+  ::selection {
+    background: hsl(142, 76%, 52%, 0.3);
+    color: hsl(142, 70%, 90%);
+  }
+}
+
+@layer utilities {
+  /* Premium text effects */
+  .neon-text {
+    text-shadow: 
+      0 0 10px hsl(142, 76%, 52%, 0.8),
+      0 0 20px hsl(142, 76%, 52%, 0.6),
+      0 0 40px hsl(142, 76%, 52%, 0.4),
+      0 0 80px hsl(142, 76%, 52%, 0.2);
+  }
+
+  .neon-text-subtle {
+    text-shadow: 
+      0 0 8px hsl(142, 76%, 52%, 0.5),
+      0 0 16px hsl(142, 76%, 52%, 0.3);
+  }
+
+  /* Premium glass morphism */
+  .glass-card {
+    background: linear-gradient(
+      135deg,
+      hsl(140, 30%, 8%, 0.95) 0%,
+      hsl(140, 30%, 6%, 0.98) 100%
+    );
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid hsl(142, 40%, 20%, 0.5);
+    box-shadow: 
+      0 8px 32px -8px hsl(142, 76%, 52%, 0.15),
+      inset 0 1px 0 0 hsl(142, 76%, 52%, 0.1);
+  }
+
+  .glass-card-hover {
+    @apply glass-card;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .glass-card-hover:hover {
+    border-color: hsl(142, 50%, 30%, 0.8);
+    box-shadow: 
+      0 16px 48px -12px hsl(142, 76%, 52%, 0.25),
+      0 0 0 1px hsl(142, 76%, 52%, 0.1),
+      inset 0 1px 0 0 hsl(142, 76%, 52%, 0.15);
+    transform: translateY(-2px);
+  }
+
+  /* Premium neon border */
+  .neon-border {
+    box-shadow: 
+      0 0 20px -5px hsl(142, 76%, 52%, 0.4),
+      0 0 40px -10px hsl(142, 76%, 52%, 0.2),
+      inset 0 0 20px -10px hsl(142, 76%, 52%, 0.1);
+    border-color: hsl(142, 50%, 35%);
+  }
+
+  .neon-border-intense {
+    box-shadow: 
+      0 0 30px -5px hsl(142, 76%, 52%, 0.6),
+      0 0 60px -10px hsl(142, 76%, 52%, 0.4),
+      0 0 100px -20px hsl(142, 76%, 52%, 0.2),
+      inset 0 0 30px -15px hsl(142, 76%, 52%, 0.2);
+    border-color: hsl(142, 60%, 45%);
+  }
+
+  /* Premium glow effects */
+  .neon-glow {
+    box-shadow: 
+      0 0 20px hsl(142, 76%, 52%, 0.5),
+      0 0 40px hsl(142, 76%, 52%, 0.3),
+      0 0 60px hsl(142, 76%, 52%, 0.15);
+  }
+
+  .neon-glow-pulse {
+    animation: glow-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 
+        0 0 20px hsl(142, 76%, 52%, 0.4),
+        0 0 40px hsl(142, 76%, 52%, 0.2);
+    }
+    50% {
+      box-shadow: 
+        0 0 30px hsl(142, 76%, 52%, 0.6),
+        0 0 60px hsl(142, 76%, 52%, 0.4),
+        0 0 80px hsl(142, 76%, 52%, 0.2);
+    }
+  }
+
+  /* Premium matrix background */
+  .matrix-bg {
+    background: 
+      linear-gradient(180deg, transparent 0%, hsl(140, 35%, 4%) 100%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 1px,
+        hsl(142, 76%, 52%, 0.02) 1px,
+        hsl(142, 76%, 52%, 0.02) 2px
+      );
+  }
+
+  /* Premium scanline effect */
+  .scanline {
+    position: relative;
+  }
+
+  .scanline::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(142, 76%, 52%, 0.015) 2px,
+      hsl(142, 76%, 52%, 0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+  }
+
+  /* Premium shimmer effect */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(142, 76%, 52%, 0.1),
+      transparent
+    );
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  /* Premium floating animation */
+  .float-premium {
+    animation: float-premium 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes float-premium {
+    0%, 100% { 
+      transform: translateY(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-6px) rotate(1deg);
+    }
+    75% {
+      transform: translateY(-3px) rotate(-1deg);
+    }
+  }
+
+  /* Premium button styles */
+  .btn-premium {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .btn-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0, 0%, 100%, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  .btn-premium:hover::before {
+    left: 100%;
+  }
+
+  .btn-premium:active {
+    transform: scale(0.97);
+  }
+
+  /* Premium icon wrapper */
+  .icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .icon-wrapper:hover {
+    transform: scale(1.1);
+  }
+
+  .icon-wrapper:active {
+    transform: scale(0.95);
+  }
+
+  /* Premium progress bar */
+  .progress-premium {
+    position: relative;
+    overflow: hidden;
+    border-radius: 999px;
+  }
+
+  .progress-premium::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(0, 0%, 100%, 0.3) 50%,
+      transparent 100%
+    );
+    animation: progress-shine 2s ease-in-out infinite;
+  }
+
+  @keyframes progress-shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Touch feedback */
+  .touch-feedback {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .touch-feedback:active {
+    opacity: 0.8;
+  }
+}

@@ -1,0 +1,69 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Debug logs
+.cursor/debug.log
+
+# Cursor IDE files
+.cursor/
+.android/
+.antigravity/
+.gemini/
+.gitconfig
+.matplotlib/
+.ssh/
+.wdm/
+
+# Windows system files
+AppData/
+Desktop/
+Documents/
+Downloads/
+Favorites/
+Music/
+NTUSER.DAT*
+ntuser.*
+OneDrive/
+Pictures/
+Saved Games/
+Searches/
+TradingView-Webhook-Bot/
+Videos/
+bot_log.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Books folder
+книги/
