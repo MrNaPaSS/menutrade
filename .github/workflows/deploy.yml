@@ -38,13 +38,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify project structure
-        run: |
-          ls -la
-          ls -la src/
-          test -f src/main.tsx && echo "main.tsx exists" || echo "main.tsx NOT FOUND"
-          test -f index.html && echo "index.html exists" || echo "index.html NOT FOUND"
-
       - name: Build
         run: npm run build
         env:
