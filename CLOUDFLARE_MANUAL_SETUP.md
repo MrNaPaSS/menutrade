@@ -1,11 +1,28 @@
-// Cloudflare Worker для проксирования запросов к OpenRouter
-// Деплой: https://workers.cloudflare.com/
-// Ключ хранится только в секретах Cloudflare, не попадает в код
+# Ручная настройка Cloudflare Worker
 
-// Новый формат Cloudflare Workers (2021+)
+## Если не можете вставить код в редактор:
+
+### Вариант 1: Через клавиатуру
+
+1. В редакторе Cloudflare выделите ВСЁ (Ctrl+A)
+2. Удалите (Delete)
+3. Скопируйте код из файла `CLOUDFLARE_WORKER_CODE.txt`
+4. Вставьте (Ctrl+V)
+
+### Вариант 2: Через файл
+
+1. Скачайте файл `cloudflare-worker-proxy.js` из проекта
+2. Откройте его в блокноте
+3. Скопируйте весь код
+4. Вставьте в редактор Cloudflare
+
+### Вариант 3: Пошагово
+
+Замените код в редакторе на этот:
+
+```javascript
 export default {
   async fetch(request, env) {
-    // Обработка CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
@@ -16,7 +33,6 @@ export default {
       });
     }
 
-    // Разрешаем только POST запросы
     if (request.method !== 'POST') {
       return new Response(JSON.stringify({ error: 'Method not allowed' }), {
         status: 405,
@@ -24,7 +40,6 @@ export default {
       });
     }
 
-    // Получаем API ключ из секретов Cloudflare
     const API_KEY = env.OPENROUTER_API_KEY;
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -39,10 +54,8 @@ export default {
     }
 
     try {
-      // Получаем тело запроса от клиента
       const body = await request.json();
 
-      // Проксируем запрос к OpenRouter
       const response = await fetch(OPENROUTER_API_URL, {
         method: 'POST',
         headers: {
@@ -54,10 +67,8 @@ export default {
         body: JSON.stringify(body),
       });
 
-      // Получаем ответ от OpenRouter
       const data = await response.json();
 
-      // Возвращаем ответ клиенту с CORS заголовками
       return new Response(JSON.stringify(data), {
         status: response.status,
         headers: {
@@ -78,3 +89,12 @@ export default {
     }
   },
 };
+```
+
+## После вставки кода:
+
+1. Нажмите "Deploy"
+2. Дождитесь деплоя
+3. Скопируйте URL Worker
+4. Добавьте секрет `OPENROUTER_API_KEY` в Settings → Variables → Secrets
+

@@ -1,8 +1,7 @@
-// Используем прокси для безопасности - ключ не попадает в клиентский код
-// В продакшене используем Cloudflare Worker прокси (URL настраивается через переменную окружения)
+// ВАЖНО: В продакшене ОБЯЗАТЕЛЬНО используем прокси - ключ НЕ должен попадать в клиентский код!
 // В разработке можно использовать прямой запрос с локальным ключом
 const OPENROUTER_API_URL = import.meta.env.PROD 
-  ? (import.meta.env.VITE_OPENROUTER_PROXY_URL || 'https://openrouter.ai/api/v1/chat/completions')
+  ? (import.meta.env.VITE_OPENROUTER_PROXY_URL || '/api/proxy-openrouter')
   : 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'openai/gpt-4o-mini';
 
@@ -157,13 +156,13 @@ export async function sendMessage(
   context?: TradingContext,
   retries = 3
 ): Promise<string> {
-  // В продакшене используем прокси (ключ на сервере), в разработке - локальный ключ
-  // Ключ может быть обфусцирован для безопасности
+  // ВАЖНО: В продакшене НЕ используем ключ вообще - только прокси!
+  // В разработке используем локальный ключ (может быть обфусцирован)
   const rawKey = import.meta.env.PROD 
-    ? null // В продакшене ключ не нужен - используется прокси
+    ? null // В продакшене ключ НЕ используется - только прокси на сервере
     : import.meta.env.VITE_OPENROUTER_API_KEY; // В разработке используем локальный ключ
   
-  // Деобфусцируем ключ если нужно
+  // Деобфусцируем ключ если нужно (только для разработки)
   const apiKey = rawKey ? getApiKey(rawKey) : null;
 
   // Отладочная информация
@@ -278,4 +277,3 @@ export async function sendMessage(
 
   throw lastError || new Error('Неизвестная ошибка при отправке сообщения');
 }
-
