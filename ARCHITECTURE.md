@@ -205,3 +205,4 @@ if (validation.valid) {
 5. Добавить больше индикаторов (Bollinger Bands, Stochastic)
 
 
+

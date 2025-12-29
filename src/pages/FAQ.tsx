@@ -26,13 +26,13 @@ const FAQ = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-16">
       <MatrixRain />
       <div className="relative z-10">
-        <SimpleMenu />
-        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
-          <div className="max-w-lg w-full mx-auto">
-            <div className="flex items-center gap-2 mb-4 sm:mb-6">
+        {/* Header с кнопкой назад */}
+        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4">
+          <div className="relative flex items-center justify-center py-2 sm:py-3">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -43,13 +43,20 @@ const FAQ = () => {
                 <span className="hidden sm:inline">Назад</span>
               </Button>
             </div>
-
-            <div className="mb-4 sm:mb-6">
-              <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">FAQ</h2>
+            <div className="flex flex-col items-center">
+              <h2 className="font-display font-bold text-lg sm:text-xl">FAQ</h2>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Часто задаваемые вопросы и ответы
               </p>
             </div>
+            <div className="absolute right-4 -top-3">
+              <SimpleMenu />
+            </div>
+          </div>
+        </div>
+
+        <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
 
             <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
               {faqItems.map((item, index) => (

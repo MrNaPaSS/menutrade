@@ -116,6 +116,27 @@ export function useTelegram() {
       if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         
+        // Разворачиваем на весь экран
+        tg.expand();
+        
+        // Скрываем стандартную кнопку Back
+        tg.BackButton.hide();
+        
+        // Настройка высоты через viewport
+        const setViewportHeight = () => {
+          if (tg.viewportHeight) {
+            document.documentElement.style.setProperty('--tg-viewport-height', `${tg.viewportHeight}px`);
+            document.body.style.height = `${tg.viewportHeight}px`;
+          }
+        };
+        
+        setViewportHeight();
+        
+        // Обновляем высоту при изменении viewport
+        tg.onEvent('viewportChanged', () => {
+          setViewportHeight();
+        });
+        
         console.log('Telegram WebApp найден:', {
           version: tg.version,
           platform: tg.platform,
@@ -126,7 +147,27 @@ export function useTelegram() {
         // Инициализация
         try {
           tg.ready();
+          
+          // Разворачиваем на весь экран
           tg.expand();
+          
+          // Скрываем стандартную кнопку Back
+          tg.BackButton.hide();
+          
+          // Настройка высоты через viewport
+          const setViewportHeight = () => {
+            if (tg.viewportHeight) {
+              document.documentElement.style.setProperty('--tg-viewport-height', `${tg.viewportHeight}px`);
+              document.body.style.height = `${tg.viewportHeight}px`;
+            }
+          };
+          
+          setViewportHeight();
+          
+          // Обновляем высоту при изменении viewport
+          tg.onEvent('viewportChanged', () => {
+            setViewportHeight();
+          });
           
           // Валидация данных Telegram
           const validation = validateTelegramData(tg.initData, tg.initDataUnsafe);

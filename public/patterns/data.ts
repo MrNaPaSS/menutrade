@@ -252,3 +252,4 @@ export const getPatternByName = (name: string): Pattern | undefined => {
 };
 
 
+

@@ -20,23 +20,37 @@ const Level2 = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-16">
       <MatrixRain />
       <div className="relative z-10">
-        <SimpleMenu />
-        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
-          <div className="max-w-lg w-full mx-auto">
-            <div className="flex items-center gap-2 mb-6">
+        {/* Header с кнопкой назад */}
+        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4">
+          <div className="relative flex items-center justify-center py-2 sm:py-3">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/trader-menu')}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="text-sm">Назад</span>
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Назад</span>
               </Button>
             </div>
+            <div className="flex flex-col items-center">
+              <h2 className="font-display font-bold text-lg sm:text-xl">PRO</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                {level.description}
+              </p>
+            </div>
+            <div className="absolute right-4 -top-3">
+              <SimpleMenu />
+            </div>
+          </div>
+        </div>
+
+        <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}

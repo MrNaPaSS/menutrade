@@ -21,22 +21,8 @@ export function AppInitializer({ children }: AppInitializerProps) {
       const minLoadTime = 1500;
       const startTime = Date.now();
 
-      // Инициализация Telegram WebApp API (если доступно)
-      // Теперь инициализация происходит в useTelegram hook
-      if (window.Telegram?.WebApp) {
-        try {
-          const tg = window.Telegram.WebApp;
-          tg.ready();
-          tg.expand();
-          
-          // Настройка темы Telegram
-          if (tg.colorScheme === 'dark') {
-            document.documentElement.classList.add('dark');
-          }
-        } catch (error) {
-          console.log('Telegram WebApp API не доступен');
-        }
-      }
+      // Инициализация Telegram WebApp API происходит в useTelegram hook
+      // Здесь только минимальная проверка для совместимости
 
       // Ждем минимум minLoadTime
       const elapsed = Date.now() - startTime;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
@@ -91,6 +91,23 @@ const Index = () => {
 
   const progress = getProgress();
 
+  // Скроллим вверх при изменении view
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant' as ScrollBehavior
+    });
+    
+    const root = document.getElementById('root');
+    if (root) {
+      root.scrollTop = 0;
+    }
+    
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [view]);
+
   // Логика скрытия заголовка при прокрутке
   useMotionValueEvent(scrollY, "change", (latest) => {
     const currentScrollY = latest;
@@ -112,7 +129,7 @@ const Index = () => {
   // Render master test
   if (view === 'master-test') {
     return (
-      <div className="min-h-[100dvh] scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-16">
         <MatrixRain />
         <div className="relative z-10">
           <SimpleMenu />
@@ -137,7 +154,7 @@ const Index = () => {
     if (!currentLesson) return null;
 
     return (
-      <div className="min-h-[100dvh] scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-16">
         <MatrixRain />
         <div className="relative z-10">
           <LessonContent
@@ -160,49 +177,54 @@ const Index = () => {
     const moduleQuestions: QuizQuestion[] = currentModule.lessons.flatMap(lesson => lesson.quiz);
 
     return (
-      <div className="min-h-[100dvh] scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-16">
         <MatrixRain />
         <div className="relative z-10">
-          <SimpleMenu />
-          <main className="p-2 sm:p-4 pb-24">
-            <div className="max-w-lg mx-auto">
-              <button
-                onClick={handleBackToLessons}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm">Назад к урокам</span>
-              </button>
+          {/* Sticky header с кнопкой назад */}
+          <motion.div 
+            className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+            animate={{
+              y: isHeaderVisible ? 0 : -100,
+              opacity: isHeaderVisible ? 1 : 0,
+            }}
+            transition={{ 
+              duration: 0.5,
+              ease: [0.4, 0, 0.2, 1]
+            }}
+            style={{ pointerEvents: isHeaderVisible ? 'auto' : 'none', overflow: 'hidden' }}
+          >
+            <div className="relative flex items-center justify-center py-2 sm:py-3">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBackToLessons}
+                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                >
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Назад</span>
+                </Button>
+              </div>
+              <div className="flex flex-col items-center">
+                <h2 className="font-display font-bold text-lg sm:text-xl">Тест по модулю</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {currentModule.title}
+                </p>
+              </div>
+              <div className="absolute right-4 -top-3">
+                <SimpleMenu />
+              </div>
+            </div>
+          </motion.div>
 
-              <motion.div 
-                className="glass-card rounded-xl p-6 neon-border mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm -mx-4 px-4"
-                initial={{ y: 0, opacity: 1 }}
-                animate={{ 
-                  y: isHeaderVisible ? 0 : -100, 
-                  opacity: isHeaderVisible ? 1 : 0 
-                }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 300, 
-                  damping: 30 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Brain className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="font-display font-bold text-lg">Тест по модулю</h2>
-                    <p className="text-sm text-muted-foreground">{currentModule.title}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Вопросов: <span className="text-primary font-bold">{moduleQuestions.length}</span>
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Порог прохождения: 70%
-                </p>
-              </motion.div>
+          <main className="p-2.5 sm:p-3 md:p-4 pb-8 sm:pb-10 flex justify-center">
+            <div className="max-w-lg w-full mx-auto">
+              <p className="text-sm text-muted-foreground mb-2 text-center">
+                Вопросов: <span className="text-primary font-bold">{moduleQuestions.length}</span>
+              </p>
+              <p className="text-xs text-muted-foreground text-center mb-4">
+                Порог прохождения: 70%
+              </p>
 
               <div className="glass-card rounded-xl p-6 neon-border">
                 <Quiz 
@@ -229,40 +251,45 @@ const Index = () => {
     const moduleQuestions = currentModule.lessons.flatMap(lesson => lesson.quiz || []);
 
     return (
-      <div className="min-h-[100dvh] scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-16">
         <MatrixRain />
         <div className="relative z-10">
-          <SimpleMenu />
-          <main className="p-2 sm:p-4 pb-24">
-            <div className="max-w-lg mx-auto">
-              <button
-                onClick={handleBackToModules}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm">Все модули</span>
-              </button>
+          {/* Sticky header с кнопкой назад */}
+          <motion.div 
+            className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+            animate={{
+              y: isHeaderVisible ? 0 : -100,
+              opacity: isHeaderVisible ? 1 : 0,
+            }}
+            transition={{ 
+              duration: 0.5,
+              ease: [0.4, 0, 0.2, 1]
+            }}
+            style={{ pointerEvents: isHeaderVisible ? 'auto' : 'none', overflow: 'hidden' }}
+          >
+            <div className="relative flex items-center justify-center py-2 sm:py-3">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBackToModules}
+                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                >
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Назад</span>
+                </Button>
+              </div>
+              <div className="flex flex-col items-center">
+                <h2 className="font-display font-bold text-lg sm:text-xl">{currentModule.title}</h2>
+              </div>
+              <div className="absolute right-4 -top-3">
+                <SimpleMenu />
+              </div>
+            </div>
+          </motion.div>
 
-              <motion.div 
-                className="flex items-center gap-3 mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
-                initial={{ y: 0, opacity: 1 }}
-                animate={{ 
-                  y: isHeaderVisible ? 0 : -100, 
-                  opacity: isHeaderVisible ? 1 : 0 
-                }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 300, 
-                  damping: 30 
-                }}
-              >
-                <div className="text-3xl">{currentModule.icon}</div>
-                <div>
-                  <h2 className="font-display font-bold text-xl">{currentModule.title}</h2>
-                  <p className="text-sm text-muted-foreground">{currentModule.description}</p>
-                </div>
-              </motion.div>
-
+          <main className="p-2.5 sm:p-3 md:p-4 pb-8 sm:pb-10 flex justify-center">
+            <div className="max-w-lg w-full mx-auto">
               <div className="space-y-3 mb-6">
                 {currentModule.lessons.map((lesson, index) => (
                   <LessonCard
@@ -298,25 +325,13 @@ const Index = () => {
 
   // Render modules list
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-screen scanline pb-16">
       <MatrixRain />
       <div className="relative z-10">
-          <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
           <div className="max-w-lg w-full mx-auto">
-            <div className="flex items-center gap-2 mb-4 sm:mb-6">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleHomeClick}
-                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
-              >
-                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">На главную</span>
-              </Button>
-            </div>
-            
             <motion.div 
-              className="flex items-center justify-between mb-4 sm:mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+              className="relative flex items-center justify-center mb-4 sm:mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
               initial={{ y: 0, opacity: 1 }}
               animate={{ 
                 y: isHeaderVisible ? 0 : -100, 
@@ -328,22 +343,26 @@ const Index = () => {
                 damping: 30 
               }}
             >
-              <div>
+              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleHomeClick}
+                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                >
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">На главную</span>
+                </Button>
+              </div>
+              <div className="flex flex-col items-center">
                 <h2 className="font-display font-bold text-lg sm:text-xl">Модули обучения</h2>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   Проходи уроки и открывай новые
                 </p>
               </div>
-              {progress > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={resetProgress}
-                  className="text-muted-foreground hover:text-destructive h-8 w-8 sm:h-9 sm:w-9 p-0"
-                >
-                  <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
-                </Button>
-              )}
+              <div className="absolute right-4 -top-3">
+                <SimpleMenu />
+              </div>
             </motion.div>
 
             <div className="space-y-3 sm:space-y-4">

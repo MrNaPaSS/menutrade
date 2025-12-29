@@ -23,6 +23,7 @@ import { AIAgentButton } from "./components/AIAgentButton";
 import { AppInitializer } from "./components/AppInitializer";
 import { TelegramProvider } from "./contexts/TelegramContext";
 import { TelegramDebug } from "./components/TelegramDebug";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const AppContent = () => {
   
   return (
   <BrowserRouter basename={basename}>
+    <ScrollToTop />
     <Routes>
       <Route path="/" element={<Navigate to="/home" replace />} />
       <Route path="/home" element={<Home />} />

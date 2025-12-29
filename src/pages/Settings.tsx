@@ -98,13 +98,13 @@ const Settings = () => {
   ];
 
   return (
-    <div className="min-h-[100dvh] scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-16">
       <MatrixRain />
       <div className="relative z-10">
-        <SimpleMenu />
-        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
-          <div className="max-w-lg w-full mx-auto">
-            <div className="flex items-center gap-2 mb-4 sm:mb-6">
+        {/* Header с кнопкой назад */}
+        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4">
+          <div className="relative flex items-center justify-center py-2 sm:py-3">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -115,21 +115,28 @@ const Settings = () => {
                 <span className="hidden sm:inline">На главную</span>
               </Button>
             </div>
-
-            <div className="mb-4 sm:mb-6">
-              <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">Настройки</h2>
+            <div className="flex flex-col items-center">
+              <h2 className="font-display font-bold text-lg sm:text-xl">Настройки</h2>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Настройки приложения и профиля
               </p>
-              {user && (
-                <div className="mt-2 sm:mt-3 p-2 sm:p-3 rounded-lg bg-muted/20 border border-border/30">
-                  <p className="text-xs text-muted-foreground mb-1">Авторизован как:</p>
-                  <p className="text-xs sm:text-sm font-semibold break-words">
-                    {user.first_name} {user.last_name || ''} {user.username && `(@${user.username})`}
-                  </p>
-                </div>
-              )}
             </div>
+            <div className="absolute right-4 -top-3">
+              <SimpleMenu />
+            </div>
+          </div>
+        </div>
+
+        <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
+            {user && (
+              <div className="mt-2 sm:mt-3 p-2 sm:p-3 rounded-lg bg-muted/20 border border-border/30">
+                <p className="text-xs text-muted-foreground mb-1">Авторизован как:</p>
+                <p className="text-xs sm:text-sm font-semibold break-words">
+                  {user.first_name} {user.last_name || ''} {user.username && `(@${user.username})`}
+                </p>
+              </div>
+            )}
 
             {/* Админ-панель */}
             {isAdmin && (

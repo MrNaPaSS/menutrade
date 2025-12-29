@@ -8,6 +8,7 @@
   /* Оптимизация для мобильных устройств 9:16 (360x640) */
   html {
     height: 100%;
+    height: var(--tg-viewport-height, 100%);
     height: -webkit-fill-available;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -16,10 +17,12 @@
   body {
     min-height: 100vh;
     min-height: 100dvh;
+    min-height: var(--tg-viewport-height, 100dvh);
     min-height: -webkit-fill-available;
     overscroll-behavior-y: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding-top: env(safe-area-inset-top);
   }
   
   /* Оптимизация для экранов 360x640 и меньше */
@@ -493,5 +496,10 @@
 
   .touch-feedback:active {
     opacity: 0.8;
+  }
+
+  /* Safe area padding bottom */
+  .safe-area-pb {
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
   }
 }

@@ -28,15 +28,15 @@ export function SimpleMenu() {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed top-2 right-4 z-50">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="h-11 w-11 min-h-[44px] min-w-[44px] sm:h-10 sm:w-10 rounded-lg hover:bg-primary/10 border border-border/30 bg-background/80 backdrop-blur-sm"
+            className="h-11 w-11 min-h-[44px] min-w-[44px] sm:h-10 sm:w-10 rounded-lg hover:bg-primary/10 bg-background/80 backdrop-blur-sm transition-all duration-300 ease-in-out active:scale-95"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5 transition-transform duration-300" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 glass-card neon-border">

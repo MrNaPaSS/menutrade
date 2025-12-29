@@ -1,14 +1,15 @@
-import { useState, useEffect, ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef, ReactNode } from 'react';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { strategyModules } from '@/data/strategies';
 import { Module } from '@/types/lesson';
-import { ArrowLeft, BarChart3, CheckCircle2, AlertCircle, AlertTriangle, Lightbulb, Info, Calculator } from 'lucide-react';
+import { CheckCircle2, AlertCircle, AlertTriangle, Lightbulb, Info, Calculator, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import { Button } from '@/components/ui/button';
 
 // Функция для правильного извлечения текста из children ReactMarkdown
 function extractTextFromChildren(children: ReactNode): string {
@@ -117,6 +118,43 @@ const Strategies = () => {
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [api, setApi] = useState<CarouselApi>(null);
   const [current, setCurrent] = useState(0);
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const { scrollY } = useScroll();
+
+  // Логика скрытия заголовка при прокрутке
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const currentScrollY = latest;
+    
+    // Показываем при прокрутке вверх или если прокрутка меньше 50px
+    if (currentScrollY < lastScrollY || currentScrollY < 50) {
+      setIsHeaderVisible(true);
+    } 
+    // Скрываем при прокрутке вниз больше 50px
+    else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      setIsHeaderVisible(false);
+    }
+    
+    setLastScrollY(currentScrollY);
+  });
+
+  // Скроллим вверх при изменении view
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant' as ScrollBehavior
+    });
+    
+    const root = document.getElementById('root');
+    if (root) {
+      root.scrollTop = 0;
+    }
+    
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [view]);
 
   const handleModuleClick = (module: Module) => {
     setSelectedModule(module);
@@ -137,11 +175,39 @@ const Strategies = () => {
   useEffect(() => {
     if (!api) return;
 
+    const handleSelect = () => {
+      const newSlide = api.selectedScrollSnap();
+      setCurrent(newSlide);
+      
+      // Сбрасываем прокрутку всех карточек
+      cardRefs.current.forEach((el, index) => {
+        if (el && index !== newSlide) {
+          el.scrollTop = 0;
+        }
+      });
+      
+      // Сбрасываем прокрутку текущей карточки в начало
+      const currentCard = cardRefs.current.get(newSlide);
+      if (currentCard) {
+        currentCard.scrollTop = 0;
+      }
+    };
+
     setCurrent(api.selectedScrollSnap());
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
+    api.on("select", handleSelect);
+    
+    return () => {
+      api.off("select", handleSelect);
+    };
   }, [api]);
+  
+  // Дополнительно сбрасываем прокрутку при изменении current
+  useEffect(() => {
+    const currentCard = cardRefs.current.get(current);
+    if (currentCard) {
+      currentCard.scrollTop = 0;
+    }
+  }, [current]);
 
   // Render module content
   if (view === 'content' && selectedModule) {
@@ -150,55 +216,60 @@ const Strategies = () => {
     if (!currentModule) return null;
 
     return (
-      <div className="min-h-[100dvh] scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-8 sm:pb-10">
         <MatrixRain />
         <div className="relative z-10">
-          <SimpleMenu />
-          <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
-            <div className="max-w-lg w-full mx-auto">
-              <button
-                onClick={handleBackToModules}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 sm:mb-6 min-h-[44px] px-2 -ml-2"
-              >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                <span className="text-sm sm:text-base">Назад к стратегиям</span>
-              </button>
-
-              {/* Module header */}
-              <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 min-h-[60px]">
-                <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <div className="text-2xl sm:text-3xl md:text-4xl flex-shrink-0">{currentModule.icon}</div>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-display font-bold text-lg sm:text-xl md:text-2xl mb-1 break-words overflow-wrap-anywhere">{currentModule.title}</h2>
-                    <p className="text-xs sm:text-sm text-muted-foreground break-words overflow-wrap-anywhere">{currentModule.description}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/30">
-                  <div className="flex-1 flex gap-1">
-                    {currentModule.lessons.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`h-1.5 flex-1 rounded-full transition-colors ${
-                          index === current ? 'bg-primary' : 'bg-muted/30'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs text-muted-foreground font-medium flex-shrink-0 ml-2">
-                    {current + 1} / {currentModule.lessons.length}
-                  </span>
-                </div>
+          {/* Sticky header с кнопкой назад */}
+          <motion.div 
+            className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+            animate={{
+              y: isHeaderVisible ? 0 : -100,
+              opacity: isHeaderVisible ? 1 : 0,
+            }}
+            transition={{ 
+              duration: 0.5,
+              ease: [0.4, 0, 0.2, 1]
+            }}
+            style={{ pointerEvents: isHeaderVisible ? 'auto' : 'none', overflow: 'hidden' }}
+          >
+            <div className="relative flex items-center justify-center py-2 sm:py-3">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBackToModules}
+                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                >
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Назад</span>
+                </Button>
               </div>
+              <div className="flex flex-col items-center">
+                <h2 className="font-display font-bold text-lg sm:text-xl">{currentModule.title}</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {currentModule.description}
+                </p>
+              </div>
+              <div className="absolute right-4 -top-3">
+                <SimpleMenu />
+              </div>
+            </div>
+          </motion.div>
 
+          <main className="p-2.5 sm:p-3 md:p-4 pb-8 sm:pb-10 flex justify-center">
+            <div className="max-w-full sm:max-w-lg w-full mx-auto">
               {/* Carousel with cards */}
               <Carousel
                 setApi={setApi}
                 opts={{
                   align: "start",
                   loop: false,
-                  dragFree: true,
+                  dragFree: false,
+                  axis: "x",
+                  slidesToScroll: 1,
                 }}
                 className="w-full"
+                style={{ touchAction: 'pan-x' }}
               >
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {currentModule.lessons.map((lesson, index) => (
@@ -206,54 +277,67 @@ const Strategies = () => {
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                        className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border min-h-[calc(100dvh-280px)] sm:min-h-[calc(100dvh-320px)] flex flex-col"
+                        transition={{ 
+                          duration: 0.5,
+                          ease: [0.4, 0, 0.2, 1]
+                        }}
+                        className="glass-card rounded-xl p-2.5 sm:p-3 md:p-4 neon-border h-[calc(100dvh-140px)] sm:h-[calc(100dvh-160px)] md:h-[calc(100dvh-180px)] flex flex-col overflow-hidden mx-auto max-w-full"
+                        style={{ touchAction: 'pan-y pinch-zoom' }}
                       >
-                        <h3 className="font-display font-bold text-lg sm:text-xl mb-3 sm:mb-4 text-primary break-words overflow-wrap-anywhere">
+                        <h3 className="font-display font-bold text-xs sm:text-sm md:text-base mb-1.5 sm:mb-2 md:mb-3 text-primary break-words overflow-wrap-anywhere flex-shrink-0 px-0.5 sm:px-0">
                           {lesson.title}
                         </h3>
-                        <div className="flex-1 prose prose-invert max-w-none w-full overflow-y-auto custom-scrollbar pb-2" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', hyphens: 'auto' }}>
+                        <div 
+                          ref={(el) => {
+                            if (el) {
+                              cardRefs.current.set(index, el);
+                            }
+                          }}
+                          className="flex-1 prose prose-invert max-w-none w-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent" 
+                          style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', hyphens: 'auto' }}
+                        >
+                          <div className="w-full pb-2 sm:pb-3 md:pb-4 px-0.5 sm:px-1 md:px-0">
                           <ReactMarkdown
                             components={{
                               h1: ({ children }) => (
-                                <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground mt-0 mb-4 sm:mb-6 neon-text flex items-center gap-2 sm:gap-3 pt-2 break-words overflow-wrap-anywhere">
-                                  <span className="w-1.5 h-6 sm:h-8 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
+                                <h1 className="font-display text-base sm:text-lg md:text-xl font-bold text-foreground mt-0 mb-2 sm:mb-3 md:mb-4 neon-text flex items-center gap-1.5 sm:gap-2 md:gap-3 pt-1 sm:pt-2 break-words overflow-wrap-anywhere">
+                                  <span className="w-1 h-4 sm:h-5 md:h-6 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
                                   <span className="break-words overflow-wrap-anywhere">{children}</span>
                                 </h1>
                               ),
                               h2: ({ children }) => (
-                                <h2 className="font-display text-lg sm:text-xl md:text-2xl font-semibold text-foreground mt-4 sm:mt-6 mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3 border-b-2 border-primary/30 pb-2 sm:pb-3 break-words overflow-wrap-anywhere">
-                                  <span className="w-1 h-5 sm:h-6 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] flex-shrink-0"></span>
+                                <h2 className="font-display text-sm sm:text-base md:text-lg font-semibold text-foreground mt-3 sm:mt-4 md:mt-6 mb-2 sm:mb-3 md:mb-4 flex items-center gap-1.5 sm:gap-2 md:gap-3 border-b-2 border-primary/30 pb-1.5 sm:pb-2 md:pb-3 break-words overflow-wrap-anywhere">
+                                  <span className="w-0.5 h-3 sm:h-4 md:h-5 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] flex-shrink-0"></span>
                                   <span className="break-words overflow-wrap-anywhere">{children}</span>
                                 </h2>
                               ),
                               h3: ({ children }) => {
                                 const text = extractTextFromChildren(children);
-                                let icon = <Info className="w-4 h-4 text-primary" />;
+                                let icon = <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />;
                                 let bgColor = 'bg-primary/10';
                                 let textColor = 'text-primary';
 
                                 if (text.includes('❌')) {
-                                  icon = <AlertCircle className="w-4 h-4 text-destructive" />;
+                                  icon = <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-destructive" />;
                                   bgColor = 'bg-destructive/10';
                                   textColor = 'text-destructive';
                                 } else if (text.includes('✅')) {
-                                  icon = <CheckCircle2 className="w-4 h-4 text-primary" />;
+                                  icon = <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />;
                                   bgColor = 'bg-primary/10';
                                   textColor = 'text-primary';
                                 } else if (text.includes('⚠️')) {
-                                  icon = <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+                                  icon = <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-500" />;
                                   bgColor = 'bg-yellow-500/10';
                                   textColor = 'text-yellow-500';
                                 } else if (text.includes('💡')) {
-                                  icon = <Lightbulb className="w-4 h-4 text-primary" />;
+                                  icon = <Lightbulb className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />;
                                   bgColor = 'bg-primary/10';
                                   textColor = 'text-primary';
                                 }
 
                                 return (
-                                  <h3 className={`font-display text-base sm:text-lg md:text-xl font-semibold ${textColor} mt-4 sm:mt-5 mb-2 sm:mb-3 flex items-center gap-2 break-words overflow-wrap-anywhere`}>
-                                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${bgColor} flex items-center justify-center border border-${textColor}/20 flex-shrink-0`}>
+                                  <h3 className={`font-display text-sm sm:text-base md:text-lg font-semibold ${textColor} mt-3 sm:mt-4 md:mt-5 mb-1.5 sm:mb-2 md:mb-3 flex items-center gap-1.5 sm:gap-2 break-words overflow-wrap-anywhere`}>
+                                    <div className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-lg ${bgColor} flex items-center justify-center border border-${textColor}/20 flex-shrink-0`}>
                                       {icon}
                                     </div>
                                     <span className="break-words overflow-wrap-anywhere">{children}</span>
@@ -277,27 +361,27 @@ const Strategies = () => {
                                   const displayChildren = removeEmojiFromChildren(children);
                                   
                                   if (trimmedText.startsWith('❌')) {
-                                    icon = <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />;
+                                    icon = <AlertCircle className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 text-destructive flex-shrink-0" />;
                                     bgColor = 'bg-destructive/10';
                                     borderColor = 'border-destructive/30';
                                   } else if (trimmedText.startsWith('✅')) {
-                                    icon = <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />;
+                                    icon = <CheckCircle2 className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />;
                                     bgColor = 'bg-primary/10';
                                     borderColor = 'border-primary/30';
                                   } else if (trimmedText.startsWith('⚠️')) {
-                                    icon = <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />;
+                                    icon = <AlertTriangle className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 text-yellow-500 flex-shrink-0" />;
                                     bgColor = 'bg-yellow-500/10';
                                     borderColor = 'border-yellow-500/30';
                                   } else if (trimmedText.startsWith('💡')) {
-                                    icon = <Lightbulb className="w-5 h-5 text-primary flex-shrink-0" />;
+                                    icon = <Lightbulb className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />;
                                     bgColor = 'bg-primary/10';
                                     borderColor = 'border-primary/30';
                                   }
                                   
                                   return (
-                                    <div className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
+                                    <div className={`flex items-start gap-1.5 sm:gap-2 md:gap-3 p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl border-2 ${bgColor} ${borderColor} mb-2 sm:mb-2.5 md:mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
                                       <span className="mt-0.5 flex-shrink-0">{icon}</span>
-                                      <div className="text-foreground text-sm sm:text-base md:text-lg flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
+                                      <div className="text-foreground text-xs sm:text-sm md:text-base flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
                                     </div>
                                   );
                                 }
@@ -305,27 +389,27 @@ const Strategies = () => {
                                 // Проверка на специальные блоки в середине текста
                                 if (text.includes('✅') || text.includes('❌')) {
                                   return (
-                                    <p className="text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 flex items-start gap-2 sm:gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10 break-words overflow-wrap-anywhere">
-                                      <span className="mt-1 flex-shrink-0">
+                                    <p className="text-xs sm:text-sm md:text-base leading-relaxed mb-2 sm:mb-3 md:mb-4 flex items-start gap-1.5 sm:gap-2 md:gap-3 p-2 sm:p-2.5 md:p-3 rounded-lg bg-primary/5 border border-primary/10 break-words overflow-wrap-anywhere">
+                                      <span className="mt-0.5 sm:mt-1 flex-shrink-0">
                                         {text.includes('✅') ? (
-                                          <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                                          <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary" />
                                         ) : (
-                                          <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
+                                          <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-destructive" />
                                         )}
                                       </span>
                                       <span className="text-foreground flex-1 break-words overflow-wrap-anywhere">{children}</span>
                                     </p>
                                   );
                                 }
-                                return <p className="text-sm sm:text-base md:text-lg text-foreground/90 leading-relaxed mb-3 sm:mb-4 break-words overflow-wrap-anywhere hyphens-auto">{children}</p>;
+                                return <p className="text-xs sm:text-sm md:text-base text-foreground/90 leading-relaxed mb-2 sm:mb-3 md:mb-4 break-words overflow-wrap-anywhere hyphens-auto">{children}</p>;
                               },
                               ul: ({ children }) => (
-                                <ul className="list-none space-y-2 sm:space-y-3 mb-3 sm:mb-4 break-words overflow-wrap-anywhere">
+                                <ul className="list-none space-y-1.5 sm:space-y-2 md:space-y-3 mb-2 sm:mb-3 md:mb-4 break-words overflow-wrap-anywhere">
                                   {children}
                                 </ul>
                               ),
                               ol: ({ children }) => (
-                                <ol className="list-decimal list-inside space-y-2 text-foreground/90 mb-3 sm:mb-4 break-words overflow-wrap-anywhere">
+                                <ol className="list-decimal list-inside space-y-1.5 sm:space-y-2 text-foreground/90 mb-2 sm:mb-3 md:mb-4 break-words overflow-wrap-anywhere text-xs sm:text-sm md:text-base">
                                   {children}
                                 </ol>
                               ),
@@ -366,21 +450,21 @@ const Strategies = () => {
                                     borderColor = 'border-primary/30';
                                   }
                                   return (
-                                    <li className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
+                                    <li className={`flex items-start gap-1.5 sm:gap-2 md:gap-3 p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl border-2 ${bgColor} ${borderColor} mb-2 sm:mb-2.5 md:mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
                                       <span className="mt-0.5 flex-shrink-0">{icon}</span>
-                                      <div className="text-foreground text-sm sm:text-base md:text-lg flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
+                                      <div className="text-foreground text-xs sm:text-sm md:text-base flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
                                     </li>
                                   );
                                 }
                                 return (
-                                  <li className="text-foreground/90 text-sm sm:text-base md:text-lg flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3 p-2 hover:bg-primary/5 rounded-lg transition-colors text-left break-words overflow-wrap-anywhere">
-                                    <span className="w-2 h-2 rounded-full bg-primary mt-2.5 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                                  <li className="text-foreground/90 text-xs sm:text-sm md:text-base flex items-start gap-1.5 sm:gap-2 md:gap-3 mb-1.5 sm:mb-2 md:mb-3 p-1.5 sm:p-2 hover:bg-primary/5 rounded-lg transition-colors text-left break-words overflow-wrap-anywhere">
+                                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary mt-2 sm:mt-2.5 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
                                     <span className="flex-1 text-left break-words overflow-wrap-anywhere">{children}</span>
                                   </li>
                                 );
                               },
                               strong: ({ children }) => (
-                                <strong className="text-primary font-bold bg-primary/15 px-2 py-0.5 rounded-md border border-primary/20 neon-text break-words overflow-wrap-anywhere inline-block">{children}</strong>
+                                <strong className="text-primary font-bold bg-primary/15 px-1.5 sm:px-2 py-0.5 rounded-md border border-primary/20 neon-text break-words overflow-wrap-anywhere inline-block text-xs sm:text-sm">{children}</strong>
                               ),
                               blockquote: ({ children }) => {
                                 const text = extractTextFromChildren(children);
@@ -412,23 +496,23 @@ const Strategies = () => {
                                 }
 
                                 return (
-                                  <blockquote className={`glass-card rounded-xl p-3 sm:p-4 md:p-5 neon-border mb-4 sm:mb-6 flex items-start gap-2 sm:gap-3 md:gap-4 ${bgColor} break-words overflow-wrap-anywhere`}>
-                                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${bgColor} flex items-center justify-center flex-shrink-0 ${iconColor}`}>
+                                  <blockquote className={`glass-card rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3 neon-border mb-3 sm:mb-4 md:mb-6 flex items-start gap-1.5 sm:gap-2 md:gap-3 ${bgColor} break-words overflow-wrap-anywhere`}>
+                                    <div className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-lg ${bgColor} flex items-center justify-center flex-shrink-0 ${iconColor}`}>
                                       {icon}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      {title && <p className={`font-display font-bold text-xs sm:text-sm mb-1 ${iconColor}`}>{title}</p>}
-                                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere">{children}</p>
+                                      {title && <p className={`font-display font-bold text-[10px] sm:text-xs md:text-sm mb-0.5 sm:mb-1 ${iconColor}`}>{title}</p>}
+                                      <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere">{children}</p>
                                     </div>
                                   </blockquote>
                                 );
                               },
                               code: ({ inline, children }) => {
                                 if (inline) {
-                                  return <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold text-foreground">{children}</code>;
+                                  return <code className="relative rounded bg-muted px-[0.2rem] sm:px-[0.3rem] py-[0.15rem] sm:py-[0.2rem] font-mono text-[10px] sm:text-xs md:text-sm font-semibold text-foreground">{children}</code>;
                                 }
                                 return (
-                                  <pre className="mb-4 mt-6 overflow-x-auto rounded-lg border bg-black/30 p-4 font-mono text-sm text-foreground">
+                                  <pre className="mb-3 sm:mb-4 mt-4 sm:mt-6 overflow-x-auto rounded-lg border bg-black/30 p-2 sm:p-3 md:p-4 font-mono text-[10px] sm:text-xs md:text-sm text-foreground">
                                     <code>{children}</code>
                                   </pre>
                                 );
@@ -449,7 +533,8 @@ const Strategies = () => {
                             {convertEmojiLinesToLists(lesson.content)}
                           </ReactMarkdown>
                         </div>
-                      </motion.div>
+                      </div>
+                    </motion.div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -466,60 +551,74 @@ const Strategies = () => {
 
   // Render modules list
   return (
-    <div className="min-h-[100dvh] scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-16">
       <MatrixRain />
       <div className="relative z-10">
-        <SimpleMenu />
-        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
-          <div className="max-w-lg w-full mx-auto">
-            {/* Header */}
-            <div className="mb-4 sm:mb-6">
-              <h1 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2 break-words overflow-wrap-anywhere">Стратегии торговли</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground break-words overflow-wrap-anywhere">
-                Рекомендации, правила и практические стратегии для успешной торговли
+        {/* Sticky header с кнопкой назад */}
+        <motion.div 
+          className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+          animate={{
+            y: isHeaderVisible ? 0 : -100,
+            opacity: isHeaderVisible ? 1 : 0,
+          }}
+          transition={{ 
+            duration: 0.5,
+            ease: [0.4, 0, 0.2, 1]
+          }}
+          style={{ pointerEvents: isHeaderVisible ? 'auto' : 'none', overflow: 'hidden' }}
+        >
+          <div className="relative flex items-center justify-center py-2 sm:py-3">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleHomeClick}
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+              >
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">На главную</span>
+              </Button>
+            </div>
+            <div className="flex flex-col items-center">
+              <h2 className="font-display font-bold text-lg sm:text-xl">Стратегии торговли</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Рекомендации, правила и практические стратегии
               </p>
             </div>
-
-            {/* Description card */}
-            <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6 min-h-[60px]">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 min-w-[40px] min-h-[40px] rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-display font-bold text-base sm:text-lg mb-1 sm:mb-2 break-words overflow-wrap-anywhere">
-                    Рекомендации и правила
-                  </h2>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere">
-                    В этом разделе собраны практические стратегии торговли, правила управления капиталом 
-                    и психологические аспекты трейдинга. Изучайте материалы в удобном для вас порядке, 
-                    применяйте знания на практике и развивайте свои навыки.
-                  </p>
-                </div>
-              </div>
+            <div className="absolute right-4 -top-3">
+              <SimpleMenu />
             </div>
+          </div>
+        </motion.div>
+
+        <main className="p-2.5 sm:p-3 md:p-4 pb-12 sm:pb-14 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
 
             {/* Modules */}
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-2.5 sm:space-y-3 md:space-y-4">
               {strategyModules.map((module, index) => (
                 <motion.button
                   key={module.id}
                   onClick={() => handleModuleClick(module)}
-                  className="w-full glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border text-left transition-all duration-300 active:scale-[0.98] hover:scale-[1.02] hover:bg-primary/5 touch-manipulation min-h-[60px]"
+                  className="w-full glass-card rounded-xl p-2.5 sm:p-3 md:p-4 neon-border text-left transition-all duration-300 active:scale-[0.98] hover:scale-[1.02] hover:bg-primary/5 touch-manipulation min-h-[50px] sm:min-h-[60px]"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ 
+                    delay: index * 0.1,
+                    duration: 0.5,
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
                 >
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="text-2xl sm:text-3xl md:text-4xl flex-shrink-0">{module.icon}</div>
+                  <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+                    <div className="text-xl sm:text-2xl md:text-3xl flex-shrink-0">{module.icon}</div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-display font-bold text-base sm:text-lg mb-1 break-words overflow-wrap-anywhere">{module.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-2 break-words overflow-wrap-anywhere">{module.description}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <h3 className="font-display font-bold text-sm sm:text-base md:text-lg mb-0.5 sm:mb-1 break-words overflow-wrap-anywhere">{module.title}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2 break-words overflow-wrap-anywhere">{module.description}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
                         {module.lessons.length} {module.lessons.length === 1 ? 'материал' : 'материалов'}
                       </p>
                     </div>
-                    <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground rotate-180 flex-shrink-0" />
+                    <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-muted-foreground rotate-180 flex-shrink-0" />
                   </div>
                 </motion.button>
               ))}

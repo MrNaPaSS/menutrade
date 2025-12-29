@@ -50,3 +50,4 @@ export function PatternRenderer({ candles, width = 200, height = 120 }: PatternR
 }
 
 
+

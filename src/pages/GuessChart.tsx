@@ -343,7 +343,7 @@ const GuessChart = () => {
     }
 
     return (
-        <div className={`min-h-[100dvh] scanline ${gameState === 'PLAYING' ? 'pb-28 md:pb-24' : 'pb-24 md:pb-24'} bg-background flex flex-col`}>
+        <div className={`min-h-[100dvh] scanline ${gameState === 'PLAYING' ? 'pb-20 md:pb-16' : 'pb-16 md:pb-16'} bg-background flex flex-col`}>
             <MatrixRain />
             <div className="relative z-10 flex-1 flex flex-col">
                 <SimpleMenu />

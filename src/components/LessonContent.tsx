@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, ReactNode } from "react";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { ArrowLeft, BookOpen, Brain, CheckCircle2, AlertCircle, AlertTriangle, Lightbulb, Info, Calculator } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
 import { Quiz } from "./Quiz";
-import { GestureHint } from "./GestureHint";
+import { SimpleMenu } from "@/components/SimpleMenu";
+import { Button } from "@/components/ui/button";
 import type { Lesson } from "@/types/lesson";
 import {
   CandlestickChart,
@@ -731,7 +733,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
   const [currentSlide, setCurrentSlide] = useState(0);
   const [api, setApi] = useState<CarouselApi>(null);
   const [showQuiz, setShowQuiz] = useState(false);
-  const [showGestureHint, setShowGestureHint] = useState<Record<number, boolean>>({});
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: Ленивая загрузка компонентов графиков
@@ -763,13 +765,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
     const fullText = contentParts.map(part => typeof part === 'string' ? part : '\n__COMPONENT__\n').join('');
     
     // Разбиваем по H2 заголовкам
-    // Используем более надежное регулярное выражение
     const h2Sections = fullText.split(/(?=^##\s)/m).filter(section => section.trim().length > 0);
-    
-    // Отладка: логируем количество найденных секций
-    if (h2Sections.length > 1) {
-      console.log(`[LessonContent] Найдено ${h2Sections.length} слайдов для урока ${lesson.id}`);
-    }
     
     const cardsList: Array<Array<string | React.ReactElement>> = [];
     
@@ -829,12 +825,26 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
   
   const isLastCard = currentSlide === cards.length - 1;
 
-  // Отслеживаем текущий слайд
+  // Отслеживаем текущий слайд и сбрасываем прокрутку
   useEffect(() => {
     if (!api) return;
     
     const handleSelect = () => {
-      setCurrentSlide(api.selectedScrollSnap());
+      const newSlide = api.selectedScrollSnap();
+      setCurrentSlide(newSlide);
+      
+      // Сбрасываем прокрутку предыдущей карточки
+      cardRefs.current.forEach((el, index) => {
+        if (el && index !== newSlide) {
+          el.scrollTop = 0;
+        }
+      });
+      
+      // Сбрасываем прокрутку текущей карточки в начало
+      const currentCard = cardRefs.current.get(newSlide);
+      if (currentCard) {
+        currentCard.scrollTop = 0;
+      }
     };
 
     api.on('select', handleSelect);
@@ -844,50 +854,15 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
       api.off('select', handleSelect);
     };
   }, [api]);
-
-  // Проверяем необходимость показа подсказки для текущего слайда (только один раз)
+  
+  // Дополнительно сбрасываем прокрутку при изменении currentSlide
   useEffect(() => {
-    // Показываем подсказку только если её ещё никогда не показывали (undefined)
-    if (showGestureHint[currentSlide] !== undefined) return;
-    
-    const cardElement = cardRefs.current.get(currentSlide);
-    if (!cardElement) return;
+    const currentCard = cardRefs.current.get(currentSlide);
+    if (currentCard) {
+      currentCard.scrollTop = 0;
+    }
+  }, [currentSlide]);
 
-    const checkScroll = () => {
-      const hasScroll = cardElement.scrollHeight > cardElement.clientHeight;
-      if (hasScroll) {
-        setShowGestureHint(prev => ({ ...prev, [currentSlide]: true }));
-      } else {
-        // Помечаем как проверенную, чтобы не проверять снова
-        setShowGestureHint(prev => ({ ...prev, [currentSlide]: false }));
-      }
-    };
-
-    const timeoutId = setTimeout(checkScroll, 500);
-    return () => clearTimeout(timeoutId);
-  }, [currentSlide, showGestureHint]);
-
-  // Скрываем подсказку при скролле или касании (и помечаем как показанную, чтобы больше не показывать)
-  useEffect(() => {
-    const cardElement = cardRefs.current.get(currentSlide);
-    // Обрабатываем только если подсказка активна (true)
-    if (!cardElement || showGestureHint[currentSlide] !== true) return;
-
-    const handleInteraction = () => {
-      // Помечаем как показанную (false) - больше никогда не будем показывать
-      setShowGestureHint(prev => ({ ...prev, [currentSlide]: false }));
-    };
-
-    cardElement.addEventListener('scroll', handleInteraction, { once: true, passive: true });
-    cardElement.addEventListener('touchstart', handleInteraction, { once: true, passive: true });
-    cardElement.addEventListener('wheel', handleInteraction, { once: true, passive: true });
-
-    return () => {
-      cardElement.removeEventListener('scroll', handleInteraction);
-      cardElement.removeEventListener('touchstart', handleInteraction);
-      cardElement.removeEventListener('wheel', handleInteraction);
-    };
-  }, [currentSlide, showGestureHint]);
 
   if (showQuiz) {
     return (
@@ -929,75 +904,71 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
   }
 
   return (
-    <div className="min-h-[100dvh] p-4 pb-20 animate-fade-in">
-      <div className="max-w-lg mx-auto">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Назад</span>
-        </button>
-
-        <div className="glass-card rounded-xl p-6 neon-border mb-4 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.3)]">
-              <BookOpen className="w-5 h-5 text-primary" />
+    <div className="min-h-[100dvh] scanline pb-8 sm:pb-10">
+      <div className="relative z-10">
+        {/* Sticky header с кнопкой назад */}
+        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm -mx-4 px-4">
+          <div className="relative flex items-center justify-center py-1">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onBack}
+                className="text-muted-foreground hover:text-foreground text-xs h-8 px-2"
+              >
+                <ArrowLeft className="w-3 h-3" />
+              </Button>
             </div>
-            <div className="flex-1">
-              <h1 className="font-display font-bold text-lg">{lesson.title}</h1>
-              <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
-                <span>⏱️</span>
-                <span>{lesson.duration}</span>
-              </p>
+            <div className="flex flex-col items-center">
+              <h2 className="font-display font-bold text-sm">{lesson.title}</h2>
+              <div className="flex items-center gap-1 mt-0.5">
+                {cards.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-1 rounded-full transition-all duration-300 ${
+                      index === currentSlide
+                        ? 'w-5 bg-primary'
+                        : 'w-1 bg-muted-foreground/30'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20">
-              {currentSlide + 1} / {cards.length}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+              <SimpleMenu />
             </div>
           </div>
         </div>
 
-        <div className="relative">
-          <Carousel
+        <div className="p-4 pb-20 flex justify-center">
+          <div className="w-full max-w-full mx-auto">
+            <Carousel
             setApi={setApi}
             opts={{
               align: "start",
               dragFree: false,
               loop: false,
               containScroll: "trimSnaps",
+              axis: "x",
+              slidesToScroll: 1,
             }}
             className="w-full"
+            style={{ touchAction: 'pan-x' }}
           >
-            <CarouselContent className="-ml-2 md:-ml-4">
+            <CarouselContent className="-ml-0">
               {cards.map((card, index) => (
-                <CarouselItem key={index} className="pl-2 md:pl-4 basis-full">
+                <CarouselItem key={index} className="pl-0 basis-full">
                   <div 
                     ref={(el) => {
                       if (el) {
                         cardRefs.current.set(index, el);
-                        // Проверяем скролл при монтировании первого слайда (только если ещё не показывали)
-                        if (index === 0 && showGestureHint[index] === undefined) {
-                          setTimeout(() => {
-                            const hasScroll = el.scrollHeight > el.clientHeight;
-                            if (hasScroll) {
-                              setShowGestureHint(prev => ({ ...prev, [index]: true }));
-                            }
-                          }, 500);
-                        }
                       }
                     }}
-                    className="glass-card rounded-xl p-8 neon-border h-[75vh] flex flex-col touch-pan-y overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] relative animate-in fade-in slide-in-from-right-2 duration-300"
+                    className="glass-card rounded-xl p-4 neon-border h-[calc(100dvh-180px)] flex flex-col overflow-hidden relative animate-in fade-in slide-in-from-right-2 duration-300 mx-auto w-full"
+                    style={{ touchAction: 'pan-y pinch-zoom' }}
                   >
-                    {showGestureHint[index] === true && (
-                      <GestureHint 
-                        onDismiss={() => {
-                          // Помечаем как показанную (false) - больше не будем показывать
-                          setShowGestureHint(prev => ({ ...prev, [index]: false }));
-                        }} 
-                      />
-                    )}
-                    <div className="flex-1 prose prose-invert max-w-none w-full flex items-center justify-center">
-                      <div className="markdown-content text-base leading-relaxed w-full">
+                    <div className="flex-1 prose prose-invert max-w-none w-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
+                      <div className="markdown-content text-sm leading-relaxed w-full pb-4 px-0">
                         {/* Рендерим части карточки - чередуем markdown и компоненты */}
                         {cards[index].map((part, partIdx) => {
                           if (typeof part === 'string') {
@@ -1065,9 +1036,9 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                                       }
                                       
                                       return (
-                                        <div className={`flex items-start gap-3 p-4 rounded-xl border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
+                                        <div className={`flex items-start gap-2 p-3 rounded-lg border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
                                           <span className="mt-0.5 flex-shrink-0">{icon}</span>
-                                          <div className="text-foreground text-base md:text-lg flex-1 text-left break-words overflow-wrap-anywhere word-break-break-word min-w-0 whitespace-normal [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
+                                          <div className="text-foreground text-sm flex-1 text-left break-words overflow-wrap-anywhere word-break-break-word min-w-0 whitespace-normal [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
                                         </div>
                                       );
                                     }
@@ -1086,11 +1057,11 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                                         </p>
                                       );
                                     }
-                                    return <p className="text-base md:text-lg text-foreground/90 leading-relaxed mb-4 break-words overflow-wrap-anywhere word-break-break-word whitespace-normal">{children}</p>;
+                                    return <p className="text-sm text-foreground/90 leading-relaxed mb-3 break-words overflow-wrap-anywhere word-break-break-word whitespace-normal">{children}</p>;
                                   },
                             h1: ({ children }) => (
-                              <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mt-0 mb-6 neon-text flex items-center gap-3 animate-in fade-in slide-in-from-top-2 pt-2 break-words overflow-wrap-anywhere">
-                                <span className="w-1.5 h-8 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
+                              <h1 className="font-display text-base font-bold text-foreground mt-0 mb-4 neon-text flex items-center gap-2 animate-in fade-in slide-in-from-top-2 pt-2 break-words overflow-wrap-anywhere">
+                                <span className="w-1 h-6 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
                                 <span className="break-words overflow-wrap-anywhere min-w-0">{children}</span>
                               </h1>
                             ),
@@ -1100,7 +1071,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                               
                               if (isCriticalErrors) {
                                 return (
-                                  <h2 className="font-display text-xl md:text-2xl font-semibold text-destructive mt-6 mb-4 flex items-center gap-3 border-b-2 border-destructive/30 pb-3 animate-in fade-in slide-in-from-left-2 break-words overflow-wrap-anywhere">
+                                  <h2 className="font-display text-sm font-semibold text-destructive mt-3 mb-2 flex items-center gap-2 border-b-2 border-destructive/30 pb-2 animate-in fade-in slide-in-from-left-2 break-words overflow-wrap-anywhere">
                                     <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
                                     <span className="break-words overflow-wrap-anywhere min-w-0">{children}</span>
                                   </h2>
@@ -1108,8 +1079,8 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                               }
                               
                               return (
-                              <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground mt-6 mb-4 flex items-center gap-3 border-b-2 border-primary/30 pb-3 animate-in fade-in slide-in-from-left-2 break-words overflow-wrap-anywhere">
-                                <span className="w-1 h-6 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] flex-shrink-0"></span>
+                              <h2 className="font-display text-sm font-semibold text-foreground mt-3 mb-2 flex items-center gap-2 border-b-2 border-primary/30 pb-2 animate-in fade-in slide-in-from-left-2 break-words overflow-wrap-anywhere">
+                                <span className="w-1 h-5 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] flex-shrink-0"></span>
                                 <span className="break-words overflow-wrap-anywhere min-w-0">{children}</span>
                               </h2>
                               );
@@ -1139,8 +1110,8 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                               }
                               
                               return (
-                                <h3 className={`font-display text-lg md:text-xl font-semibold ${textColor} mt-5 mb-3 flex items-center gap-2 break-words overflow-wrap-anywhere`}>
-                                  <div className={`w-8 h-8 rounded-lg ${bgColor} flex items-center justify-center border border-${textColor}/20 flex-shrink-0`}>
+                                <h3 className={`font-display text-sm font-semibold ${textColor} mt-3 mb-2 flex items-center gap-2 break-words overflow-wrap-anywhere`}>
+                                  <div className={`w-7 h-7 rounded-lg ${bgColor} flex items-center justify-center border border-${textColor}/20 flex-shrink-0`}>
                                     {icon}
                                   </div>
                                   <span className="break-words overflow-wrap-anywhere min-w-0">{children}</span>
@@ -1214,9 +1185,9 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                                 const displayChildren = removeEmojiFromChildren(children);
                                 
                                 return (
-                                  <li className={`flex items-start gap-3 p-4 rounded-xl border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 w-full`}>
+                                  <li className={`flex items-start gap-2 p-3 rounded-lg border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 w-full`}>
                                     <span className="mt-0.5 flex-shrink-0">{icon}</span>
-                                    <div className="text-foreground text-base md:text-lg flex-1 flex flex-col items-center gap-2 text-center">
+                                    <div className="text-foreground text-sm flex-1 flex flex-col items-center gap-2 text-center">
                                       <div className="[&_strong]:text-primary [&_strong]:font-bold [&_strong]:bg-primary/20 [&_strong]:border-2 [&_strong]:border-primary/50 [&_strong]:px-3 [&_strong]:py-1.5 [&_strong]:rounded-lg [&_strong]:block [&_strong]:w-full [&_strong]:mb-2 [&_strong]:text-center">
                                         {displayChildren}
                                       </div>
@@ -1225,8 +1196,8 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                                 );
                               }
                               return (
-                                <li className="text-foreground/90 text-base md:text-lg flex items-start gap-3 mb-3 p-2 hover:bg-primary/5 rounded-lg transition-colors text-left">
-                                  <span className="w-2 h-2 rounded-full bg-primary mt-2.5 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                                <li className="text-foreground/90 text-sm flex items-start gap-2 mb-3 p-2 hover:bg-primary/5 rounded-lg transition-colors text-left">
+                                  <span className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
                                   <span className="flex-1 text-left break-words overflow-wrap-anywhere">{children}</span>
                                 </li>
                               );
@@ -1299,17 +1270,17 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                               const displayText = cleaned !== textStr ? cleaned : removeRememberFromChildren(children);
                               
              return (
-               <div className={`border-l-4 ${bgColor} pl-5 py-4 my-5 rounded-r-xl flex flex-col items-center gap-4 animate-in fade-in slide-in-from-left-2 duration-300 shadow-lg text-center`}>
-                 <div className={`${iconColor} flex-shrink-0 w-10 h-10 rounded-lg bg-background/50 flex items-center justify-center border-2 ${bgColor.split(' ')[0]}`}>
+               <blockquote className={`border-l-4 ${bgColor} pl-4 py-3 my-4 rounded-r-lg flex flex-col items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-300 shadow-lg text-center`}>
+                 <div className={`${iconColor} flex-shrink-0 w-8 h-8 rounded-lg bg-background/50 flex items-center justify-center border-2 ${bgColor.split(' ')[0]}`}>
                    {icon}
                  </div>
                  <div className="flex-1 min-w-0 w-full text-center">
                    {title && (
-                     <div className={`font-bold text-lg mb-2 ${iconColor}`}>{title}</div>
+                     <div className={`font-bold text-base mb-2 ${iconColor}`}>{title}</div>
                    )}
-                   <span className="text-foreground text-base md:text-lg block text-center [&_strong]:text-foreground [&_strong]:font-normal">{displayText}</span>
+                   <div className="text-foreground text-sm block text-center [&_strong]:text-foreground [&_strong]:font-normal">{displayText}</div>
                  </div>
-               </div>
+               </blockquote>
              );
                             },
                             code: ({ children, className }) => {
@@ -1357,34 +1328,35 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-2" />
-            <CarouselNext className="right-2" />
-          </Carousel>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
 
-          {/* Прогресс индикатор */}
-          <div className="flex justify-center gap-1.5 mt-4">
-            {cards.map((_, index) => (
-              <div
-                key={index}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  index === currentSlide
-                    ? 'bg-primary w-8 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
-                    : 'bg-primary/20 w-1.5'
-                }`}
-              />
-            ))}
+            {/* Прогресс индикатор */}
+            <div className="flex justify-center gap-1.5 mt-4">
+              {cards.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    index === currentSlide
+                      ? 'bg-primary w-8 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
+                      : 'bg-primary/20 w-1.5'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {isLastCard && lesson.quiz && lesson.quiz.length > 0 && (
+              <button
+                onClick={() => setShowQuiz(true)}
+                className="mt-4 w-full glass-card rounded-xl p-4 neon-border hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-display font-semibold text-base animate-in fade-in slide-in-from-bottom-2 min-h-[44px]"
+              >
+                <Brain className="w-6 h-6 text-primary" />
+                <span>Пройти квиз</span>
+              </button>
+            )}
           </div>
         </div>
-
-        {isLastCard && lesson.quiz && lesson.quiz.length > 0 && (
-          <button
-            onClick={() => setShowQuiz(true)}
-            className="mt-6 w-full glass-card rounded-xl p-4 neon-border hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-display font-semibold text-lg animate-in fade-in slide-in-from-bottom-2"
-          >
-            <Brain className="w-6 h-6 text-primary" />
-            <span>Пройти квиз</span>
-          </button>
-        )}
       </div>
     </div>
   );
