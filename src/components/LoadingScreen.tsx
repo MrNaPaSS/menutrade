@@ -17,27 +17,7 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
     const pathsToTry = imagePath
       ? [imagePath]
       : [
-        `${basePath}ultra_trader_logo.gif`,
-        `${basePath}premium_pepe_animated.gif`,
-        `${basePath}pepe_animated.gif`,
-        `/pepe_animated.gif`,
-        `${basePath}ai_pepe_final_animated.gif`,
-        `${basePath}loading.gif`,
-        `${basePath}loading-animation.gif`,
-        `${basePath}welcome-image.gif`,
-        `${basePath}welcome-animation.gif`,
-        `${basePath}onboarding.gif`,
-        `${basePath}logo.gif`,
-        `${basePath}loading.png`,
-        `${basePath}loading.jpg`,
-        `${basePath}welcome-image.png`,
-        `${basePath}welcome-image.jpg`,
-        `${basePath}loading-image.png`,
-        `${basePath}loading-image.jpg`,
-        `${basePath}logo.png`,
-        `${basePath}logo.jpg`,
-        `${basePath}onboarding.png`,
-        `${basePath}onboarding.jpg`
+        `${basePath}ultra_trader_logo.gif`
       ];
 
     const checkImage = (path: string): Promise<boolean> => {
