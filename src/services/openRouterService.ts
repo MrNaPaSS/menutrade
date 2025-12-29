@@ -1,5 +1,13 @@
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+// Используем прокси для безопасности - ключ не попадает в клиентский код
+// В продакшене используем Cloudflare Worker прокси (URL настраивается через переменную окружения)
+// В разработке можно использовать прямой запрос с локальным ключом
+const OPENROUTER_API_URL = import.meta.env.PROD 
+  ? (import.meta.env.VITE_OPENROUTER_PROXY_URL || 'https://openrouter.ai/api/v1/chat/completions')
+  : 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'openai/gpt-4o-mini';
+
+// Импорт обфускатора для работы с закодированными ключами
+import { getApiKey } from '@/utils/apiKeyObfuscator';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -149,31 +157,33 @@ export async function sendMessage(
   context?: TradingContext,
   retries = 3
 ): Promise<string> {
-  // Проверка переменной окружения
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  // В продакшене используем прокси (ключ на сервере), в разработке - локальный ключ
+  // Ключ может быть обфусцирован для безопасности
+  const rawKey = import.meta.env.PROD 
+    ? null // В продакшене ключ не нужен - используется прокси
+    : import.meta.env.VITE_OPENROUTER_API_KEY; // В разработке используем локальный ключ
+  
+  // Деобфусцируем ключ если нужно
+  const apiKey = rawKey ? getApiKey(rawKey) : null;
 
-  // Отладочная информация (всегда выводим в консоль)
-  console.log('🔍 Отладка переменных окружения:', {
-    hasApiKey: !!apiKey,
-    apiKeyLength: apiKey?.length || 0,
-    apiKeyPreview: apiKey ? `${apiKey.substring(0, 20)}...` : 'не найден',
-    allViteEnvKeys: Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')),
+  // Отладочная информация
+  console.log('🔍 Отладка API:', {
     mode: import.meta.env.MODE,
     dev: import.meta.env.DEV,
-    prod: import.meta.env.PROD
+    prod: import.meta.env.PROD,
+    usingProxy: import.meta.env.PROD,
+    apiUrl: OPENROUTER_API_URL,
+    hasApiKey: !!apiKey,
   });
 
-  if (!apiKey) {
-
+  // В разработке проверяем наличие ключа
+  if (!import.meta.env.PROD && !apiKey) {
     throw new Error(
-      'API ключ OpenRouter не найден.\n\n' +
+      'API ключ OpenRouter не найден для разработки.\n\n' +
       'Убедитесь, что:\n' +
       '1. Файл .env существует в корне проекта\n' +
-      '2. В файле .env есть строка: VITE_OPENROUTER_API_KEY=ваш_ключ (БЕЗ пробелов вокруг =)\n' +
-      '3. Dev сервер перезапущен после создания/изменения .env файла\n\n' +
-      'ВАЖНО: После создания или изменения .env файла ОБЯЗАТЕЛЬНО перезапустите сервер:\n' +
-      '- Остановите сервер (Ctrl+C)\n' +
-      '- Запустите снова: npm run dev'
+      '2. В файле .env есть строка: VITE_OPENROUTER_API_KEY=ваш_ключ\n' +
+      '3. Dev сервер перезапущен после создания/изменения .env файла'
     );
   }
 
@@ -210,14 +220,21 @@ export async function sendMessage(
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
+      // В продакшене используем прокси (ключ на сервере), в разработке - прямой запрос
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'NO MONEY - NO HONEY'
+      };
+
+      // Добавляем Authorization только в разработке (в продакшене прокси добавит сам)
+      if (!import.meta.env.PROD && apiKey) {
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      }
+
       const response = await fetch(OPENROUTER_API_URL, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': window.location.origin,
-          'X-Title': 'NO MONEY - NO HONEY'
-        },
+        headers,
         body: JSON.stringify(requestBody)
       });
 
