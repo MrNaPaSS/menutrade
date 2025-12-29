@@ -68,12 +68,12 @@ const TraderMenu = () => {
               transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
               className="mb-6"
             >
-              <div 
+              <div
                 className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
                 onClick={() => navigate('/promo-codes')}
               >
                 <div className="flex items-start gap-4">
-                  <motion.div 
+                  <motion.div
                     className="relative w-16 h-16 rounded-2xl flex items-center justify-center border bg-gradient-to-br from-primary/15 to-primary/25 border-primary/20 shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)]"
                     whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
                     transition={{ duration: 0.3 }}
@@ -140,14 +140,14 @@ const TraderMenu = () => {
                   }
                 };
                 const colorClasses = getColorClasses(index);
-                
+
                 // Для всех уровней переходим на страницу уровня
                 const handleLevelClick = (e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
                   navigate(`/level/${level.id}`);
                 };
-                
+
                 return (
                   <motion.div
                     key={level.id}
@@ -168,7 +168,7 @@ const TraderMenu = () => {
                       }}
                     >
                       <div className="flex flex-col items-center text-center">
-                        <motion.div 
+                        <motion.div
                           className={`relative w-12 h-12 rounded-xl flex items-center justify-center border ${colorClasses.bg} shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)] mb-3`}
                           whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
                           transition={{ duration: 0.3 }}
@@ -193,12 +193,12 @@ const TraderMenu = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, type: "spring", stiffness: 300, damping: 25 }}
               >
-                <div 
+                <div
                   className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
                   onClick={() => window.open(platformLinks.pocketOptions, '_blank')}
                 >
                   <div className="flex items-start gap-4">
-                    <motion.div 
+                    <motion.div
                       className="relative w-16 h-16 rounded-2xl flex items-center justify-center border bg-gradient-to-br from-primary/15 to-primary/25 border-primary/20 shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)]"
                       whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
                       transition={{ duration: 0.3 }}
@@ -237,12 +237,12 @@ const TraderMenu = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7, type: "spring", stiffness: 300, damping: 25 }}
               >
-                <div 
+                <div
                   className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
                   onClick={() => window.open(platformLinks.blackMirrorUltra, '_blank')}
                 >
                   <div className="flex items-start gap-4">
-                    <motion.div 
+                    <motion.div
                       className="relative w-16 h-16 rounded-2xl flex items-center justify-center border bg-gradient-to-br from-primary/15 to-primary/25 border-primary/20 shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)]"
                       whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
                       transition={{ duration: 0.3 }}
@@ -281,12 +281,12 @@ const TraderMenu = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, type: "spring", stiffness: 300, damping: 25 }}
               >
-                <div 
+                <div
                   className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
                   onClick={() => navigate('/faq')}
                 >
                   <div className="flex items-start gap-4">
-                    <motion.div 
+                    <motion.div
                       className="relative w-16 h-16 rounded-2xl flex items-center justify-center border bg-gradient-to-br from-secondary/15 to-secondary/25 border-secondary/20 shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)]"
                       whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
                       transition={{ duration: 0.3 }}
