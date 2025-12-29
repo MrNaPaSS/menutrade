@@ -5,6 +5,41 @@
 @tailwind utilities;
 
 @layer base {
+  /* Оптимизация для мобильных устройств 9:16 (360x640) */
+  html {
+    height: 100%;
+    height: -webkit-fill-available;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Оптимизация для экранов 360x640 и меньше */
+  @media (max-width: 360px) {
+    body {
+      font-size: 13px;
+    }
+    
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.25rem; }
+    h3 { font-size: 1.125rem; }
+  }
+  
+  /* Оптимизация для вертикальной ориентации 9:16 */
+  @media (orientation: portrait) and (max-width: 640px) {
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+  
   /* Глобальная оптимизация переноса текста */
   * {
     word-break: break-word;

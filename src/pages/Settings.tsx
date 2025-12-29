@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { useTelegramContext } from '@/contexts/TelegramContext';
@@ -98,34 +98,33 @@ const Settings = () => {
   ];
 
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={progress} />
-        
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
-            <div className="flex items-center gap-2 mb-6">
+        <SimpleMenu />
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleHomeClick}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="text-sm">На главную</span>
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">На главную</span>
               </Button>
             </div>
 
-            <div className="mb-6">
-              <h2 className="font-display font-bold text-2xl mb-2">Настройки</h2>
-              <p className="text-sm text-muted-foreground">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">Настройки</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Настройки приложения и профиля
               </p>
               {user && (
-                <div className="mt-3 p-3 rounded-lg bg-muted/20 border border-border/30">
+                <div className="mt-2 sm:mt-3 p-2 sm:p-3 rounded-lg bg-muted/20 border border-border/30">
                   <p className="text-xs text-muted-foreground mb-1">Авторизован как:</p>
-                  <p className="text-sm font-semibold">
+                  <p className="text-xs sm:text-sm font-semibold break-words">
                     {user.first_name} {user.last_name || ''} {user.username && `(@${user.username})`}
                   </p>
                 </div>
@@ -140,21 +139,21 @@ const Settings = () => {
                 transition={{ delay: 0 }}
                 className="mb-6"
               >
-                <div className="glass-card rounded-xl p-6 neon-border">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 flex items-center justify-center">
-                        <Shield className="w-6 h-6 text-yellow-400" />
+                <div className="glass-card rounded-xl p-3 sm:p-4 md:p-6 neon-border">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 flex items-center justify-center flex-shrink-0">
+                        <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
                       </div>
                       <div>
-                        <h3 className="font-display font-bold text-lg">Админ-панель</h3>
+                        <h3 className="font-display font-bold text-base sm:text-lg">Админ-панель</h3>
                         <p className="text-xs text-muted-foreground">Управление системой</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Вкладки админ-панели */}
-                  <div className="grid grid-cols-4 gap-2 mb-4">
+                  <div className="grid grid-cols-4 gap-1 sm:gap-2 mb-3 sm:mb-4">
                     {[
                       { id: 'stats', label: 'Статистика', icon: BarChart3 },
                       { id: 'referrals', label: 'Рефералы', icon: Users },
@@ -166,14 +165,15 @@ const Settings = () => {
                         <button
                           key={tab.id}
                           onClick={() => setAdminView(tab.id as typeof adminView)}
-                          className={`p-2 rounded-lg text-xs font-medium transition-all ${
+                          className={`p-1.5 sm:p-2 rounded-lg text-[10px] sm:text-xs font-medium transition-all touch-manipulation ${
                             adminView === tab.id
                               ? 'bg-primary/20 text-primary border border-primary/30'
-                              : 'bg-muted/20 text-muted-foreground hover:bg-muted/30'
+                              : 'bg-muted/20 text-muted-foreground active:bg-muted/30'
                           }`}
                         >
-                          <Icon className="w-4 h-4 mx-auto mb-1" />
-                          {tab.label}
+                          <Icon className="w-3 h-3 sm:w-4 sm:h-4 mx-auto mb-0.5 sm:mb-1" />
+                          <span className="hidden sm:inline">{tab.label}</span>
+                          <span className="sm:hidden">{tab.label.substring(0, 3)}</span>
                         </button>
                       );
                     })}
@@ -184,30 +184,30 @@ const Settings = () => {
                     {adminView === 'stats' && (
                       <div className="space-y-4">
                         <h4 className="font-semibold text-sm mb-3">Общая статистика</h4>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="p-3 rounded-lg bg-muted/20">
-                            <div className="text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-xs text-muted-foreground">Всего пользователей</div>
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
+                            <div className="text-[10px] sm:text-xs text-muted-foreground">Всего пользователей</div>
                           </div>
-                          <div className="p-3 rounded-lg bg-muted/20">
-                            <div className="text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-xs text-muted-foreground">Верифицированные</div>
+                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
+                            <div className="text-[10px] sm:text-xs text-muted-foreground">Верифицированные</div>
                           </div>
-                          <div className="p-3 rounded-lg bg-muted/20">
-                            <div className="text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-xs text-muted-foreground">С PO ID</div>
+                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
+                            <div className="text-[10px] sm:text-xs text-muted-foreground">С PO ID</div>
                           </div>
-                          <div className="p-3 rounded-lg bg-muted/20">
-                            <div className="text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-xs text-muted-foreground">С депозитом</div>
+                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
+                            <div className="text-[10px] sm:text-xs text-muted-foreground">С депозитом</div>
                           </div>
-                          <div className="p-3 rounded-lg bg-muted/20">
-                            <div className="text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-xs text-muted-foreground">Новых сегодня</div>
+                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
+                            <div className="text-[10px] sm:text-xs text-muted-foreground">Новых сегодня</div>
                           </div>
-                          <div className="p-3 rounded-lg bg-muted/20">
-                            <div className="text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-xs text-muted-foreground">Новых за неделю</div>
+                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
+                            <div className="text-[10px] sm:text-xs text-muted-foreground">Новых за неделю</div>
                           </div>
                         </div>
                       </div>

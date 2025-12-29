@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { ArrowLeft, Users } from 'lucide-react';
@@ -19,13 +19,12 @@ const Level3 = () => {
   };
 
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={progress} />
-        
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
+        <SimpleMenu />
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
             <div className="flex items-center gap-2 mb-6">
               <button
                 onClick={() => navigate('/trader-menu')}
@@ -58,26 +57,68 @@ const Level3 = () => {
                 </div>
               </div>
 
-              <div className="glass-card rounded-xl p-6 neon-border mb-6">
-                <h3 className="font-display font-bold text-lg mb-4">Что включено:</h3>
-                <ul className="space-y-3">
+              <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
+                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs sm:text-sm">👥</span>
+                  </div>
+                  <h3 className="font-display font-bold text-base sm:text-lg">Что входит:</h3>
+                </div>
+                <ul className="space-y-2 sm:space-y-3">
                   {level.features.map((feature, index) => (
                     <motion.li
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex items-start gap-3"
+                      className="flex items-start gap-2 sm:gap-3"
                     >
-                      <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                      <span className="text-sm text-muted-foreground">{feature}</span>
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm text-muted-foreground">{feature}</span>
                     </motion.li>
                   ))}
                 </ul>
               </div>
 
-              <div className="glass-card rounded-xl p-6 neon-border">
-                <p className="text-sm text-muted-foreground text-center">
+              {level.forWhom && (
+                <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm">🎯</span>
+                    </div>
+                    <h3 className="font-display font-bold text-base sm:text-lg">Для кого:</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{level.forWhom}</p>
+                </div>
+              )}
+
+              {level.advantages && (
+                <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm">💡</span>
+                    </div>
+                    <h3 className="font-display font-bold text-base sm:text-lg">Преимущества:</h3>
+                  </div>
+                  <ul className="space-y-2 sm:space-y-3">
+                    {level.advantages.map((advantage, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-start gap-2 sm:gap-3"
+                      >
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-muted-foreground">{advantage}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border">
+                <p className="text-xs sm:text-sm text-muted-foreground text-center">
                   Для получения доступа к уровню MENTOR свяжитесь с менеджером
                 </p>
               </div>

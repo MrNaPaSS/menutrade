@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { ArrowLeft, Gift, ExternalLink, HelpCircle, TrendingUp, Code, Users, Crown, ArrowRight } from 'lucide-react';
@@ -32,28 +32,27 @@ const TraderMenu = () => {
   ];
 
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={progress} />
-        
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
-            <div className="flex items-center gap-2 mb-6">
+        <SimpleMenu />
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleHomeClick}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="text-sm">На главную</span>
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">На главную</span>
               </Button>
             </div>
 
-            <div className="mb-6">
-              <h2 className="font-display font-bold text-2xl mb-2">Меню трейдера</h2>
-              <p className="text-sm text-muted-foreground">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">Меню трейдера</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Выберите уровень доступа или перейдите в нужный раздел
               </p>
             </div>
@@ -138,19 +137,11 @@ const TraderMenu = () => {
                 };
                 const colorClasses = getColorClasses(index);
                 
-                // Для Level 1 и Level 2 открываем ссылку "посмотреть в действии", для остальных - страницу уровня
-                const handleLevelClick = () => {
-                  if (level.id === 1 || level.id === 2) {
-                    // Находим первую ссылку типа 'link' для "посмотреть в действии"
-                    const viewLink = level.actions.find(action => action.type === 'link');
-                    if (viewLink) {
-                      window.open(viewLink.url, '_blank');
-                    } else {
-                      navigate(`/level/${level.id}`);
-                    }
-                  } else {
-                    navigate(`/level/${level.id}`);
-                  }
+                // Для всех уровней переходим на страницу уровня
+                const handleLevelClick = (e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(`/level/${level.id}`);
                 };
                 
                 return (
@@ -163,6 +154,14 @@ const TraderMenu = () => {
                     <div
                       className="glass-card rounded-xl p-4 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
                       onClick={handleLevelClick}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate(`/level/${level.id}`);
+                        }
+                      }}
                     >
                       <div className="flex flex-col items-center text-center">
                         <motion.div 

@@ -251,3 +251,4 @@ export const getPatternByName = (name: string): Pattern | undefined => {
   return patterns.find(p => p.name === name || p.nameEn === name);
 };
 
+

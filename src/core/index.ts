@@ -3,3 +3,4 @@ export { useLessonEngine, type LessonEngineProps, type LessonState } from "./Les
 export { InteractionEngine, type InteractionState, type InteractionEvent } from "./InteractionEngine";
 export { validateLevel, validatePattern, type ValidationResult } from "./ValidationEngine";
 
+

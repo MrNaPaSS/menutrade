@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { ArrowLeft, TrendingUp, ExternalLink, Eye } from 'lucide-react';
@@ -20,34 +20,33 @@ const Level1 = () => {
   };
 
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={progress} />
-        
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
-            <div className="flex items-center gap-2 mb-6">
+        <SimpleMenu />
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/trader-menu')}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="text-sm">Назад</span>
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Назад</span>
               </Button>
             </div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6"
+              className="mb-4 sm:mb-6"
             >
-              <div className="glass-card rounded-xl p-6 neon-border mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-                    <TrendingUp className="w-8 h-8 text-blue-400" />
+              <div className="glass-card rounded-xl p-3 sm:p-4 md:p-6 neon-border mb-4 sm:mb-6">
+                <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-blue-400" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -61,23 +60,65 @@ const Level1 = () => {
                 </div>
               </div>
 
-              <div className="glass-card rounded-xl p-6 neon-border mb-6">
-                <h3 className="font-display font-bold text-lg mb-4">Что включено:</h3>
-                <ul className="space-y-3">
+              <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
+                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs sm:text-sm">📋</span>
+                  </div>
+                  <h3 className="font-display font-bold text-base sm:text-lg">Что входит:</h3>
+                </div>
+                <ul className="space-y-2 sm:space-y-3">
                   {level.features.map((feature, index) => (
                     <motion.li
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex items-start gap-3"
+                      className="flex items-start gap-2 sm:gap-3"
                     >
-                      <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                      <span className="text-sm text-muted-foreground">{feature}</span>
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-400 mt-2 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm text-muted-foreground">{feature}</span>
                     </motion.li>
                   ))}
                 </ul>
               </div>
+
+              {level.forWhom && (
+                <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm">🎯</span>
+                    </div>
+                    <h3 className="font-display font-bold text-base sm:text-lg">Для кого:</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{level.forWhom}</p>
+                </div>
+              )}
+
+              {level.advantages && (
+                <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm">💡</span>
+                    </div>
+                    <h3 className="font-display font-bold text-base sm:text-lg">Преимущества:</h3>
+                  </div>
+                  <ul className="space-y-2 sm:space-y-3">
+                    {level.advantages.map((advantage, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-start gap-2 sm:gap-3"
+                      >
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-400 mt-2 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-muted-foreground">{advantage}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="space-y-3">
                 {level.actions.map((action, index) => (
@@ -87,24 +128,23 @@ const Level1 = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + index * 0.1 }}
                   >
-                    {action.type === 'link' ? (
-                      <Button
-                        variant="outline"
-                        className="w-full glass-card rounded-xl p-4 neon-border h-auto justify-start"
-                        onClick={() => window.open(action.url, '_blank')}
-                      >
-                        <Eye className="w-5 h-5 mr-2" />
-                        {action.label}
-                      </Button>
-                    ) : (
-                      <Button
-                        className="w-full glass-card rounded-xl p-4 neon-border h-auto"
-                        onClick={() => window.open(action.url, '_blank')}
-                      >
-                        <ExternalLink className="w-5 h-5 mr-2" />
-                        {action.label}
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      className="w-full glass-card rounded-xl p-4 sm:p-5 neon-border h-auto min-h-[44px] justify-start text-sm sm:text-base hover:bg-primary/10 hover:border-primary/50 transition-all"
+                      onClick={() => window.open(action.url, '_blank')}
+                    >
+                      {action.type === 'link' ? (
+                        <>
+                          <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                          <span className="text-foreground">{action.label}</span>
+                        </>
+                      ) : (
+                        <>
+                          <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                          <span className="text-foreground">{action.label}</span>
+                        </>
+                      )}
+                    </Button>
                   </motion.div>
                 ))}
               </div>

@@ -196,3 +196,4 @@ export const getIndicatorById = (id: string): IndicatorConfig | undefined => {
   return indicators.find(i => i.id === id);
 };
 
+

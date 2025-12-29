@@ -41,18 +41,19 @@ export function AIAgentButton() {
         onClick={handleOpen}
         style={{
           position: 'fixed',
-          bottom: '7rem',
+          bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))',
           right: '1rem',
           zIndex: 60
         }}
         className={cn(
-          "w-14 h-14 rounded-full",
+          "w-12 h-12 sm:w-14 sm:h-14 rounded-full",
           "bg-gradient-to-br from-primary via-primary to-secondary",
           "shadow-[0_0_30px_-5px_hsl(142,76%,52%,0.6)]",
           "flex items-center justify-center",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
           "transition-all duration-300",
-          "relative overflow-visible"
+          "relative overflow-visible",
+          "touch-manipulation"
         )}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ 
@@ -114,7 +115,7 @@ export function AIAgentButton() {
             ease: "easeInOut"
           }}
         >
-          <Brain className="w-6 h-6 text-primary-foreground relative z-10" strokeWidth={2.5} />
+          <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground relative z-10" strokeWidth={2.5} />
         </motion.div>
 
         {/* Бейдж с количеством непрочитанных */}
@@ -122,11 +123,11 @@ export function AIAgentButton() {
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1"
+            className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1"
           >
             <Badge
               variant="destructive"
-              className="h-5 min-w-5 px-1.5 flex items-center justify-center text-xs font-bold rounded-full"
+              className="h-4 min-w-4 sm:h-5 sm:min-w-5 px-1 sm:px-1.5 flex items-center justify-center text-[10px] sm:text-xs font-bold rounded-full"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>

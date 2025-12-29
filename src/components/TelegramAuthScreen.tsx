@@ -10,7 +10,7 @@ export function TelegramAuthScreen() {
   // Если не в Telegram - показываем инструкцию
   if (isReady && !isTelegram) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background scanline">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background scanline">
         <MatrixRain />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -64,7 +64,7 @@ export function TelegramAuthScreen() {
   // Если еще загружается
   if (!isReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background scanline">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background scanline">
         <MatrixRain />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -91,7 +91,7 @@ export function TelegramAuthScreen() {
   // Если в Telegram, но пользователь не авторизован
   if (isTelegram && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background scanline">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background scanline">
         <MatrixRain />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}

@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
-import { ArrowLeft, Code, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Code, ExternalLink, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { levels, platformLinks } from '@/data/traderMenu';
@@ -20,13 +20,12 @@ const Level2 = () => {
   };
 
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={progress} />
-        
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
+        <SimpleMenu />
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
             <div className="flex items-center gap-2 mb-6">
               <Button
                 variant="ghost"
@@ -61,23 +60,65 @@ const Level2 = () => {
                 </div>
               </div>
 
-              <div className="glass-card rounded-xl p-6 neon-border mb-6">
-                <h3 className="font-display font-bold text-lg mb-4">Что включено:</h3>
-                <ul className="space-y-3">
+              <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
+                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs sm:text-sm">🔧</span>
+                  </div>
+                  <h3 className="font-display font-bold text-base sm:text-lg">Что входит:</h3>
+                </div>
+                <ul className="space-y-2 sm:space-y-3">
                   {level.features.map((feature, index) => (
                     <motion.li
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex items-start gap-3"
+                      className="flex items-start gap-2 sm:gap-3"
                     >
-                      <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                      <span className="text-sm text-muted-foreground">{feature}</span>
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm text-muted-foreground">{feature}</span>
                     </motion.li>
                   ))}
                 </ul>
               </div>
+
+              {level.forWhom && (
+                <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm">🎯</span>
+                    </div>
+                    <h3 className="font-display font-bold text-base sm:text-lg">Для кого:</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{level.forWhom}</p>
+                </div>
+              )}
+
+              {level.advantages && (
+                <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm">💡</span>
+                    </div>
+                    <h3 className="font-display font-bold text-base sm:text-lg">Преимущества:</h3>
+                  </div>
+                  <ul className="space-y-2 sm:space-y-3">
+                    {level.advantages.map((advantage, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-start gap-2 sm:gap-3"
+                      >
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-muted-foreground">{advantage}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="space-y-3">
                 {level.actions.map((action, index) => (
@@ -89,11 +130,20 @@ const Level2 = () => {
                   >
                     <Button
                       variant="outline"
-                      className="w-full glass-card rounded-xl p-4 neon-border h-auto justify-start"
+                      className="w-full glass-card rounded-xl p-4 sm:p-5 neon-border h-auto min-h-[44px] justify-start text-sm sm:text-base hover:bg-primary/10 hover:border-primary/50 transition-all"
                       onClick={() => window.open(action.url, '_blank')}
                     >
-                      <ExternalLink className="w-5 h-5 mr-2" />
-                      {action.label}
+                      {action.type === 'link' ? (
+                        <>
+                          <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                          <span className="text-foreground">{action.label}</span>
+                        </>
+                      ) : (
+                        <>
+                          <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                          <span className="text-foreground">{action.label}</span>
+                        </>
+                      )}
                     </Button>
                   </motion.div>
                 ))}

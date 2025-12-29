@@ -891,7 +891,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
 
   if (showQuiz) {
     return (
-      <div className="min-h-screen p-4 pb-20">
+      <div className="min-h-[100dvh] p-4 pb-20">
         <div className="max-w-lg mx-auto">
           <button
             onClick={() => setShowQuiz(false)}
@@ -929,7 +929,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
   }
 
   return (
-    <div className="min-h-screen p-4 pb-20 animate-fade-in">
+    <div className="min-h-[100dvh] p-4 pb-20 animate-fade-in">
       <div className="max-w-lg mx-auto">
         <button
           onClick={onBack}

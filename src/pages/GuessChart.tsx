@@ -6,12 +6,36 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowUpCircle, ArrowDownCircle, Clock, ArrowRight, ArrowLeft, RefreshCw, Trophy, Play } from 'lucide-react';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { useProgress } from '@/hooks/useProgress';
 import { chartScenarios, ChartScenario, ChartDataPoint } from '@/data/chartGameData';
 import { toast } from "@/components/ui/sonner";
 import { CandlestickChart } from '@/components/lesson-visuals/CandlestickChart';
 import type { CandlestickData } from '@/components/lesson-visuals/types';
+
+// Хук для определения размера экрана
+function useWindowSize() {
+    const [windowSize, setWindowSize] = useState({
+        width: typeof window !== 'undefined' ? window.innerWidth : 1024,
+        height: typeof window !== 'undefined' ? window.innerHeight : 768,
+    });
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        
+        function handleResize() {
+            setWindowSize({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            });
+        }
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    return windowSize;
+}
 
 const GAME_DURATION = 10;
 
@@ -101,6 +125,14 @@ const GuessChart = () => {
     const navigate = useNavigate();
     const { getProgress } = useProgress();
     const progress = getProgress();
+    const { width } = useWindowSize();
+    
+    // Адаптивная высота графика в зависимости от размера экрана
+    const chartHeight = useMemo(() => {
+        if (width < 640) return 250; // мобильные
+        if (width < 768) return 300; // планшеты
+        return 400; // десктоп
+    }, [width]);
 
     const [currentScenario, setCurrentScenario] = useState<ChartScenario | null>(null);
     const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
@@ -311,63 +343,68 @@ const GuessChart = () => {
     }
 
     return (
-        <div className="min-h-screen scanline pb-24 bg-background">
+        <div className={`min-h-[100dvh] scanline ${gameState === 'PLAYING' ? 'pb-28 md:pb-24' : 'pb-24 md:pb-24'} bg-background flex flex-col`}>
             <MatrixRain />
-            <div className="relative z-10">
-                <Header progress={progress} />
-
-                <main className="container max-w-4xl mx-auto p-4">
-                    {/* Top Bar */}
-                    <div className="mb-6">
+            <div className="relative z-10 flex-1 flex flex-col">
+                <SimpleMenu />
+                {/* Top Bar - фиксирован сверху */}
+                <div className="flex-shrink-0 px-4 md:px-5 pt-4 md:pt-5">
+                    <div className="container max-w-4xl mx-auto">
                         <div className="flex items-center justify-between mb-2">
-                        <Button variant="ghost" onClick={() => navigate('/home')}>
-                            <ArrowLeft className="mr-2 h-4 w-4" /> На главную
-                        </Button>
+                            <Button variant="ghost" size="sm" className="text-xs md:text-sm" onClick={() => navigate('/home')}>
+                                <ArrowLeft className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">На главную</span>
+                            </Button>
                             {gameState === 'PLAYING' && (
-                        <div className="flex items-center gap-2 font-mono text-xl">
-                            <Clock className={`h-5 w-5 ${timeLeft <= 3 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />
-                            <span className={timeLeft <= 3 ? 'text-red-500' : 'text-foreground'}>
+                                <div className="flex items-center gap-1 md:gap-2 font-mono text-lg md:text-xl">
+                                    <Clock className={`h-4 w-4 md:h-5 md:w-5 ${timeLeft <= 3 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />
+                                    <span className={timeLeft <= 3 ? 'text-red-500' : 'text-foreground'}>
                                         {timeLeft < 10 ? `00:0${timeLeft}` : `00:${timeLeft}`}
-                            </span>
+                                    </span>
                                 </div>
                             )}
                         </div>
-                        <div className="text-center">
-                            <h1 className="text-2xl md:text-3xl font-bold font-display neon-text mb-2">
+                        <div className="text-center mb-2 md:mb-4">
+                            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold font-display neon-text mb-1 md:mb-2">
                                 Куда пойдёт график
                             </h1>
-                            <p className="text-muted-foreground text-sm md:text-base">
+                            <p className="text-muted-foreground text-xs md:text-sm lg:text-base px-2">
                                 Тренируй насмотренность и анализируй куда пойдёт цена
                             </p>
                         </div>
                     </div>
+                </div>
 
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {/* Chart Area */}
-                        <Card className="md:col-span-2 p-6 glass-card neon-border relative overflow-hidden">
-                            <div className="mb-4 flex justify-between items-center">
-                                <h2 className="text-xl font-bold font-display">Куда пойдет цена?</h2>
+                {/* Центральный контент - график по центру экрана */}
+                <main className="flex-1 flex items-center justify-center px-4 md:px-5">
+                    <div className="container max-w-4xl mx-auto w-full">
+                        <div className="flex flex-col items-center gap-3 md:gap-6">
+                        {/* Chart Area - центрирован */}
+                        <Card className="w-full max-w-2xl p-3 md:p-6 glass-card neon-border relative overflow-hidden">
+                            <div className="mb-2 md:mb-4 flex justify-between items-center">
+                                <h2 className="text-base md:text-xl font-bold font-display">Куда пойдет цена?</h2>
                                 {gameState === 'RESULT' && (
-                                <span className="text-muted-foreground text-sm font-mono">
+                                <span className="text-muted-foreground text-xs md:text-sm font-mono">
                                     {currentScenario.name}
                                 </span>
                                 )}
                             </div>
 
-                            <div className="h-[400px] w-full">
-                                <CandlestickChart
-                                    data={candlestickData}
-                                    height={400}
-                                    interactive={false}
-                                    showLevels={false}
-                                    showVolume={false}
-                                    showPatterns={false}
-                                />
+                            <div className="h-[35vh] sm:h-[40vh] md:h-[400px] max-h-[400px] w-full flex items-center justify-center">
+                                <div className="w-full h-full">
+                                    <CandlestickChart
+                                        data={candlestickData}
+                                        height={chartHeight}
+                                        interactive={false}
+                                        showLevels={false}
+                                        showVolume={false}
+                                        showPatterns={false}
+                                    />
+                                </div>
                             </div>
                         </Card>
 
-                        {/* Controls & Result Area */}
-                        <div className="space-y-4">
+                        {/* Controls & Result Area - центрированы */}
+                        <div className="w-full max-w-2xl space-y-3 md:space-y-4">
                             <AnimatePresence mode="wait">
                                 {gameState === 'NOT_STARTED' ? (
                                     <motion.div
@@ -375,24 +412,24 @@ const GuessChart = () => {
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.9 }}
-                                        className="space-y-4"
+                                        className="space-y-3 md:space-y-4"
                                     >
-                                        <Card className="p-6 glass-card neon-border">
-                                            <div className="text-center mb-4">
-                                                <h3 className="text-2xl font-bold text-foreground mb-2">
+                                        <Card className="p-4 md:p-6 glass-card neon-border">
+                                            <div className="text-center mb-3 md:mb-4">
+                                                <h3 className="text-lg md:text-2xl font-bold text-foreground mb-1 md:mb-2">
                                                     Готовы начать?
                                                 </h3>
-                                                <p className="text-muted-foreground text-sm mb-4">
+                                                <p className="text-muted-foreground text-xs md:text-sm mb-3 md:mb-4">
                                                     Изучите график японских свечей и угадайте направление цены
                                                 </p>
                                             </div>
                                             <Button 
-                                                className="w-full h-24 text-xl font-bold bg-primary/20 hover:bg-primary/30 text-primary border-primary/50"
+                                                className="w-full h-16 md:h-24 text-lg md:text-xl font-bold bg-primary/20 hover:bg-primary/30 text-primary border-primary/50"
                                                 variant="outline"
                                                 size="lg"
                                                 onClick={handleStart}
                                             >
-                                                <Play className="mr-2 h-8 w-8" /> Старт
+                                                <Play className="mr-2 h-6 w-6 md:h-8 md:w-8" /> Старт
                                             </Button>
                                         </Card>
                                     </motion.div>
@@ -402,21 +439,21 @@ const GuessChart = () => {
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -20 }}
-                                        className="space-y-4"
+                                        className="space-y-3 md:space-y-4"
                                     >
                                         <Button
-                                            className="w-full h-24 text-xl font-bold bg-green-500/10 hover:bg-green-500/20 text-green-500 border-green-500/50"
+                                            className="w-full h-16 md:h-20 lg:h-24 text-lg md:text-xl font-bold bg-green-500/10 hover:bg-green-500/20 active:bg-green-500/30 text-green-500 border-green-500/50 touch-manipulation hidden md:flex"
                                             variant="outline"
                                             onClick={() => handleGuess('UP')}
                                         >
-                                            <ArrowUpCircle className="mr-2 h-8 w-8" /> UP
+                                            <ArrowUpCircle className="mr-2 h-6 w-6 md:h-8 md:w-8" /> UP
                                         </Button>
                                         <Button
-                                            className="w-full h-24 text-xl font-bold bg-red-500/10 hover:bg-red-500/20 text-red-500 border-red-500/50"
+                                            className="w-full h-16 md:h-20 lg:h-24 text-lg md:text-xl font-bold bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 text-red-500 border-red-500/50 touch-manipulation hidden md:flex"
                                             variant="outline"
                                             onClick={() => handleGuess('DOWN')}
                                         >
-                                            <ArrowDownCircle className="mr-2 h-8 w-8" /> DOWN
+                                            <ArrowDownCircle className="mr-2 h-6 w-6 md:h-8 md:w-8" /> DOWN
                                         </Button>
                                     </motion.div>
                                 ) : (
@@ -424,17 +461,17 @@ const GuessChart = () => {
                                         key="result"
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        className="space-y-4"
+                                        className="space-y-3 md:space-y-4"
                                     >
-                                        <Card className={`p-6 border-2 ${result === 'CORRECT' ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10'}`}>
-                                            <div className="text-center mb-4">
-                                                {result === 'CORRECT' && <Trophy className="h-12 w-12 text-green-500 mx-auto mb-2" />}
-                                                <h3 className={`text-2xl font-bold ${result === 'CORRECT' ? 'text-green-500' : 'text-red-500'}`}>
+                                        <Card className={`p-4 md:p-6 border-2 ${result === 'CORRECT' ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10'}`}>
+                                            <div className="text-center mb-3 md:mb-4">
+                                                {result === 'CORRECT' && <Trophy className="h-8 w-8 md:h-12 md:w-12 text-green-500 mx-auto mb-2" />}
+                                                <h3 className={`text-lg md:text-2xl font-bold ${result === 'CORRECT' ? 'text-green-500' : 'text-red-500'}`}>
                                                     {result === 'CORRECT' ? 'Правильно!' : result === 'TIMEOUT' ? 'Время вышло' : 'Ошибка'}
                                                 </h3>
                                             </div>
 
-                                            <div className="text-sm rounded-lg bg-background/50 p-3 mb-4">
+                                            <div className="text-xs md:text-sm rounded-lg bg-background/50 p-2 md:p-3 mb-3 md:mb-4">
                                                 <p className="font-semibold mb-1">Анализ:</p>
                                                 <p className="text-muted-foreground">{currentScenario.explanation}</p>
                                             </div>
@@ -447,13 +484,36 @@ const GuessChart = () => {
                                 )}
                             </AnimatePresence>
 
-                            <div className="glass-card p-4 rounded-xl text-xs text-muted-foreground">
+                            <div className="glass-card p-3 md:p-4 rounded-xl text-xs text-muted-foreground">
                                 <p>Подсказка: Анализируйте тренд и свечные паттерны. У вас всего {GAME_DURATION} секунд на решение!</p>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </main>
             </div>
+
+            {/* Fixed Mobile Buttons - только на мобильных устройствах во время игры */}
+            {gameState === 'PLAYING' && (
+                <div className="fixed bottom-0 left-0 right-0 md:hidden z-50 p-3 pb-[max(12px,env(safe-area-inset-bottom))] bg-background/95 backdrop-blur-lg border-t border-border/50 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+                    <div className="container max-w-4xl mx-auto grid grid-cols-2 gap-3">
+                        <Button
+                            className="w-full h-16 text-lg font-bold bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40 text-green-500 border-2 border-green-500/50 touch-manipulation transition-all duration-150"
+                            variant="outline"
+                            onClick={() => handleGuess('UP')}
+                        >
+                            <ArrowUpCircle className="mr-2 h-7 w-7" /> UP
+                        </Button>
+                        <Button
+                            className="w-full h-16 text-lg font-bold bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 text-red-500 border-2 border-red-500/50 touch-manipulation transition-all duration-150"
+                            variant="outline"
+                            onClick={() => handleGuess('DOWN')}
+                        >
+                            <ArrowDownCircle className="mr-2 h-7 w-7" /> DOWN
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

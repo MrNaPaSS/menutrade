@@ -1,7 +1,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { strategyModules } from '@/data/strategies';
@@ -150,31 +150,30 @@ const Strategies = () => {
     if (!currentModule) return null;
 
     return (
-      <div className="min-h-screen scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-24">
         <MatrixRain />
         <div className="relative z-10">
-          <Header progress={0} />
-          
-          <main className="p-4 pb-24">
-            <div className="max-w-lg mx-auto">
+          <SimpleMenu />
+          <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+            <div className="max-w-lg w-full mx-auto">
               <button
                 onClick={handleBackToModules}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 sm:mb-6 min-h-[44px] px-2 -ml-2"
               >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm">Назад к стратегиям</span>
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="text-sm sm:text-base">Назад к стратегиям</span>
               </button>
 
               {/* Module header */}
-              <div className="glass-card rounded-xl p-6 neon-border mb-4">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="text-4xl">{currentModule.icon}</div>
-                  <div className="flex-1">
-                    <h2 className="font-display font-bold text-2xl mb-1">{currentModule.title}</h2>
-                    <p className="text-sm text-muted-foreground">{currentModule.description}</p>
+              <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 min-h-[60px]">
+                <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="text-2xl sm:text-3xl md:text-4xl flex-shrink-0">{currentModule.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-display font-bold text-lg sm:text-xl md:text-2xl mb-1 break-words overflow-wrap-anywhere">{currentModule.title}</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground break-words overflow-wrap-anywhere">{currentModule.description}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/30">
+                <div className="flex items-center gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/30">
                   <div className="flex-1 flex gap-1">
                     {currentModule.lessons.map((_, index) => (
                       <div
@@ -185,7 +184,7 @@ const Strategies = () => {
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium">
+                  <span className="text-xs text-muted-foreground font-medium flex-shrink-0 ml-2">
                     {current + 1} / {currentModule.lessons.length}
                   </span>
                 </div>
@@ -197,6 +196,7 @@ const Strategies = () => {
                 opts={{
                   align: "start",
                   loop: false,
+                  dragFree: true,
                 }}
                 className="w-full"
               >
@@ -207,23 +207,23 @@ const Strategies = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.3 }}
-                        className="glass-card rounded-xl p-6 neon-border min-h-[60vh] flex flex-col"
+                        className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border min-h-[calc(100dvh-280px)] sm:min-h-[calc(100dvh-320px)] flex flex-col"
                       >
-                        <h3 className="font-display font-bold text-xl mb-4 text-primary">
+                        <h3 className="font-display font-bold text-lg sm:text-xl mb-3 sm:mb-4 text-primary break-words overflow-wrap-anywhere">
                           {lesson.title}
                         </h3>
-                        <div className="flex-1 prose prose-invert max-w-none w-full overflow-y-auto custom-scrollbar" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', hyphens: 'auto' }}>
+                        <div className="flex-1 prose prose-invert max-w-none w-full overflow-y-auto custom-scrollbar pb-2" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', hyphens: 'auto' }}>
                           <ReactMarkdown
                             components={{
                               h1: ({ children }) => (
-                                <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mt-0 mb-6 neon-text flex items-center gap-3 pt-2 break-words overflow-wrap-anywhere">
-                                  <span className="w-1.5 h-8 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
+                                <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground mt-0 mb-4 sm:mb-6 neon-text flex items-center gap-2 sm:gap-3 pt-2 break-words overflow-wrap-anywhere">
+                                  <span className="w-1.5 h-6 sm:h-8 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
                                   <span className="break-words overflow-wrap-anywhere">{children}</span>
                                 </h1>
                               ),
                               h2: ({ children }) => (
-                                <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground mt-6 mb-4 flex items-center gap-3 border-b-2 border-primary/30 pb-3 break-words overflow-wrap-anywhere">
-                                  <span className="w-1 h-6 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] flex-shrink-0"></span>
+                                <h2 className="font-display text-lg sm:text-xl md:text-2xl font-semibold text-foreground mt-4 sm:mt-6 mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3 border-b-2 border-primary/30 pb-2 sm:pb-3 break-words overflow-wrap-anywhere">
+                                  <span className="w-1 h-5 sm:h-6 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] flex-shrink-0"></span>
                                   <span className="break-words overflow-wrap-anywhere">{children}</span>
                                 </h2>
                               ),
@@ -252,8 +252,8 @@ const Strategies = () => {
                                 }
 
                                 return (
-                                  <h3 className={`font-display text-lg md:text-xl font-semibold ${textColor} mt-5 mb-3 flex items-center gap-2 break-words overflow-wrap-anywhere`}>
-                                    <div className={`w-8 h-8 rounded-lg ${bgColor} flex items-center justify-center border border-${textColor}/20 flex-shrink-0`}>
+                                  <h3 className={`font-display text-base sm:text-lg md:text-xl font-semibold ${textColor} mt-4 sm:mt-5 mb-2 sm:mb-3 flex items-center gap-2 break-words overflow-wrap-anywhere`}>
+                                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${bgColor} flex items-center justify-center border border-${textColor}/20 flex-shrink-0`}>
                                       {icon}
                                     </div>
                                     <span className="break-words overflow-wrap-anywhere">{children}</span>
@@ -295,9 +295,9 @@ const Strategies = () => {
                                   }
                                   
                                   return (
-                                    <div className={`flex items-start gap-3 p-4 rounded-xl border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
+                                    <div className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
                                       <span className="mt-0.5 flex-shrink-0">{icon}</span>
-                                      <div className="text-foreground text-base md:text-lg flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
+                                      <div className="text-foreground text-sm sm:text-base md:text-lg flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
                                     </div>
                                   );
                                 }
@@ -305,27 +305,27 @@ const Strategies = () => {
                                 // Проверка на специальные блоки в середине текста
                                 if (text.includes('✅') || text.includes('❌')) {
                                   return (
-                                    <p className="text-base md:text-lg leading-relaxed mb-4 flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10 break-words overflow-wrap-anywhere">
+                                    <p className="text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4 flex items-start gap-2 sm:gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10 break-words overflow-wrap-anywhere">
                                       <span className="mt-1 flex-shrink-0">
                                         {text.includes('✅') ? (
-                                          <CheckCircle2 className="w-5 h-5 text-primary" />
+                                          <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                                         ) : (
-                                          <AlertCircle className="w-5 h-5 text-destructive" />
+                                          <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
                                         )}
                                       </span>
                                       <span className="text-foreground flex-1 break-words overflow-wrap-anywhere">{children}</span>
                                     </p>
                                   );
                                 }
-                                return <p className="text-base md:text-lg text-foreground/90 leading-relaxed mb-4 break-words overflow-wrap-anywhere hyphens-auto">{children}</p>;
+                                return <p className="text-sm sm:text-base md:text-lg text-foreground/90 leading-relaxed mb-3 sm:mb-4 break-words overflow-wrap-anywhere hyphens-auto">{children}</p>;
                               },
                               ul: ({ children }) => (
-                                <ul className="list-none space-y-3 mb-4 break-words overflow-wrap-anywhere">
+                                <ul className="list-none space-y-2 sm:space-y-3 mb-3 sm:mb-4 break-words overflow-wrap-anywhere">
                                   {children}
                                 </ul>
                               ),
                               ol: ({ children }) => (
-                                <ol className="list-decimal list-inside space-y-2 text-foreground/90 mb-4 break-words overflow-wrap-anywhere">
+                                <ol className="list-decimal list-inside space-y-2 text-foreground/90 mb-3 sm:mb-4 break-words overflow-wrap-anywhere">
                                   {children}
                                 </ol>
                               ),
@@ -366,14 +366,14 @@ const Strategies = () => {
                                     borderColor = 'border-primary/30';
                                   }
                                   return (
-                                    <li className={`flex items-start gap-3 p-4 rounded-xl border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
+                                    <li className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
                                       <span className="mt-0.5 flex-shrink-0">{icon}</span>
-                                      <div className="text-foreground text-base md:text-lg flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
+                                      <div className="text-foreground text-sm sm:text-base md:text-lg flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
                                     </li>
                                   );
                                 }
                                 return (
-                                  <li className="text-foreground/90 text-base md:text-lg flex items-start gap-3 mb-3 p-2 hover:bg-primary/5 rounded-lg transition-colors text-left break-words overflow-wrap-anywhere">
+                                  <li className="text-foreground/90 text-sm sm:text-base md:text-lg flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3 p-2 hover:bg-primary/5 rounded-lg transition-colors text-left break-words overflow-wrap-anywhere">
                                     <span className="w-2 h-2 rounded-full bg-primary mt-2.5 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
                                     <span className="flex-1 text-left break-words overflow-wrap-anywhere">{children}</span>
                                   </li>
@@ -412,13 +412,13 @@ const Strategies = () => {
                                 }
 
                                 return (
-                                  <blockquote className={`glass-card rounded-xl p-5 neon-border mb-6 flex items-start gap-4 ${bgColor} break-words overflow-wrap-anywhere`}>
-                                    <div className={`w-10 h-10 rounded-lg ${bgColor} flex items-center justify-center flex-shrink-0 ${iconColor}`}>
+                                  <blockquote className={`glass-card rounded-xl p-3 sm:p-4 md:p-5 neon-border mb-4 sm:mb-6 flex items-start gap-2 sm:gap-3 md:gap-4 ${bgColor} break-words overflow-wrap-anywhere`}>
+                                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${bgColor} flex items-center justify-center flex-shrink-0 ${iconColor}`}>
                                       {icon}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      {title && <p className={`font-display font-bold text-sm mb-1 ${iconColor}`}>{title}</p>}
-                                      <p className="text-sm text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere">{children}</p>
+                                      {title && <p className={`font-display font-bold text-xs sm:text-sm mb-1 ${iconColor}`}>{title}</p>}
+                                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere">{children}</p>
                                     </div>
                                   </blockquote>
                                 );
@@ -453,8 +453,8 @@ const Strategies = () => {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="left-2 md:left-4" />
-                <CarouselNext className="right-2 md:right-4" />
+                <CarouselPrevious className="left-2 sm:left-3 md:left-4 h-11 w-11 min-h-[44px] min-w-[44px] bg-background/95 backdrop-blur-lg border-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 z-50" />
+                <CarouselNext className="right-2 sm:right-3 md:right-4 h-11 w-11 min-h-[44px] min-w-[44px] bg-background/95 backdrop-blur-lg border-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 z-50" />
               </Carousel>
             </div>
           </main>
@@ -466,32 +466,31 @@ const Strategies = () => {
 
   // Render modules list
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={0} />
-        
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
+        <SimpleMenu />
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
             {/* Header */}
-            <div className="mb-6">
-              <h1 className="font-display font-bold text-2xl mb-2">Стратегии торговли</h1>
-              <p className="text-sm text-muted-foreground">
+            <div className="mb-4 sm:mb-6">
+              <h1 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2 break-words overflow-wrap-anywhere">Стратегии торговли</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground break-words overflow-wrap-anywhere">
                 Рекомендации, правила и практические стратегии для успешной торговли
               </p>
             </div>
 
             {/* Description card */}
-            <div className="glass-card rounded-xl p-6 neon-border mb-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <BarChart3 className="w-6 h-6 text-primary" />
+            <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6 min-h-[60px]">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 min-w-[40px] min-h-[40px] rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
-                <div>
-                  <h2 className="font-display font-bold text-lg mb-2">
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-display font-bold text-base sm:text-lg mb-1 sm:mb-2 break-words overflow-wrap-anywhere">
                     Рекомендации и правила
                   </h2>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere">
                     В этом разделе собраны практические стратегии торговли, правила управления капиталом 
                     и психологические аспекты трейдинга. Изучайте материалы в удобном для вас порядке, 
                     применяйте знания на практике и развивайте свои навыки.
@@ -501,26 +500,26 @@ const Strategies = () => {
             </div>
 
             {/* Modules */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {strategyModules.map((module, index) => (
                 <motion.button
                   key={module.id}
                   onClick={() => handleModuleClick(module)}
-                  className="w-full glass-card rounded-xl p-6 neon-border text-left transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
+                  className="w-full glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border text-left transition-all duration-300 active:scale-[0.98] hover:scale-[1.02] hover:bg-primary/5 touch-manipulation min-h-[60px]"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{module.icon}</div>
-                    <div className="flex-1">
-                      <h3 className="font-display font-bold text-lg mb-1">{module.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{module.description}</p>
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="text-2xl sm:text-3xl md:text-4xl flex-shrink-0">{module.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-display font-bold text-base sm:text-lg mb-1 break-words overflow-wrap-anywhere">{module.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-2 break-words overflow-wrap-anywhere">{module.description}</p>
                       <p className="text-xs text-muted-foreground">
                         {module.lessons.length} {module.lessons.length === 1 ? 'материал' : 'материалов'}
                       </p>
                     </div>
-                    <ArrowLeft className="w-5 h-5 text-muted-foreground rotate-180" />
+                    <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground rotate-180 flex-shrink-0" />
                   </div>
                 </motion.button>
               ))}

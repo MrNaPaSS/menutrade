@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { ArrowLeft, BookOpen, ExternalLink } from 'lucide-react';
@@ -150,34 +150,33 @@ const Library = () => {
   };
 
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={progress} />
-        
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
-            <div className="flex items-center gap-2 mb-6">
+        <SimpleMenu />
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleHomeClick}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="text-sm">На главную</span>
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">На главную</span>
               </Button>
             </div>
 
-            <div className="mb-6">
-              <h2 className="font-display font-bold text-2xl mb-2">Библиотека здравого трейдера</h2>
-              <p className="text-sm text-muted-foreground">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">Библиотека здравого трейдера</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Книги по трейдингу, психологии и управлению капиталом
               </p>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto p-1 glass-card neon-border mb-6 overflow-x-auto">
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto p-1 glass-card neon-border mb-4 sm:mb-6 overflow-x-auto">
                 {libraryCategories.map((category) => (
                   <TabsTrigger
                     key={category.id}
@@ -199,10 +198,10 @@ const Library = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: bookIndex * 0.05 }}
                       >
-                        <div className="glass-card rounded-xl p-4 neon-border hover:scale-[1.01] transition-transform">
-                          <div className="flex gap-4">
+                        <div className="glass-card rounded-xl p-3 sm:p-4 neon-border active:scale-[0.98] hover:scale-[1.01] transition-transform touch-manipulation">
+                          <div className="flex gap-2 sm:gap-3 md:gap-4">
                             {/* Обложка книги */}
-                            <div className="w-24 h-32 flex-shrink-0 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 flex items-center justify-center overflow-hidden relative">
+                            <div className="w-20 h-28 sm:w-24 sm:h-32 flex-shrink-0 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 flex items-center justify-center overflow-hidden relative">
                               {(book.coverImage || bookCovers[book.id]) ? (
                                 <img 
                                   src={book.coverImage || bookCovers[book.id]} 
@@ -238,22 +237,22 @@ const Library = () => {
 
                             {/* Информация о книге */}
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-display font-bold text-base mb-1">
+                              <h4 className="font-display font-bold text-sm sm:text-base mb-1">
                                 {book.title}
                               </h4>
-                              <p className="text-sm text-muted-foreground mb-2">
+                              <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
                                 {book.author}
                               </p>
-                              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+                              <p className="text-xs text-muted-foreground mb-2 sm:mb-3 line-clamp-2">
                                 {getBookDescription(book)}
                               </p>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="w-full"
+                                className="w-full text-xs sm:text-sm h-8 sm:h-9"
                                 onClick={() => handleReadOnline(book.title, book.author)}
                               >
-                                <ExternalLink className="w-4 h-4 mr-2" />
+                                <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                                 Читать онлайн
                               </Button>
                             </div>

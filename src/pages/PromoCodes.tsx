@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { ArrowLeft, Gift, ExternalLink, Copy, Check } from 'lucide-react';
@@ -27,28 +27,27 @@ const PromoCodes = () => {
   };
 
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={progress} />
-        
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
-            <div className="flex items-center gap-2 mb-6">
+        <SimpleMenu />
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/trader-menu')}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="text-sm">Назад</span>
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Назад</span>
               </Button>
             </div>
 
-            <div className="mb-6">
-              <h2 className="font-display font-bold text-2xl mb-2">Промокоды</h2>
-              <p className="text-sm text-muted-foreground">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">Промокоды</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Используйте промокоды при регистрации для получения бонусов
               </p>
             </div>

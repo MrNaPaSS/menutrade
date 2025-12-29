@@ -88,23 +88,23 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen scanline pb-24">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={progress} />
+        <Header progress={progress} hideOnScroll={true} />
 
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
             {/* Заголовок */}
-            <div className="mb-6">
-              <h2 className="font-display font-bold text-2xl mb-2">Главная</h2>
-              <p className="text-sm text-muted-foreground">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">Главная</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Добро пожаловать в Академию здравого трейдера
               </p>
             </div>
 
             {/* Карточки разделов */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {sections.map((section, index) => {
                 const Icon = section.icon;
                 const getColorClasses = (color: string) => {
@@ -140,23 +140,21 @@ const Home = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1, type: "spring", stiffness: 300, damping: 25 }}
                   >
-                    <div className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
-                      onClick={section.onClick}
-                    >
-                      <div className="flex items-start gap-4">
+                    <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border transition-all duration-300 touch-manipulation min-h-[60px]">
+                      <div className="flex items-start gap-2 sm:gap-3 md:gap-4">
                         <motion.div
-                          className={`relative w-16 h-16 rounded-2xl flex items-center justify-center border ${colorClasses.bg} shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)]`}
+                          className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center border ${colorClasses.bg} shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)] flex-shrink-0`}
                           whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
                           transition={{ duration: 0.3 }}
                         >
-                          <Icon className={`w-8 h-8 ${colorClasses.icon}`} />
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 ${colorClasses.icon}`} />
                         </motion.div>
 
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-display text-lg font-bold tracking-wide mb-1">
+                          <h3 className="font-display text-base sm:text-lg font-bold tracking-wide mb-1">
                             {section.title}
                           </h3>
-                          <p className="text-sm text-muted-foreground mb-3">
+                          <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
                             {section.description}
                           </p>
 
@@ -205,29 +203,29 @@ const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="mt-6 glass-card rounded-xl p-6 neon-border"
+              className="mt-4 sm:mt-6 glass-card rounded-xl p-4 sm:p-6 neon-border"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-primary" />
+              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-lg">Ваш прогресс</h3>
+                  <h3 className="font-display font-bold text-base sm:text-lg">Ваш прогресс</h3>
                   <p className="text-xs text-muted-foreground">Общая статистика обучения</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 rounded-lg bg-muted/20">
-                  <div className="text-2xl font-bold text-primary mb-1">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/20">
+                  <div className="text-xl sm:text-2xl font-bold text-primary mb-1">
                     {completedModules}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     Модулей пройдено
                   </div>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-muted/20">
-                  <div className="text-2xl font-bold text-primary mb-1">
+                <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/20">
+                  <div className="text-xl sm:text-2xl font-bold text-primary mb-1">
                     {completedLessons}
                   </div>
                   <div className="text-xs text-muted-foreground">

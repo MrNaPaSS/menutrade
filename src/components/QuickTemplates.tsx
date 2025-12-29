@@ -54,10 +54,10 @@ export function QuickTemplates({ onSelect, className }: QuickTemplatesProps) {
               variant="outline"
               size="sm"
               onClick={() => onSelect(template.text)}
-              className="w-full justify-start glass-card border-border/30 hover:border-primary/50 hover:bg-primary/10 transition-all"
+              className="w-full justify-start glass-card border-border/30 hover:border-primary/50 hover:bg-primary/10 transition-all h-auto py-2 sm:py-2.5 text-left touch-manipulation"
             >
-              <Icon className="w-3 h-3" />
-              <span className="text-xs">{template.text}</span>
+              <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+              <span className="text-xs sm:text-sm break-words">{template.text}</span>
             </Button>
           </motion.div>
         );

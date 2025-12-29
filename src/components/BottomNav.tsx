@@ -100,14 +100,14 @@ export function BottomNav({
         {/* Glow effect */}
         <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
         
-        <div className="max-w-lg mx-auto px-2 py-2 safe-area-pb">
+        <div className="max-w-lg mx-auto px-4 py-3 safe-area-pb">
           <div className="flex items-end justify-around">
             {navItems.map((item, index) => (
               <motion.button
                 key={index}
                 onClick={item.onClick}
                 className={cn(
-                  "relative flex flex-col items-center gap-1 px-3 py-2 rounded-2xl touch-feedback",
+                  "relative flex flex-col items-center gap-1 px-3 py-2 rounded-2xl touch-feedback min-h-[44px] min-w-[44px]",
                   "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                   item.isMain ? "px-4" : ""
                 )}

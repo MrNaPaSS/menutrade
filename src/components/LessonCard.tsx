@@ -23,7 +23,7 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
       onClick={onClick}
       disabled={lesson.isLocked}
       className={cn(
-        "w-full p-4 rounded-xl text-left touch-feedback",
+        "w-full p-4 sm:p-5 rounded-lg sm:rounded-xl text-left touch-manipulation min-h-[60px]",
         "border border-border/40",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
         lesson.isLocked 
@@ -37,10 +37,10 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
       whileHover={!lesson.isLocked ? { x: 8, scale: 1.02 } : undefined}
       whileTap={!lesson.isLocked ? { scale: 0.98 } : undefined}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
         <motion.div 
           className={cn(
-            "relative w-12 h-12 rounded-xl flex items-center justify-center",
+            "relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0",
             "border",
             lesson.isLocked 
               ? "bg-muted/30 border-border/30" 
@@ -51,29 +51,29 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
           whileHover={!lesson.isLocked ? { scale: 1.1 } : undefined}
         >
           <Icon className={cn(
-            "w-5 h-5 relative z-10",
+            "w-4 h-4 sm:w-5 sm:h-5 relative z-10",
             lesson.isLocked ? "text-muted-foreground" : "text-primary"
           )} strokeWidth={2} />
         </motion.div>
 
         <div className="flex-1 min-w-0">
           <h3 className={cn(
-            "font-display text-sm font-semibold tracking-wide break-words overflow-wrap-anywhere word-break-break-word",
+            "font-display text-xs sm:text-sm font-semibold tracking-wide break-words overflow-wrap-anywhere word-break-break-word",
             lesson.isLocked ? "text-muted-foreground" : "text-foreground"
           )}>
             {lesson.title}
           </h3>
-          <p className="text-xs text-muted-foreground break-words overflow-wrap-anywhere word-break-break-word whitespace-normal mt-0.5 line-clamp-2">
+          <p className="text-[10px] sm:text-xs text-muted-foreground break-words overflow-wrap-anywhere word-break-break-word whitespace-normal mt-0.5 line-clamp-2">
             {lesson.description}
           </p>
         </div>
 
         <div className={cn(
-          "flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg",
+          "flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg flex-shrink-0",
           lesson.isLocked ? "text-muted-foreground/50" : "text-muted-foreground bg-muted/30"
         )}>
-          <Clock className="w-3.5 h-3.5" />
-          <span className="font-medium">{lesson.duration}</span>
+          <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          <span className="font-medium hidden sm:inline">{lesson.duration}</span>
         </div>
       </div>
     </motion.button>

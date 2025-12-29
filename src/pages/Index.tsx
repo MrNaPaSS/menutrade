@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
+import { SimpleMenu } from '@/components/SimpleMenu';
 import { ModuleCard } from '@/components/ModuleCard';
 import { LessonCard } from '@/components/LessonCard';
 import { LessonContent } from '@/components/LessonContent';
@@ -19,6 +19,10 @@ type View = 'modules' | 'lessons' | 'content' | 'master-test' | 'module-test';
 
 const Index = () => {
   const navigate = useNavigate();
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const { scrollY } = useScroll();
+  
   const { 
     modules, 
     completeLesson,
@@ -86,16 +90,32 @@ const Index = () => {
   };
 
   const progress = getProgress();
+
+  // Логика скрытия заголовка при прокрутке
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const currentScrollY = latest;
+    
+    // Показываем при прокрутке вверх или если прокрутка меньше 50px
+    if (currentScrollY < lastScrollY || currentScrollY < 50) {
+      setIsHeaderVisible(true);
+    } 
+    // Скрываем при прокрутке вниз больше 50px
+    else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      setIsHeaderVisible(false);
+    }
+    
+    setLastScrollY(currentScrollY);
+  });
   const allCompleted = isAllModulesCompleted();
   const masterTestCompleted = isMasterTestCompleted();
 
   // Render master test
   if (view === 'master-test') {
     return (
-      <div className="min-h-screen scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-24">
         <MatrixRain />
         <div className="relative z-10">
-          <Header progress={progress} />
+          <SimpleMenu />
           <MasterTest
             questions={masterTest}
             onComplete={handleMasterTestComplete}
@@ -117,7 +137,7 @@ const Index = () => {
     if (!currentLesson) return null;
 
     return (
-      <div className="min-h-screen scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-24">
         <MatrixRain />
         <div className="relative z-10">
           <LessonContent
@@ -140,12 +160,11 @@ const Index = () => {
     const moduleQuestions: QuizQuestion[] = currentModule.lessons.flatMap(lesson => lesson.quiz);
 
     return (
-      <div className="min-h-screen scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-24">
         <MatrixRain />
         <div className="relative z-10">
-          <Header progress={progress} />
-          
-          <main className="p-4 pb-24">
+          <SimpleMenu />
+          <main className="p-2 sm:p-4 pb-24">
             <div className="max-w-lg mx-auto">
               <button
                 onClick={handleBackToLessons}
@@ -155,7 +174,19 @@ const Index = () => {
                 <span className="text-sm">Назад к урокам</span>
               </button>
 
-              <div className="glass-card rounded-xl p-6 neon-border mb-6">
+              <motion.div 
+                className="glass-card rounded-xl p-6 neon-border mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm -mx-4 px-4"
+                initial={{ y: 0, opacity: 1 }}
+                animate={{ 
+                  y: isHeaderVisible ? 0 : -100, 
+                  opacity: isHeaderVisible ? 1 : 0 
+                }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 300, 
+                  damping: 30 
+                }}
+              >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                     <Brain className="w-5 h-5 text-primary" />
@@ -171,7 +202,7 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground">
                   Порог прохождения: 70%
                 </p>
-              </div>
+              </motion.div>
 
               <div className="glass-card rounded-xl p-6 neon-border">
                 <Quiz 
@@ -198,12 +229,11 @@ const Index = () => {
     const moduleQuestions = currentModule.lessons.flatMap(lesson => lesson.quiz || []);
 
     return (
-      <div className="min-h-screen scanline pb-24">
+      <div className="min-h-[100dvh] scanline pb-24">
         <MatrixRain />
         <div className="relative z-10">
-          <Header progress={progress} />
-          
-          <main className="p-4 pb-24">
+          <SimpleMenu />
+          <main className="p-2 sm:p-4 pb-24">
             <div className="max-w-lg mx-auto">
               <button
                 onClick={handleBackToModules}
@@ -213,13 +243,25 @@ const Index = () => {
                 <span className="text-sm">Все модули</span>
               </button>
 
-              <div className="flex items-center gap-3 mb-6">
+              <motion.div 
+                className="flex items-center gap-3 mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+                initial={{ y: 0, opacity: 1 }}
+                animate={{ 
+                  y: isHeaderVisible ? 0 : -100, 
+                  opacity: isHeaderVisible ? 1 : 0 
+                }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 300, 
+                  damping: 30 
+                }}
+              >
                 <div className="text-3xl">{currentModule.icon}</div>
                 <div>
                   <h2 className="font-display font-bold text-xl">{currentModule.title}</h2>
                   <p className="text-sm text-muted-foreground">{currentModule.description}</p>
                 </div>
-              </div>
+              </motion.div>
 
               <div className="space-y-3 mb-6">
                 {currentModule.lessons.map((lesson, index) => (
@@ -259,26 +301,36 @@ const Index = () => {
     <div className="min-h-screen scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
-        <Header progress={progress} />
-        
-        <main className="p-4 pb-24">
-          <div className="max-w-lg mx-auto">
-            <div className="flex items-center gap-2 mb-6">
+          <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+          <div className="max-w-lg w-full mx-auto">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleHomeClick}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="text-sm">На главную</span>
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">На главную</span>
               </Button>
             </div>
             
-            <div className="flex items-center justify-between mb-6">
+            <motion.div 
+              className="flex items-center justify-between mb-4 sm:mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+              initial={{ y: 0, opacity: 1 }}
+              animate={{ 
+                y: isHeaderVisible ? 0 : -100, 
+                opacity: isHeaderVisible ? 1 : 0 
+              }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 300, 
+                damping: 30 
+              }}
+            >
               <div>
-                <h2 className="font-display font-bold text-xl">Модули обучения</h2>
-                <p className="text-sm text-muted-foreground">
+                <h2 className="font-display font-bold text-lg sm:text-xl">Модули обучения</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Проходи уроки и открывай новые
                 </p>
               </div>
@@ -287,14 +339,14 @@ const Index = () => {
                   variant="ghost"
                   size="sm"
                   onClick={resetProgress}
-                  className="text-muted-foreground hover:text-destructive"
+                  className="text-muted-foreground hover:text-destructive h-8 w-8 sm:h-9 sm:w-9 p-0"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               )}
-            </div>
+            </motion.div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {modules.map((module, index) => (
                 <ModuleCard
                   key={module.id}

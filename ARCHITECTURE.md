@@ -204,3 +204,4 @@ if (validation.valid) {
 4. Реализовать сохранение прогресса
 5. Добавить больше индикаторов (Bollinger Bands, Stochastic)
 
+

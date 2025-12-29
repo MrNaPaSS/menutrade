@@ -164,17 +164,17 @@ export function FileUpload({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          "border-2 border-dashed rounded-lg p-4 transition-colors",
+          "border-2 border-dashed rounded-lg p-2 sm:p-3 md:p-4 transition-colors",
           isDragging
             ? "border-primary bg-primary/10"
             : "border-border hover:border-primary/50",
           error && "border-destructive"
         )}
       >
-        <div className="flex flex-col items-center gap-2">
-          <Upload className="w-6 h-6 text-muted-foreground" />
+        <div className="flex flex-col items-center gap-1.5 sm:gap-2">
+          <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
           <div className="text-center">
-            <p className="text-sm text-foreground">
+            <p className="text-xs sm:text-sm text-foreground px-2">
               Перетащите файлы сюда или{' '}
               <label className="text-primary cursor-pointer hover:underline">
                 выберите файл
@@ -187,10 +187,10 @@ export function FileUpload({
                 />
               </label>
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 px-2">
               Максимум {maxFiles} файлов, до {formatFileSize(maxSize)} каждый
               {!isAdminUser && (
-                <span className="block mt-1">
+                <span className="block mt-0.5 sm:mt-1">
                   Фото: {remainingPhotos > 0 ? `${remainingPhotos} из 3 осталось` : 'лимит исчерпан'}
                 </span>
               )}
@@ -216,27 +216,27 @@ export function FileUpload({
                 exit={{ opacity: 0, scale: 0.8 }}
                 className="relative group"
               >
-                <div className="glass-card rounded-lg p-2 border border-border/30 flex items-center gap-2 min-w-[120px] max-w-[200px]">
+                <div className="glass-card rounded-lg p-1.5 sm:p-2 border border-border/30 flex items-center gap-1.5 sm:gap-2 min-w-[100px] sm:min-w-[120px] max-w-[180px] sm:max-w-[200px]">
                   {file.thumbnail ? (
                     <img
                       src={file.thumbnail}
                       alt={file.name}
-                      className="w-10 h-10 object-cover rounded"
+                      className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
                       {getFileIcon(file.type)}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                    <p className="text-[10px] sm:text-xs font-medium truncate">{file.name}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
                   </div>
                   <button
                     onClick={() => removeFile(index)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/20 rounded"
+                    className="opacity-70 sm:opacity-0 group-hover:opacity-100 transition-opacity p-0.5 sm:p-1 hover:bg-destructive/20 rounded touch-manipulation flex-shrink-0"
                   >
-                    <X className="w-3 h-3 text-destructive" />
+                    <X className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-destructive" />
                   </button>
                 </div>
               </motion.div>

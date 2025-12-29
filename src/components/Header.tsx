@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ProgressBar } from './ProgressBar';
 import { PepeIcon } from './PepeIcon';
@@ -19,16 +19,37 @@ import { useState, useEffect } from 'react';
 
 interface HeaderProps {
   progress: number;
+  hideOnScroll?: boolean;
 }
 
-export function Header({ progress }: HeaderProps) {
+export function Header({ progress, hideOnScroll = false }: HeaderProps) {
   const navigate = useNavigate();
   const [language, setLanguage] = useState<string>('ru');
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const { scrollY } = useScroll();
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('app_language') || 'ru';
     setLanguage(savedLanguage);
   }, []);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (!hideOnScroll) return;
+    
+    const currentScrollY = latest;
+    
+    // Показываем при прокрутке вверх или если прокрутка меньше 50px
+    if (currentScrollY < lastScrollY || currentScrollY < 50) {
+      setIsVisible(true);
+    } 
+    // Скрываем при прокрутке вниз больше 50px
+    else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      setIsVisible(false);
+    }
+    
+    setLastScrollY(currentScrollY);
+  });
 
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang);
@@ -38,9 +59,12 @@ export function Header({ progress }: HeaderProps) {
 
   return (
     <motion.header 
-      className="sticky top-0 z-50 glass-card border-b border-border/30"
+      className={`sticky top-0 z-50 glass-card border-b border-border/30 ${hideOnScroll && !isVisible ? 'pointer-events-none' : ''}`}
       initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
+      animate={{ 
+        y: hideOnScroll ? (isVisible ? 0 : -100) : 0, 
+        opacity: hideOnScroll ? (isVisible ? 1 : 0) : 1 
+      }}
       transition={{ 
         type: "spring", 
         stiffness: 300, 
