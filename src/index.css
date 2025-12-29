@@ -22,7 +22,7 @@
     overscroll-behavior-y: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding-top: env(safe-area-inset-top);
+    padding-top: 0;
     transform: translateZ(0);
     backface-visibility: hidden;
     perspective: 1000px;

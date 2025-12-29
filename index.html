@@ -27,8 +27,15 @@
       if (tg) {
         tg.ready();
 
-        // Разворачиваем на весь экран (стандартный API)
-        tg.expand();
+        // Разворачиваем на весь экран и запрашиваем полноэкранный режим (для оверлея)
+        try {
+          tg.expand();
+          if (tg.requestFullscreen) {
+            tg.requestFullscreen();
+          }
+        } catch (e) {
+          console.log('Fullscreen error:', e);
+        }
 
         // Настройка цветов
         // #070e0b - это точный цвет фона из темы (hsl 140 35% 4%)

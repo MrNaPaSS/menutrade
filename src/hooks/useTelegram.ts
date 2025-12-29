@@ -74,6 +74,8 @@ export interface TelegramWebApp {
     show: () => void;
     hide: () => void;
   };
+  requestFullscreen: () => void;
+  onEvent: (eventType: string, callback: () => void) => void;
   HapticFeedback: {
     impactOccurred: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void;
     notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
@@ -110,18 +112,21 @@ export function useTelegram() {
 
   useEffect(() => {
     let checkInterval: NodeJS.Timeout | null = null;
-    
+
     const initTelegram = () => {
       // Проверяем наличие Telegram Web App
       if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
-        
+
         // Разворачиваем на весь экран
         tg.expand();
-        
+        if (tg.requestFullscreen) {
+          tg.requestFullscreen();
+        }
+
         // Скрываем стандартную кнопку Back
         tg.BackButton.hide();
-        
+
         // Настройка высоты через viewport
         const setViewportHeight = () => {
           if (tg.viewportHeight) {
@@ -129,31 +134,31 @@ export function useTelegram() {
             document.body.style.height = `${tg.viewportHeight}px`;
           }
         };
-        
+
         setViewportHeight();
-        
+
         // Обновляем высоту при изменении viewport
         tg.onEvent('viewportChanged', () => {
           setViewportHeight();
         });
-        
+
         console.log('Telegram WebApp найден:', {
           version: tg.version,
           platform: tg.platform,
           user: tg.initDataUnsafe?.user,
           initData: tg.initData ? 'present' : 'missing'
         });
-        
+
         // Инициализация
         try {
           tg.ready();
-          
+
           // Разворачиваем на весь экран
           tg.expand();
-          
+
           // Скрываем стандартную кнопку Back
           tg.BackButton.hide();
-          
+
           // Настройка высоты через viewport
           const setViewportHeight = () => {
             if (tg.viewportHeight) {
@@ -161,17 +166,17 @@ export function useTelegram() {
               document.body.style.height = `${tg.viewportHeight}px`;
             }
           };
-          
+
           setViewportHeight();
-          
+
           // Обновляем высоту при изменении viewport
           tg.onEvent('viewportChanged', () => {
             setViewportHeight();
           });
-          
+
           // Валидация данных Telegram
           const validation = validateTelegramData(tg.initData, tg.initDataUnsafe);
-          
+
           if (!validation.isValid) {
             console.warn('Валидация данных Telegram не прошла:', validation.error);
             // В production блокируем доступ, если валидация не прошла
@@ -185,9 +190,9 @@ export function useTelegram() {
             console.log('✅ Данные Telegram прошли базовую валидацию');
             // ВАЖНО: Для полной безопасности нужно проверить hash на сервере!
           }
-          
+
           setWebApp(tg);
-          
+
           // Получаем данные пользователя только если валидация прошла
           if (validation.isValid && tg.initDataUnsafe?.user) {
             const telegramUser = tg.initDataUnsafe.user;
@@ -206,12 +211,12 @@ export function useTelegram() {
               console.log('initDataUnsafe:', tg.initDataUnsafe);
             }
           }
-          
+
           // Настройка темы
           if (tg.colorScheme === 'dark') {
             document.documentElement.classList.add('dark');
           }
-          
+
           setIsReady(true);
         } catch (error) {
           console.error('Ошибка инициализации Telegram WebApp:', error);
@@ -221,17 +226,17 @@ export function useTelegram() {
         // Ждем загрузки скрипта (максимум 3 секунды)
         let attempts = 0;
         const maxAttempts = 30; // 30 попыток по 100мс = 3 секунды
-        
+
         checkInterval = setInterval(() => {
           attempts++;
-          
+
           if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
             if (checkInterval) clearInterval(checkInterval);
             initTelegram();
           } else if (attempts >= maxAttempts) {
             if (checkInterval) clearInterval(checkInterval);
             console.log('Telegram WebApp не найден после ожидания');
-            
+
             // Для тестирования в режиме разработки: используем тестового пользователя из localStorage
             // ВАЖНО: В продакшене это не работает, так как проверка isTelegram все равно будет false
             if (import.meta.env.DEV) {
@@ -242,7 +247,7 @@ export function useTelegram() {
                 setUser(testUser);
               }
             }
-            
+
             setIsReady(true);
           }
         }, 100);
@@ -251,7 +256,7 @@ export function useTelegram() {
 
     // Запускаем инициализацию
     initTelegram();
-    
+
     // Cleanup
     return () => {
       if (checkInterval) {
