@@ -21,6 +21,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: false
+      
+      - name: Configure Git for long paths
+        run: |
+          git config --global core.longpaths true
+          git config core.longpaths true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

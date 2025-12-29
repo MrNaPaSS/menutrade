@@ -132,7 +132,7 @@ function ImageWithFallback({ src: originalSrc, alt, ...props }: { src: string; a
     if (currentSrcIndex < pathVariants.length - 1) {
       const nextPath = pathVariants[currentSrcIndex + 1];
       // Логируем для проблемных изображений
-      if (alt && (alt.includes('Три индейца') || alt.includes('Чашка с ручкой'))) {
+      if (alt && (alt.includes('Три индейца') || alt.includes('Чашка с ручкой') || alt.includes('чашка_с_ручкой'))) {
         console.log(`[Image Debug] Пробуем следующий путь для "${alt}":`, nextPath);
       }
       setCurrentSrcIndex(currentSrcIndex + 1);
@@ -141,7 +141,7 @@ function ImageWithFallback({ src: originalSrc, alt, ...props }: { src: string; a
       setHasError(true);
       console.error('Ошибка загрузки изображения:', originalSrc, 'Испробованы пути:', pathVariants);
       // Дополнительное логирование для проблемных изображений
-      if (alt && (alt.includes('Три индейца') || alt.includes('Чашка с ручкой'))) {
+      if (alt && (alt.includes('Три индейца') || alt.includes('Чашка с ручкой') || alt.includes('чашка_с_ручкой'))) {
         console.error(`[Image Debug] Все пути испробованы для "${alt}":`, pathVariants);
       }
     }
