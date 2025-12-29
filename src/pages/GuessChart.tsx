@@ -351,7 +351,7 @@ const GuessChart = () => {
                 <div className="flex-shrink-0 px-4 md:px-5 pt-4 md:pt-5">
                     <div className="container max-w-4xl mx-auto">
                         <div className="flex items-center justify-between mb-2">
-                            <Button variant="ghost" size="sm" className="text-xs md:text-sm" onClick={() => navigate('/home')}>
+                            <Button variant="ghost" size="sm" className="text-xs md:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0" onClick={() => navigate('/home')}>
                                 <ArrowLeft className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">На главную</span>
                             </Button>
                             {gameState === 'PLAYING' && (

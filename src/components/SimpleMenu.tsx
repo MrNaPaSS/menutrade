@@ -31,13 +31,11 @@ export function SimpleMenu() {
     <div className="fixed top-2 right-4 z-50">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-11 w-11 min-h-[44px] min-w-[44px] sm:h-10 sm:w-10 rounded-lg hover:bg-primary/10 bg-background/80 backdrop-blur-sm transition-all duration-300 ease-in-out active:scale-95"
+          <button
+            className="h-8 w-8 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 p-0 cursor-pointer"
           >
-            <Menu className="h-5 w-5 transition-transform duration-300" />
-          </Button>
+            <Menu className="h-4 w-4 sm:h-4 sm:w-4" />
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 glass-card neon-border">
           <DropdownMenuLabel>Меню</DropdownMenuLabel>

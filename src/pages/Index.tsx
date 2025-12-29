@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
@@ -10,6 +10,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { MasterTest } from '@/components/MasterTest';
 import { Quiz } from '@/components/Quiz';
 import { useProgress } from '@/hooks/useProgress';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { Module, Lesson, QuizQuestion } from '@/types/lesson';
 import { ArrowLeft, RotateCcw, Trophy, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -90,6 +91,18 @@ const Index = () => {
   };
 
   const progress = getProgress();
+
+  // Хуки для свайпа назад - должны быть на верхнем уровне
+  // Всегда вызываем хуки в одном порядке, но управляем через enabled
+  const swipeBackFromContent = useSwipeBack({ 
+    onSwipeBack: handleBackToLessons,
+    enabled: view === 'content' && selectedLesson !== null && selectedModule !== null
+  });
+
+  const swipeBackFromLessons = useSwipeBack({ 
+    onSwipeBack: handleBackToModules,
+    enabled: (view === 'lessons' || view === 'module-test') && selectedModule !== null
+  });
 
   // Скроллим вверх при изменении view
   useEffect(() => {
@@ -199,7 +212,7 @@ const Index = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleBackToLessons}
-                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0"
                 >
                   <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">Назад</span>
@@ -273,7 +286,7 @@ const Index = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleBackToModules}
-                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0"
                 >
                   <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">Назад</span>
@@ -348,7 +361,7 @@ const Index = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleHomeClick}
-                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0"
                 >
                   <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">На главную</span>

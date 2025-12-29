@@ -88,12 +88,12 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-[100dvh] scanline pb-16">
+    <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <div className="relative z-10">
         <Header progress={progress} hideOnScroll={true} />
 
-        <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
+        <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
           <div className="max-w-lg w-full mx-auto">
             {/* Заголовок */}
             <div className="mb-4 sm:mb-6">

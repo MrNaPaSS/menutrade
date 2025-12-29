@@ -7,6 +7,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { useTelegramContext } from '@/contexts/TelegramContext';
 import { AdminStatsView } from '@/components/AdminStatsView';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Settings as SettingsIcon, RotateCcw, Globe, Bell, Info, Trash2, AlertTriangle, Shield, BarChart3, Users, FileDown, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -29,6 +30,12 @@ const Settings = () => {
   const handleHomeClick = () => {
     navigate('/home');
   };
+
+  // Хук для свайпа назад
+  useSwipeBack({ 
+    onSwipeBack: handleHomeClick,
+    enabled: true
+  });
 
   const handleResetProgress = () => {
     resetProgress();
@@ -109,7 +116,7 @@ const Settings = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleHomeClick}
-                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0"
               >
                 <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">На главную</span>

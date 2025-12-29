@@ -18,6 +18,9 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
       ? [imagePath]
       : [
           `${basePath}pepe_animated.gif`,
+          `/pepe_animated.gif`,
+          `${basePath}premium_pepe_animated.gif`,
+          `${basePath}ai_pepe_final_animated.gif`,
           `${basePath}loading.gif`,
           `${basePath}loading-animation.gif`,
           `${basePath}welcome-image.gif`,
@@ -39,14 +42,32 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
     const checkImage = (path: string): Promise<boolean> => {
       return new Promise((resolve) => {
         const img = new Image();
+        let resolved = false;
+        
+        const timeout = setTimeout(() => {
+          if (!resolved) {
+            console.log('⏱️ Таймаут загрузки:', path);
+            resolved = true;
+            resolve(false);
+          }
+        }, 2000); // Таймаут 2 секунды
+        
         img.onload = () => {
-          console.log('✅ GIF найден:', path);
-          setCurrentImagePath(path);
-          resolve(true);
+          if (!resolved) {
+            console.log('✅ GIF найден:', path);
+            setCurrentImagePath(path);
+            resolved = true;
+            clearTimeout(timeout);
+            resolve(true);
+          }
         };
         img.onerror = () => {
-          console.log('❌ Файл не найден:', path);
-          resolve(false);
+          if (!resolved) {
+            console.log('❌ Файл не найден:', path);
+            resolved = true;
+            clearTimeout(timeout);
+            resolve(false);
+          }
         };
         img.src = path;
       });

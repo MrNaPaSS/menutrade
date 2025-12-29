@@ -43,7 +43,7 @@ const TraderMenu = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleHomeClick}
-                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0"
               >
                 <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">На главную</span>
@@ -51,9 +51,6 @@ const TraderMenu = () => {
             </div>
             <div className="flex flex-col items-center">
               <h2 className="font-display font-bold text-lg sm:text-xl">Меню трейдера</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Выберите уровень доступа или перейдите в нужный раздел
-              </p>
             </div>
             <div className="absolute right-4 -top-3">
               <SimpleMenu />
@@ -181,9 +178,6 @@ const TraderMenu = () => {
                         <h3 className="font-display font-bold text-base mb-1">
                           {level.name}
                         </h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {level.description}
-                        </p>
                       </div>
                     </div>
                   </motion.div>

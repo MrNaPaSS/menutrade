@@ -37,7 +37,7 @@ const FAQ = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/trader-menu')}
-                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0"
               >
                 <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Назад</span>

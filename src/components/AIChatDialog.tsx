@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Send, Trash2, X } from 'lucide-react';
+import { Brain, Send, Trash2, X, MoreVertical } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useChatHistory, type ChatMessage } from '@/hooks/useChatHistory';
 import { useTradingContext } from '@/hooks/useTradingContext';
 import { sendMessage, type FileData } from '@/services/openRouterService';
@@ -51,6 +57,12 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   useEffect(() => {
     if (open && history.length > 0) {
       setTimeout(scrollToBottom, 100);
+    }
+    // Фокус на поле ввода при открытии диалога
+    if (open && textareaRef.current) {
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 150);
     }
   }, [open, history.length, scrollToBottom]);
 
@@ -184,26 +196,40 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
         )}
       >
         {/* Заголовок */}
-        <DialogHeader className="px-3 sm:px-4 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 border-b border-border/30 relative pr-12 sm:pr-14 md:pr-16">
+        <DialogHeader className="px-3 sm:px-4 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 border-b border-border/30 relative">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              </div>
               <div className="min-w-0">
                 <DialogTitle className="text-sm sm:text-base md:text-lg font-display truncate">AI Трейдинг Помощник</DialogTitle>
                 <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Эксперт по бинарным опционам и Forex</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleClearHistory}
-              className="text-muted-foreground hover:text-destructive h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 flex-shrink-0"
-              title="Очистить историю"
-            >
-              <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
-            </Button>
+            <div className="flex items-center gap-1 flex-shrink-0 absolute top-2 sm:top-3 md:top-4 right-12 sm:right-14 md:right-16 z-10">
+              {/* Иконка Brain */}
+              <div className="w-7 h-7 sm:w-8 sm:w-8 md:h-9 md:w-9 rounded-sm opacity-70 hover:opacity-100 transition-opacity flex items-center justify-center ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                <Brain className="w-3.5 h-3.5 sm:w-4 sm:w-4 md:h-4 md:w-4 text-foreground" />
+              </div>
+              {/* Меню с тремя точками */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="text-muted-foreground hover:text-foreground h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 opacity-70 hover:opacity-100 transition-opacity bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 p-0 cursor-pointer flex items-center justify-center"
+                    type="button"
+                  >
+                    <MoreVertical className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={handleClearHistory}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Очистить историю
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </DialogHeader>
 
@@ -255,9 +281,11 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onClick={(e) => e.stopPropagation()}
                 placeholder="Напишите ваш вопрос..."
                 className="min-h-[50px] sm:min-h-[60px] max-h-[150px] sm:max-h-[200px] resize-none glass-card border-border/30 focus:border-primary/50 text-sm sm:text-base"
                 disabled={isLoading}
+                tabIndex={0}
               />
             </div>
             <Button

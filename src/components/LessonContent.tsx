@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Quiz } from "./Quiz";
 import { SimpleMenu } from "@/components/SimpleMenu";
 import { Button } from "@/components/ui/button";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 import type { Lesson } from "@/types/lesson";
 import {
   CandlestickChart,
@@ -736,6 +737,12 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
+  // Хук для свайпа назад
+  useSwipeBack({ 
+    onSwipeBack: onBack,
+    enabled: true
+  });
+
   // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: Ленивая загрузка компонентов графиков
   const [isContentLoaded, setIsContentLoaded] = useState(false);
   const [loadedCardIndex, setLoadedCardIndex] = useState<Set<number>>(new Set([0])); // Загружаем только первую карточку
@@ -914,7 +921,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                 variant="ghost"
                 size="sm"
                 onClick={onBack}
-                className="text-muted-foreground hover:text-foreground text-xs h-8 px-2"
+                className="text-muted-foreground hover:text-foreground text-xs h-8 px-2 focus:outline-none focus-visible:outline-none focus-visible:ring-0"
               >
                 <ArrowLeft className="w-3 h-3" />
               </Button>
@@ -964,10 +971,11 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                         cardRefs.current.set(index, el);
                       }
                     }}
-                    className="glass-card rounded-xl p-4 neon-border h-[calc(100dvh-180px)] flex flex-col overflow-hidden relative animate-in fade-in slide-in-from-right-2 duration-300 mx-auto w-full"
+                    className="glass-card rounded-xl p-4 neon-border h-[calc(100dvh-180px)] flex flex-col overflow-hidden relative mx-auto w-full"
                     style={{ touchAction: 'pan-y pinch-zoom' }}
                   >
-                    <div className="flex-1 prose prose-invert max-w-none w-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
+                    <div className="flex-1 prose prose-invert max-w-none w-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
+                      style={{ willChange: 'scroll-position', transform: 'translateZ(0)' }}>
                       <div className="markdown-content text-sm leading-relaxed w-full pb-4 px-0">
                         {/* Рендерим части карточки - чередуем markdown и компоненты */}
                         {cards[index].map((part, partIdx) => {
@@ -1036,7 +1044,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                                       }
                                       
                                       return (
-                                        <div className={`flex items-start gap-2 p-3 rounded-lg border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 text-left w-full block`}>
+                                        <div className={`flex items-start gap-2 p-3 rounded-lg border-2 ${bgColor} ${borderColor} mb-3 shadow-lg text-left w-full block`}>
                                           <span className="mt-0.5 flex-shrink-0">{icon}</span>
                                           <div className="text-foreground text-sm flex-1 text-left break-words overflow-wrap-anywhere word-break-break-word min-w-0 whitespace-normal [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
                                         </div>
@@ -1060,7 +1068,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                                     return <p className="text-sm text-foreground/90 leading-relaxed mb-3 break-words overflow-wrap-anywhere word-break-break-word whitespace-normal">{children}</p>;
                                   },
                             h1: ({ children }) => (
-                              <h1 className="font-display text-base font-bold text-foreground mt-0 mb-4 neon-text flex items-center gap-2 animate-in fade-in slide-in-from-top-2 pt-2 break-words overflow-wrap-anywhere">
+                              <h1 className="font-display text-base font-bold text-foreground mt-0 mb-4 neon-text flex items-center gap-2 pt-2 break-words overflow-wrap-anywhere">
                                 <span className="w-1 h-6 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
                                 <span className="break-words overflow-wrap-anywhere min-w-0">{children}</span>
                               </h1>
@@ -1071,7 +1079,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                               
                               if (isCriticalErrors) {
                                 return (
-                                  <h2 className="font-display text-sm font-semibold text-destructive mt-3 mb-2 flex items-center gap-2 border-b-2 border-destructive/30 pb-2 animate-in fade-in slide-in-from-left-2 break-words overflow-wrap-anywhere">
+                                  <h2 className="font-display text-sm font-semibold text-destructive mt-3 mb-2 flex items-center gap-2 border-b-2 border-destructive/30 pb-2 break-words overflow-wrap-anywhere">
                                     <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
                                     <span className="break-words overflow-wrap-anywhere min-w-0">{children}</span>
                                   </h2>
@@ -1079,7 +1087,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                               }
                               
                               return (
-                              <h2 className="font-display text-sm font-semibold text-foreground mt-3 mb-2 flex items-center gap-2 border-b-2 border-primary/30 pb-2 animate-in fade-in slide-in-from-left-2 break-words overflow-wrap-anywhere">
+                              <h2 className="font-display text-sm font-semibold text-foreground mt-3 mb-2 flex items-center gap-2 border-b-2 border-primary/30 pb-2 break-words overflow-wrap-anywhere">
                                 <span className="w-1 h-5 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] flex-shrink-0"></span>
                                 <span className="break-words overflow-wrap-anywhere min-w-0">{children}</span>
                               </h2>
@@ -1185,7 +1193,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                                 const displayChildren = removeEmojiFromChildren(children);
                                 
                                 return (
-                                  <li className={`flex items-start gap-2 p-3 rounded-lg border-2 ${bgColor} ${borderColor} mb-3 shadow-lg animate-in fade-in slide-in-from-left-2 w-full`}>
+                                  <li className={`flex items-start gap-2 p-3 rounded-lg border-2 ${bgColor} ${borderColor} mb-3 shadow-lg w-full`}>
                                     <span className="mt-0.5 flex-shrink-0">{icon}</span>
                                     <div className="text-foreground text-sm flex-1 flex flex-col items-center gap-2 text-center">
                                       <div className="[&_strong]:text-primary [&_strong]:font-bold [&_strong]:bg-primary/20 [&_strong]:border-2 [&_strong]:border-primary/50 [&_strong]:px-3 [&_strong]:py-1.5 [&_strong]:rounded-lg [&_strong]:block [&_strong]:w-full [&_strong]:mb-2 [&_strong]:text-center">
@@ -1270,7 +1278,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                               const displayText = cleaned !== textStr ? cleaned : removeRememberFromChildren(children);
                               
              return (
-               <blockquote className={`border-l-4 ${bgColor} pl-4 py-3 my-4 rounded-r-lg flex flex-col items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-300 shadow-lg text-center`}>
+               <blockquote className={`border-l-4 ${bgColor} pl-4 py-3 my-4 rounded-r-lg flex flex-col items-center gap-3 shadow-lg text-center`}>
                  <div className={`${iconColor} flex-shrink-0 w-8 h-8 rounded-lg bg-background/50 flex items-center justify-center border-2 ${bgColor.split(' ')[0]}`}>
                    {icon}
                  </div>
@@ -1316,7 +1324,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                             } else {
                               // Это компонент - рендерим напрямую
                               return (
-                                <div key={`comp-${index}-${partIdx}`} className="my-6 animate-in fade-in slide-in-from-bottom-2">
+                                <div key={`comp-${index}-${partIdx}`} className="my-6">
                                   {part}
                                 </div>
                               );
@@ -1349,7 +1357,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
             {isLastCard && lesson.quiz && lesson.quiz.length > 0 && (
               <button
                 onClick={() => setShowQuiz(true)}
-                className="mt-4 w-full glass-card rounded-xl p-4 neon-border hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-display font-semibold text-base animate-in fade-in slide-in-from-bottom-2 min-h-[44px]"
+                className="mt-4 w-full glass-card rounded-xl p-4 neon-border hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-display font-semibold text-base min-h-[44px]"
               >
                 <Brain className="w-6 h-6 text-primary" />
                 <span>Пройти квиз</span>

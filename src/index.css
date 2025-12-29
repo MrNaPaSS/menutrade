@@ -23,6 +23,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-top: env(safe-area-inset-top);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
   
   /* Оптимизация для экранов 360x640 и меньше */
@@ -228,6 +231,18 @@
     display: none; /* Chrome, Safari, Opera */
   }
 
+  /* Оптимизация скролла для предотвращения мерцания */
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Orbitron', sans-serif;
     letter-spacing: 0.02em;
@@ -272,6 +287,8 @@
     box-shadow: 
       0 8px 32px -8px hsl(142, 76%, 52%, 0.15),
       inset 0 1px 0 0 hsl(142, 76%, 52%, 0.1);
+    will-change: transform;
+    transform: translateZ(0);
   }
 
   .glass-card-hover {
@@ -501,5 +518,22 @@
   /* Safe area padding bottom */
   .safe-area-pb {
     padding-bottom: max(4px, env(safe-area-inset-bottom));
+  }
+
+  /* Фиксация нижней панели - вне контекста наложения */
+  nav.fixed.bottom-0 {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 50 !important;
+    transform: none !important;
+  }
+  
+  /* Убираем transform с body, который ломает fixed */
+  body {
+    transform: none !important;
+    perspective: none !important;
+    backface-visibility: visible !important;
   }
 }

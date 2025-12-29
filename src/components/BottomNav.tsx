@@ -81,16 +81,8 @@ export function BottomNav({
   ];
 
   return (
-    <motion.nav 
+    <nav 
       className="fixed bottom-0 left-0 right-0 z-50"
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 30,
-        delay: 0.2 
-      }}
     >
       {/* Gradient fade effect */}
       <div className="absolute inset-x-0 -top-4 h-4 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
@@ -200,6 +192,6 @@ export function BottomNav({
           </div>
         </div>
       </div>
-    </motion.nav>
+    </nav>
   );
 }
