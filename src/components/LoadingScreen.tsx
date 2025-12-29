@@ -17,7 +17,7 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
     const pathsToTry = imagePath
       ? [imagePath]
       : [
-        `${basePath}ultra_trader_logo.gif`
+        `${basePath}pepe_animated.gif`
       ];
 
     const checkImage = (path: string): Promise<boolean> => {
