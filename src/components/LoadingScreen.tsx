@@ -14,36 +14,37 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
   // Пробуем найти изображение (GIF, PNG, JPG) по разным путям
   useEffect(() => {
     const basePath = import.meta.env.BASE_URL || '/';
-    const pathsToTry = imagePath 
+    const pathsToTry = imagePath
       ? [imagePath]
       : [
-          `${basePath}pepe_animated.gif`,
-          `/pepe_animated.gif`,
-          `${basePath}premium_pepe_animated.gif`,
-          `${basePath}ai_pepe_final_animated.gif`,
-          `${basePath}loading.gif`,
-          `${basePath}loading-animation.gif`,
-          `${basePath}welcome-image.gif`,
-          `${basePath}welcome-animation.gif`,
-          `${basePath}onboarding.gif`,
-          `${basePath}logo.gif`,
-          `${basePath}loading.png`,
-          `${basePath}loading.jpg`,
-          `${basePath}welcome-image.png`,
-          `${basePath}welcome-image.jpg`,
-          `${basePath}loading-image.png`,
-          `${basePath}loading-image.jpg`,
-          `${basePath}logo.png`,
-          `${basePath}logo.jpg`,
-          `${basePath}onboarding.png`,
-          `${basePath}onboarding.jpg`
-        ];
+        `${basePath}ultra_trader_logo.gif`,
+        `${basePath}premium_pepe_animated.gif`,
+        `${basePath}pepe_animated.gif`,
+        `/pepe_animated.gif`,
+        `${basePath}ai_pepe_final_animated.gif`,
+        `${basePath}loading.gif`,
+        `${basePath}loading-animation.gif`,
+        `${basePath}welcome-image.gif`,
+        `${basePath}welcome-animation.gif`,
+        `${basePath}onboarding.gif`,
+        `${basePath}logo.gif`,
+        `${basePath}loading.png`,
+        `${basePath}loading.jpg`,
+        `${basePath}welcome-image.png`,
+        `${basePath}welcome-image.jpg`,
+        `${basePath}loading-image.png`,
+        `${basePath}loading-image.jpg`,
+        `${basePath}logo.png`,
+        `${basePath}logo.jpg`,
+        `${basePath}onboarding.png`,
+        `${basePath}onboarding.jpg`
+      ];
 
     const checkImage = (path: string): Promise<boolean> => {
       return new Promise((resolve) => {
         const img = new Image();
         let resolved = false;
-        
+
         const timeout = setTimeout(() => {
           if (!resolved) {
             console.log('⏱️ Таймаут загрузки:', path);
@@ -51,7 +52,7 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
             resolve(false);
           }
         }, 2000); // Таймаут 2 секунды
-        
+
         img.onload = () => {
           if (!resolved) {
             console.log('✅ GIF найден:', path);
@@ -117,7 +118,7 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
               ease: "easeInOut"
             }}
           />
-          
+
           {currentImagePath && !imageError ? (
             <motion.img
               src={currentImagePath}
