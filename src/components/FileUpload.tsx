@@ -19,6 +19,7 @@ interface FileUploadProps {
   onFilesChange: (files: FileData[]) => void;
   maxSize?: number; // в байтах
   maxFiles?: number;
+  hideDropzone?: boolean;
 }
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 МБ
@@ -28,7 +29,8 @@ export function FileUpload({
   files,
   onFilesChange,
   maxSize = MAX_FILE_SIZE,
-  maxFiles = MAX_FILES
+  maxFiles = MAX_FILES,
+  hideDropzone = false
 }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -159,45 +161,58 @@ export function FileUpload({
 
   return (
     <div className="space-y-2">
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        className={cn(
-          "border-2 border-dashed rounded-lg p-2 sm:p-3 md:p-4 transition-colors",
-          isDragging
-            ? "border-primary bg-primary/10"
-            : "border-border hover:border-primary/50",
-          error && "border-destructive"
-        )}
-      >
-        <div className="flex flex-col items-center gap-1">
-          <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
-          <div className="text-center">
-            <p className="text-[10px] sm:text-xs text-foreground px-2">
-              Перетащите файлы сюда или{' '}
-              <label className="text-primary cursor-pointer hover:underline">
-                выберите файл
-                <input
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileInput}
-                  accept="*/*"
-                />
-              </label>
-            </p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 px-2">
-              Максимум {maxFiles} файлов, до {formatFileSize(maxSize)} каждый
-              {!isAdminUser && (
-                <span className="block mt-0.5">
-                  Фото: {remainingPhotos > 0 ? `${remainingPhotos} из 3 осталось` : 'лимит исчерпан'}
-                </span>
-              )}
-            </p>
+      {!hideDropzone && (
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={cn(
+            "border-2 border-dashed rounded-lg p-2 sm:p-3 md:p-4 transition-colors",
+            isDragging
+              ? "border-primary bg-primary/10"
+              : "border-border hover:border-primary/50",
+            error && "border-destructive"
+          )}
+        >
+          <div className="flex flex-col items-center gap-1">
+            <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+            <div className="text-center">
+              <p className="text-[10px] sm:text-xs text-foreground px-2">
+                Перетащите файлы сюда или{' '}
+                <label className="text-primary cursor-pointer hover:underline">
+                  выберите файл
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileInput}
+                    accept="*/*"
+                  />
+                </label>
+              </p>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 px-2">
+                Максимум {maxFiles} файлов, до {formatFileSize(maxSize)} каждый
+                {!isAdminUser && (
+                  <span className="block mt-0.5">
+                    Фото: {remainingPhotos > 0 ? `${remainingPhotos} из 3 осталось` : 'лимит исчерпан'}
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Скрытый инпут для управления извне (например, через скрепку) */}
+      {hideDropzone && (
+        <input
+          type="file"
+          multiple
+          className="hidden"
+          onChange={handleFileInput}
+          accept="*/*"
+        />
+      )}
 
       {error && (
         <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Send, Trash2, X, MoreVertical } from 'lucide-react';
+import { Brain, Send, Trash2, X, MoreVertical, Paperclip } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useChatHistory, type ChatMessage } from '@/hooks/useChatHistory';
 import { useTradingContext } from '@/hooks/useTradingContext';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { sendMessage, type FileData } from '@/services/openRouterService';
 import { ChatMessage as ChatMessageComponent } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
@@ -43,6 +44,11 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
   const { history, addMessage, updateMessage, clearHistory } = useChatHistory();
   const context = useTradingContext();
+
+  useSwipeBack({
+    onSwipeBack: () => onOpenChange(false),
+    enabled: open
+  });
 
   // Автопрокрутка к последнему сообщению
   const scrollToBottom = useCallback(() => {
@@ -197,46 +203,43 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
       >
         {/* Заголовок */}
         <DialogHeader className="px-3 sm:px-4 md:px-6 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-2 border-b border-border/30 relative flex-shrink-0">
-          <div className="flex flex-col w-full gap-2">
-            {/* Первый ряд: Название (в центре между кнопками Телеграма) */}
-            <div className="flex items-center justify-center min-h-[32px]">
+          <div className="flex flex-col w-full relative">
+            {/* Название и Подзаголовок (в центре) */}
+            <div className="flex flex-col items-center justify-center min-h-[56px] sm:min-h-[64px] text-center">
               <DialogTitle className="text-sm sm:text-base md:text-lg font-display neon-text-subtle">
                 AI Помощник
               </DialogTitle>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                Эксперт по форекс рынку
+              </p>
             </div>
 
-            {/* Второй ряд: Подзаголовок и Кастомные кнопки (смещены ниже) */}
-            <div className="flex items-center justify-between mt-1 px-1">
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Эксперт по бинарным опционам
-              </p>
-
-              <div className="flex items-center gap-1 bg-white/5 rounded-full px-1 border border-white/10">
-                {/* Иконка Brain */}
-                <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity">
-                  <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-                </div>
-                {/* Меню с тремя точками */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="text-muted-foreground hover:text-foreground h-7 w-7 sm:h-8 sm:h-8 opacity-70 hover:opacity-100 transition-opacity bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none p-0 cursor-pointer flex items-center justify-center"
-                      type="button"
-                    >
-                      <MoreVertical className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="glass-card neon-border">
-                    <DropdownMenuItem
-                      onClick={handleClearHistory}
-                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Очистить историю
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+            {/* Кнопки управления (внизу справа в заголовке) */}
+            <div className="absolute bottom-0 right-0 flex items-center gap-1 bg-white/5 rounded-full px-1 border border-white/10 z-10 mb-1">
+              {/* Иконка Brain */}
+              <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity">
+                <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
               </div>
+              {/* Меню с тремя точками */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="text-muted-foreground hover:text-foreground h-7 w-7 sm:h-8 sm:h-8 opacity-70 hover:opacity-100 transition-opacity bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none p-0 cursor-pointer flex items-center justify-center"
+                    type="button"
+                  >
+                    <MoreVertical className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="glass-card neon-border">
+                  <DropdownMenuItem
+                    onClick={handleClearHistory}
+                    className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Очистить историю
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </DialogHeader>
@@ -280,18 +283,31 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
         </ScrollArea>
 
         {/* Поле ввода */}
-        <div className="px-2 sm:px-3 md:px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:pb-4 pt-2 border-t border-border/30 bg-background/50 backdrop-blur-sm">
-          {/* Загрузка файлов */}
-          <div className="mb-2">
+        <div className="px-2 sm:px-3 md:px-4 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] sm:pb-3 pt-1.5 border-t border-border/30 bg-background/50 backdrop-blur-sm">
+          {/* Миниатюры загруженных файлов (если есть) */}
+          <div className="mb-1.5">
             <FileUpload
               files={files}
               onFilesChange={setFiles}
+              hideDropzone={true}
             />
           </div>
 
-          <div className="flex gap-2 items-end">
+          <div className="flex gap-1.5 items-center">
+            {/* Скрепка для прикрепления файла */}
+            <button
+              onClick={() => {
+                const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                fileInput?.click();
+              }}
+              className="h-[34px] sm:h-[38px] w-[34px] sm:w-[38px] rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-white/5 transition-colors border border-white/10 flex-shrink-0"
+              title="Прикрепить файл"
+            >
+              <Paperclip className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+
             <div className="flex-1 relative group">
-              <div className="absolute -inset-0.5 bg-primary/10 blur opacity-0 group-focus-within:opacity-100 transition duration-500 rounded-xl" />
+              <div className="absolute -inset-0.5 bg-primary/10 blur opacity-0 group-focus-within:opacity-100 transition duration-500 rounded-lg" />
               <Textarea
                 ref={textareaRef}
                 value={input}
@@ -299,7 +315,8 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                 onKeyDown={handleKeyDown}
                 onClick={(e) => e.stopPropagation()}
                 placeholder="Напишите ваш вопрос..."
-                className="relative min-h-[44px] sm:min-h-[50px] max-h-[120px] sm:max-h-[150px] resize-none glass-card border-border/40 focus:border-primary/50 text-sm sm:text-base rounded-xl py-2.5 px-4 shadow-inner"
+                className="relative min-h-[34px] sm:min-h-[38px] max-h-[120px] sm:max-h-[150px] resize-none glass-card border-border/40 focus:border-primary/50 text-xs sm:text-sm rounded-lg py-1.5 px-3 shadow-inner flex items-center"
+                style={{ lineHeight: '1.2' }}
                 disabled={isLoading}
                 tabIndex={0}
               />
@@ -307,18 +324,15 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
             <Button
               onClick={handleSend}
               disabled={(!input.trim() && files.length === 0) || isLoading}
-              className="h-[44px] sm:h-[50px] w-[44px] sm:w-[50px] rounded-xl flex-shrink-0 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 shadow-lg transition-all active:scale-95"
+              className="h-[34px] sm:h-[38px] w-[34px] sm:w-[38px] rounded-lg flex-shrink-0 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 shadow-lg transition-all active:scale-95"
               size="icon"
             >
-              <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Button>
           </div>
-          <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1.5 text-center opacity-70">
-            Enter - отправить, Shift+Enter - новая строка
-          </p>
         </div>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }
 

@@ -28,7 +28,7 @@ const mainButtonVariants = {
   hover: { scale: 1.08, y: -4 }
 };
 
-export function BottomNav({ 
+export function BottomNav({
   onHomeClick,
   platformUrl = "https://u3.shortink.io/register?utm_campaign=827841&utm_source=affiliate&utm_medium=sr&a=CQQJpdvm2ya9dU&ac=min&code=WELCOME50",
   supportUrl = "https://t.me/kaktotakxm",
@@ -81,27 +81,28 @@ export function BottomNav({
   ];
 
   return (
-    <nav 
+    <nav
       className="fixed bottom-0 left-0 right-0 z-50"
     >
       {/* Gradient fade effect */}
       <div className="absolute inset-x-0 -top-4 h-4 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
-      
+
       {/* Main nav container */}
       <div className="relative bg-background/60 backdrop-blur-2xl border-t border-border/30">
         {/* Glow effect */}
         <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
-        
-        <div className="max-w-lg mx-auto px-2 py-1.5 safe-area-pb">
-          <div className="flex items-end justify-around">
+
+        <div className="max-w-screen-xl mx-auto px-2 py-0.5 sm:py-1 safe-area-pb">
+          {/* Tighter grouping with smaller gaps */}
+          <div className="flex items-center justify-center gap-1 sm:gap-4 md:gap-10">
             {navItems.map((item, index) => (
               <motion.button
                 key={index}
                 onClick={item.onClick}
                 className={cn(
-                  "relative flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl touch-feedback min-h-[44px] min-w-[44px]",
+                  "relative flex flex-col items-center gap-0.5 px-0.5 py-0.5 rounded-xl touch-feedback min-w-[54px] sm:min-w-[68px]",
                   "focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/50",
-                  item.isMain ? "px-3" : ""
+                  item.isMain ? "min-w-[65px]" : ""
                 )}
                 variants={item.isMain ? mainButtonVariants : navItemVariants}
                 initial="initial"
@@ -111,44 +112,44 @@ export function BottomNav({
               >
                 {item.isMain ? (
                   <>
-                    {/* Main button with enhanced glow */}
-                    <motion.div 
-                      className="relative -mt-4 mb-0.5"
+                    {/* Main button protruding significantly (half of its height) */}
+                    <motion.div
+                      className="relative -mt-10 mb-0"
                       layoutId="main-nav-button"
                     >
                       {/* Outer glow ring */}
-                      <motion.div 
-                        className="absolute inset-0 rounded-full bg-primary/30 blur-lg"
-                        animate={{ 
-                          scale: [1, 1.2, 1],
-                          opacity: [0.5, 0.8, 0.5] 
+                      <motion.div
+                        className="absolute inset-0 rounded-full bg-primary/30 blur-xl"
+                        animate={{
+                          scale: [1, 1.3, 1],
+                          opacity: [0.4, 0.7, 0.4]
                         }}
-                        transition={{ 
-                          duration: 3, 
+                        transition={{
+                          duration: 3,
                           repeat: Infinity,
-                          ease: "easeInOut" 
+                          ease: "easeInOut"
                         }}
                       />
-                      
+
                       {/* Main button */}
-                      <motion.div 
+                      <motion.div
                         className={cn(
-                          "relative w-7 h-7 rounded-full flex items-center justify-center",
+                          "relative w-11 h-11 sm:w-13 sm:h-13 rounded-full flex items-center justify-center",
                           "bg-gradient-to-br from-primary via-primary to-secondary",
-                          "shadow-[0_0_15px_-3px_hsl(142,76%,52%,0.6)]"
+                          "shadow-[0_0_15px_-3px_hsl(142,76%,52%,0.4)]"
                         )}
                         variants={iconVariants}
                       >
                         {/* Inner shine */}
                         <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent via-white/10 to-white/20" />
-                        
-                        <item.icon className="w-3.5 h-3.5 text-primary-foreground relative z-10" strokeWidth={2.5} />
+
+                        <item.icon className="w-5.5 h-5.5 sm:w-6.5 sm:h-6.5 text-primary-foreground relative z-10" strokeWidth={2.5} />
                       </motion.div>
                     </motion.div>
-                    
-                    <motion.span 
-                      className="text-[9px] font-semibold text-primary tracking-wide"
-                      initial={{ opacity: 0.8 }}
+
+                    <motion.span
+                      className="text-[10px] sm:text-[11px] font-bold text-primary tracking-tight whitespace-nowrap"
+                      initial={{ opacity: 0.9 }}
                       whileHover={{ opacity: 1 }}
                     >
                       {item.label}
@@ -156,32 +157,32 @@ export function BottomNav({
                   </>
                 ) : (
                   <>
-                    <motion.div 
+                    <motion.div
                       className={cn(
-                        "w-5 h-5 rounded-lg flex items-center justify-center backdrop-blur-sm border",
+                        "w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center backdrop-blur-sm border transition-colors",
                         item.isActive
-                          ? "bg-primary/20 border-primary/30"
-                          : "bg-muted/30 border-border/30"
+                          ? "bg-primary/20 border-primary/40 shadow-[0_0_8px_-1px_hsl(142,76%,52%,0.2)]"
+                          : "bg-muted/40 border-border/40"
                       )}
                       variants={iconVariants}
                       transition={{ type: "spring", stiffness: 400, damping: 20 }}
                     >
-                      <item.icon 
+                      <item.icon
                         className={cn(
-                          "w-2.5 h-2.5",
+                          "w-4.5 h-4.5 sm:w-5.5 sm:h-5.5",
                           item.isActive ? "text-primary" : "text-muted-foreground"
-                        )} 
-                        strokeWidth={2} 
+                        )}
+                        strokeWidth={2.5}
                       />
                     </motion.div>
-                    
-                    <motion.span 
+
+                    <motion.span
                       className={cn(
-                        "text-[8px] font-medium tracking-wide",
+                        "text-[9px] sm:text-[10.5px] font-semibold tracking-tight whitespace-nowrap",
                         item.isActive ? "text-primary" : "text-muted-foreground"
                       )}
-                      initial={{ opacity: 0.7 }}
-                      whileHover={{ opacity: 1, color: item.isActive ? undefined : "hsl(142, 76%, 52%)" }}
+                      initial={{ opacity: 0.8 }}
+                      whileHover={{ opacity: 1, color: "hsl(142, 76%, 52%)" }}
                     >
                       {item.label}
                     </motion.span>
