@@ -51,17 +51,20 @@ export function BottomNav({
 
   const navItems = [
     {
+      id: "nav-channel",
       icon: MessageCircle,
       label: "Канал",
       onClick: () => window.open(channelUrl, '_blank'),
     },
     {
+      id: "nav-strategies",
       icon: Target,
       label: "Стратегии",
       onClick: handleStrategiesClick,
       isActive: location.pathname === '/strategies',
     },
     {
+      id: "nav-home",
       icon: Home,
       label: "Домой",
       onClick: handleHomeClick,
@@ -69,11 +72,13 @@ export function BottomNav({
       isActive: location.pathname === '/home',
     },
     {
+      id: "nav-trade",
       icon: ExternalLink,
       label: "Торгуем здесь",
       onClick: () => window.open(platformUrl, '_blank'),
     },
     {
+      id: "nav-support",
       icon: HeadphonesIcon,
       label: "Поддержка",
       onClick: () => window.open(supportUrl, '_blank'),
@@ -98,6 +103,7 @@ export function BottomNav({
             {navItems.map((item, index) => (
               <motion.button
                 key={index}
+                id={item.id}
                 onClick={item.onClick}
                 className={cn(
                   "relative flex flex-col items-center gap-0.5 px-1 py-0.5 rounded-xl touch-feedback min-w-[60px] sm:min-w-[80px]",

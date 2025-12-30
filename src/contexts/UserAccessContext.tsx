@@ -24,7 +24,7 @@ const UserAccessContext = createContext<UserAccessContextType | undefined>(undef
 
 // Константы
 const AI_MESSAGE_LIMIT = 3;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 минут
+const CACHE_DURATION = 0; // Отключаем кэш для моментального обновления статусов
 
 // Вспомогательные функции для localStorage
 const getStorageKey = (userId: string, key: string) => `user_access_${userId}_${key}`;

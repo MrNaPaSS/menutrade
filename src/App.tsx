@@ -22,6 +22,7 @@ import Level4 from "./pages/Level4";
 import UserProfile from "./pages/UserProfile";
 import { AIAgentButton } from "./components/AIAgentButton";
 import { AppInitializer } from "./components/AppInitializer";
+import { OnboardingTutorial } from "./components/OnboardingTutorial";
 import { TelegramProvider } from "./contexts/TelegramContext";
 import { UserAccessProvider } from "./contexts/UserAccessContext";
 import { TelegramDebug } from "./components/TelegramDebug";
@@ -59,6 +60,7 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AIAgentButton />
+      <OnboardingTutorial />
     </BrowserRouter>
   );
 };

@@ -125,6 +125,7 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
+                id="header-menu-button"
                 variant="ghost"
                 size="icon"
                 className="h-10 w-10 rounded-lg hover:bg-primary/10 border border-border/30"

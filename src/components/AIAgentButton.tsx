@@ -38,6 +38,7 @@ export function AIAgentButton() {
   return (
     <>
       <motion.button
+        id="ai-agent-trigger"
         onClick={handleOpen}
         style={{
           position: 'fixed',
@@ -56,8 +57,8 @@ export function AIAgentButton() {
           "touch-manipulation"
         )}
         initial={{ scale: 0, opacity: 0 }}
-        animate={{ 
-          scale: isOpen ? 0 : 1, 
+        animate={{
+          scale: isOpen ? 0 : 1,
           opacity: isOpen ? 0 : 1,
           pointerEvents: isOpen ? 'none' : 'auto'
         }}

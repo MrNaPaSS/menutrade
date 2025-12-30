@@ -5107,6 +5107,7 @@ class DataRequestHandler(http.server.BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*') # Разрешаем запросы с любых доменов
+                self.send_header('Access-Control-Allow-Headers', 'ngrok-skip-browser-warning, Content-Type') # Разрешаем наши заголовки
                 self.end_headers()
                 self.wfile.write(data.encode('utf-8'))
                 return
@@ -5118,6 +5119,14 @@ class DataRequestHandler(http.server.BaseHTTPRequestHandler):
         
         # Если путь не найден
         self.send_response(404)
+        self.end_headers()
+
+    def do_OPTIONS(self):
+        """Обработка OPTIONS запросов (CORS)"""
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'ngrok-skip-browser-warning, Content-Type')
         self.end_headers()
 
 def run_api_server(port=8081):
