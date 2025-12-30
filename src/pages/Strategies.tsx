@@ -3,6 +3,7 @@ import { motion, useScroll, useMotionValueEvent, Variants } from 'framer-motion'
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
+import { ModuleCard } from '@/components/ModuleCard';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { strategyModules } from '@/data/strategies';
 import { Module } from '@/types/lesson';
@@ -677,55 +678,17 @@ const Strategies = () => {
               initial="hidden"
               animate="visible"
             >
-              {strategyModules.map((module) => (
-                <motion.button
+              {strategyModules.map((module, index) => (
+                <ModuleCard
                   key={module.id}
-                  variants={moduleItemVariants}
+                  module={module}
+                  index={index}
                   onClick={() => handleModuleClick(module)}
-                  className={cn(
-                    "group relative w-full glass-card rounded-2xl p-5 md:p-6 text-left transition-all duration-300",
-                    "neon-border hover:bg-primary/5 active:scale-[0.98] touch-manipulation",
-                    "flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 lg:gap-8"
-                  )}
-                >
-                  {/* Icon Container with Glow */}
-                  <div className="relative flex-shrink-0">
-                    <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/30 transition-colors rounded-full" />
-                    <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-background/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-3xl sm:text-4xl shadow-xl">
-                      {module.icon}
-                    </div>
-                  </div>
-
-                  {/* Text Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <h3 className="font-display font-bold text-lg sm:text-xl group-hover:text-primary transition-colors line-clamp-1">
-                        {module.title}
-                      </h3>
-                      <div className="hidden sm:block px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary uppercase tracking-wider">
-                        Strategy
-                      </div>
-                    </div>
-                    <p className="text-sm sm:text-base text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
-                      {module.description}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground/80">
-                      <span className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                        {module.lessons.length} {module.lessons.length === 1 ? 'материал' : 'материалов'}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                        Доступно сейчас
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Arrow Indicator */}
-                  <div className="hidden sm:flex w-10 h-10 rounded-full items-center justify-center bg-white/5 border border-white/10 group-hover:bg-primary/10 group-hover:border-primary/30 transition-all">
-                    <ArrowLeft className="w-5 h-5 text-muted-foreground group-hover:text-primary rotate-180 transition-colors" />
-                  </div>
-                </motion.button>
+                  badge="Strategy"
+                  showProgress={false}
+                  showArrow={true}
+                  variants={moduleItemVariants}
+                />
               ))}
             </motion.div>
           </div>

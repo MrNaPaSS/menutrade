@@ -8,6 +8,7 @@ import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Gift, ExternalLink, HelpCircle, TrendingUp, Code, Users, Crown, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { levels, platformLinks } from '@/data/traderMenu';
+import { cn } from '@/lib/utils';
 
 const TraderMenu = () => {
   const navigate = useNavigate();
@@ -30,12 +31,71 @@ const TraderMenu = () => {
     Crown // Level 4
   ];
 
-  const levelColors = [
-    'from-blue-500/20 to-blue-600/20 border-blue-500/30 text-blue-400', // Level 1
-    'from-primary/20 to-primary/30 border-primary/30 text-primary', // Level 2
-    'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400', // Level 3
-    'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30 text-yellow-400' // Level 4
-  ];
+  // Helper component for standard premium action cards
+  const ActionCard = ({
+    title,
+    description,
+    icon: Icon,
+    onClick,
+    colorClass = "primary",
+    buttonText,
+    index = 0
+  }: any) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ delay: index * 0.1, type: "spring", stiffness: 300, damping: 25 }}
+      className="mb-4 sm:mb-6"
+    >
+      <div
+        className="group relative glass-card rounded-2xl p-5 sm:p-6 neon-border cursor-pointer transition-all duration-300 hover:bg-white/5 active:scale-[0.98]"
+        onClick={onClick}
+      >
+        <div className="flex items-start gap-4 sm:gap-6">
+          <div className="relative">
+            <div className={cn(
+              "absolute inset-0 blur-xl opacity-20 group-hover:opacity-40 transition-opacity rounded-full",
+              colorClass === "primary" ? "bg-primary" : "bg-secondary"
+            )} />
+            <motion.div
+              className={cn(
+                "relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center border transition-all duration-300 backdrop-blur-md",
+                colorClass === "primary"
+                  ? "bg-primary/15 border-primary/30 group-hover:border-primary/50"
+                  : "bg-secondary/15 border-secondary/30 group-hover:border-secondary/50"
+              )}
+              whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
+            >
+              <Icon className={cn("w-7 h-7 sm:w-8 sm:h-8", colorClass === "primary" ? "text-primary" : "text-secondary")} />
+            </motion.div>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display text-lg sm:text-xl font-bold tracking-wide mb-1 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4 line-clamp-1">
+              {description}
+            </p>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-between group/btn border-white/10 hover:border-primary/50 hover:bg-primary/10 transition-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
+            >
+              <span className="font-semibold">{buttonText}</span>
+              <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
 
   return (
     <div className="min-h-[100dvh] scanline pb-16">
@@ -67,93 +127,29 @@ const TraderMenu = () => {
         <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
           <div className="max-w-lg w-full mx-auto">
 
-            {/* Промокоды - верхняя кнопка */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.1 }}
-              transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
-              className="mb-6"
-            >
-              <div
-                className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
-                onClick={() => navigate('/promo-codes')}
-              >
-                <div className="flex items-start gap-4">
-                  <motion.div
-                    className="relative w-16 h-16 rounded-2xl flex items-center justify-center border bg-gradient-to-br from-primary/15 to-primary/25 border-primary/20 shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)]"
-                    whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Gift className="w-8 h-8 text-primary" />
-                  </motion.div>
-
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-display text-lg font-bold tracking-wide mb-1">
-                      Промокоды
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Получите бонусы на депозит
-                    </p>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-between group"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/promo-codes');
-                      }}
-                    >
-                      <span>Открыть промокоды</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            {/* Промокоды */}
+            <ActionCard
+              title="Промокоды"
+              description="Получите бонусы на депозит"
+              icon={Gift}
+              buttonText="Открыть промокоды"
+              onClick={() => navigate('/promo-codes')}
+              index={0}
+            />
 
             {/* Сетка уровней доступа 2x2 */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
               {levels.map((level, index) => {
                 const Icon = levelIcons[index];
-                const getColorClasses = (index: number) => {
-                  switch (index) {
-                    case 0:
-                      return {
-                        bg: 'bg-gradient-to-br from-blue-500/15 to-blue-600/25 border-blue-500/20',
-                        icon: 'text-blue-400'
-                      };
-                    case 1:
-                      return {
-                        bg: 'bg-gradient-to-br from-primary/15 to-primary/25 border-primary/20',
-                        icon: 'text-primary'
-                      };
-                    case 2:
-                      return {
-                        bg: 'bg-gradient-to-br from-purple-500/15 to-purple-600/25 border-purple-500/20',
-                        icon: 'text-purple-400'
-                      };
-                    case 3:
-                      return {
-                        bg: 'bg-gradient-to-br from-yellow-500/15 to-yellow-600/25 border-yellow-500/20',
-                        icon: 'text-yellow-400'
-                      };
-                    default:
-                      return {
-                        bg: 'bg-gradient-to-br from-primary/15 to-primary/25 border-primary/20',
-                        icon: 'text-primary'
-                      };
-                  }
-                };
-                const colorClasses = getColorClasses(index);
+                const colorClasses = index === 0 ? "text-blue-400 border-blue-500/30" :
+                  index === 1 ? "text-primary border-primary/30" :
+                    index === 2 ? "text-purple-400 border-purple-500/30" :
+                      "text-yellow-400 border-yellow-500/30";
 
-                // Для всех уровней переходим на страницу уровня
-                const handleLevelClick = (e: React.MouseEvent) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate(`/level/${level.id}`);
-                };
+                const bgClasses = index === 0 ? "bg-blue-500/10" :
+                  index === 1 ? "bg-primary/10" :
+                    index === 2 ? "bg-purple-500/10" :
+                      "bg-yellow-500/10";
 
                 return (
                   <motion.div
@@ -164,29 +160,23 @@ const TraderMenu = () => {
                     transition={{ delay: 0.2 + index * 0.1, type: "spring", stiffness: 300, damping: 25 }}
                   >
                     <div
-                      className="glass-card rounded-xl p-4 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
-                      onClick={handleLevelClick}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          navigate(`/level/${level.id}`);
-                        }
-                      }}
+                      className="group glass-card rounded-2xl p-4 sm:p-5 neon-border cursor-pointer transition-all duration-300 hover:bg-white/5 active:scale-[0.95] flex flex-col items-center text-center h-full"
+                      onClick={() => navigate(`/level/${level.id}`)}
                     >
-                      <div className="flex flex-col items-center text-center">
+                      <div className="relative mb-3">
+                        <div className={cn("absolute inset-0 blur-lg opacity-20 rounded-full", bgClasses)} />
                         <motion.div
-                          className={`relative w-12 h-12 rounded-xl flex items-center justify-center border ${colorClasses.bg} shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)] mb-3`}
+                          className={cn("relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center border transition-all duration-300", bgClasses, colorClasses)}
                           whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
-                          transition={{ duration: 0.3 }}
                         >
-                          <Icon className={`w-6 h-6 ${colorClasses.icon}`} />
+                          <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
                         </motion.div>
-                        <h3 className="font-display font-bold text-base mb-1">
-                          {level.name}
-                        </h3>
                       </div>
+                      <h3 className="font-display font-bold text-sm sm:text-base group-hover:text-primary transition-colors">
+                        {level.name}
+                      </h3>
+                      {index === 0 && <span className="text-[10px] font-bold text-blue-400/80 mt-1 uppercase">Free Access</span>}
+                      {index === 3 && <span className="text-[10px] font-bold text-yellow-500/80 mt-1 uppercase">VIP Status</span>}
                     </div>
                   </motion.div>
                 );
@@ -194,145 +184,38 @@ const TraderMenu = () => {
             </div>
 
             {/* Дополнительные кнопки */}
-            <div className="space-y-4 mb-6">
-              {/* PocketOptions */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 300, damping: 25 }}
-              >
-                <div
-                  className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
-                  onClick={() => window.open(platformLinks.pocketOptions, '_blank')}
-                >
-                  <div className="flex items-start gap-4">
-                    <motion.div
-                      className="relative w-16 h-16 rounded-2xl flex items-center justify-center border bg-gradient-to-br from-primary/15 to-primary/25 border-primary/20 shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)]"
-                      whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ExternalLink className="w-8 h-8 text-primary" />
-                    </motion.div>
+            <div className="space-y-4">
+              <ActionCard
+                title="PocketOptions"
+                description="Торгуем Здесь"
+                icon={ExternalLink}
+                buttonText="Открыть платформу"
+                onClick={() => window.open(platformLinks.pocketOptions, '_blank')}
+                index={3}
+              />
 
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display text-lg font-bold tracking-wide mb-1">
-                        PocketOptions
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Торгуем Здесь
-                      </p>
+              <ActionCard
+                title="BlackMirror ULTRA"
+                description="TradingView Индикатор"
+                icon={Code}
+                buttonText="Открыть индикатор"
+                onClick={() => window.open(platformLinks.blackMirrorUltra, '_blank')}
+                index={4}
+              />
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-between group"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(platformLinks.pocketOptions, '_blank');
-                        }}
-                      >
-                        <span>Открыть платформу</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* BlackMirror ULTRA */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ delay: 0.4, type: "spring", stiffness: 300, damping: 25 }}
-              >
-                <div
-                  className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
-                  onClick={() => window.open(platformLinks.blackMirrorUltra, '_blank')}
-                >
-                  <div className="flex items-start gap-4">
-                    <motion.div
-                      className="relative w-16 h-16 rounded-2xl flex items-center justify-center border bg-gradient-to-br from-primary/15 to-primary/25 border-primary/20 shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)]"
-                      whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Code className="w-8 h-8 text-primary" />
-                    </motion.div>
-
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display text-lg font-bold tracking-wide mb-1">
-                        BlackMirror ULTRA
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        TradingView
-                      </p>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-between group"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(platformLinks.blackMirrorUltra, '_blank');
-                        }}
-                      >
-                        <span>Открыть индикатор</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* FAQ */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 25 }}
-              >
-                <div
-                  className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
-                  onClick={() => navigate('/faq')}
-                >
-                  <div className="flex items-start gap-4">
-                    <motion.div
-                      className="relative w-16 h-16 rounded-2xl flex items-center justify-center border bg-gradient-to-br from-secondary/15 to-secondary/25 border-secondary/20 shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)]"
-                      whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <HelpCircle className="w-8 h-8 text-secondary" />
-                    </motion.div>
-
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display text-lg font-bold tracking-wide mb-1">
-                        FAQ
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Вопросы/Ответы
-                      </p>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-between group"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate('/faq');
-                        }}
-                      >
-                        <span>Открыть FAQ</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+              <ActionCard
+                title="FAQ"
+                description="Вопросы и ответы"
+                icon={HelpCircle}
+                buttonText="Открыть FAQ"
+                onClick={() => navigate('/faq')}
+                colorClass="secondary"
+                index={5}
+              />
             </div>
 
-            <div className="mt-8 text-center">
-              <p className="text-xs text-muted-foreground font-mono">
+            <div className="mt-12 text-center">
+              <p className="text-[10px] text-muted-foreground font-mono bg-white/5 py-2 rounded-full border border-white/5 inline-block px-4">
                 🐸 Built with 💚 for Академия здравого трейдера
               </p>
             </div>

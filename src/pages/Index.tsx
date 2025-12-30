@@ -23,12 +23,12 @@ const Index = () => {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { scrollY } = useScroll();
-  
-  const { 
-    modules, 
+
+  const {
+    modules,
     completeLesson,
     completeModule,
-    getProgress, 
+    getProgress,
     resetProgress,
     isMasterTestCompleted,
     completeMasterTest,
@@ -94,12 +94,12 @@ const Index = () => {
 
   // Хуки для свайпа назад - должны быть на верхнем уровне
   // Всегда вызываем хуки в одном порядке, но управляем через enabled
-  const swipeBackFromContent = useSwipeBack({ 
+  const swipeBackFromContent = useSwipeBack({
     onSwipeBack: handleBackToLessons,
     enabled: view === 'content' && selectedLesson !== null && selectedModule !== null
   });
 
-  const swipeBackFromLessons = useSwipeBack({ 
+  const swipeBackFromLessons = useSwipeBack({
     onSwipeBack: handleBackToModules,
     enabled: (view === 'lessons' || view === 'module-test') && selectedModule !== null
   });
@@ -111,12 +111,12 @@ const Index = () => {
       left: 0,
       behavior: 'instant' as ScrollBehavior
     });
-    
+
     const root = document.getElementById('root');
     if (root) {
       root.scrollTop = 0;
     }
-    
+
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
   }, [view]);
@@ -124,16 +124,16 @@ const Index = () => {
   // Логика скрытия заголовка при прокрутке
   useMotionValueEvent(scrollY, "change", (latest) => {
     const currentScrollY = latest;
-    
+
     // Показываем при прокрутке вверх или если прокрутка меньше 50px
     if (currentScrollY < lastScrollY || currentScrollY < 50) {
       setIsHeaderVisible(true);
-    } 
+    }
     // Скрываем при прокрутке вниз больше 50px
     else if (currentScrollY > lastScrollY && currentScrollY > 50) {
       setIsHeaderVisible(false);
     }
-    
+
     setLastScrollY(currentScrollY);
   });
   const allCompleted = isAllModulesCompleted();
@@ -163,7 +163,7 @@ const Index = () => {
     // Get fresh lesson data
     const currentModule = modules.find(m => m.id === selectedModule.id);
     const currentLesson = currentModule?.lessons.find(l => l.id === selectedLesson.id);
-    
+
     if (!currentLesson) return null;
 
     return (
@@ -194,13 +194,13 @@ const Index = () => {
         <MatrixRain />
         <div className="relative z-10">
           {/* Sticky header с кнопкой назад */}
-          <motion.div 
+          <motion.div
             className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
             animate={{
               y: isHeaderVisible ? 0 : -100,
               opacity: isHeaderVisible ? 1 : 0,
             }}
-            transition={{ 
+            transition={{
               duration: 0.5,
               ease: [0.4, 0, 0.2, 1]
             }}
@@ -240,8 +240,8 @@ const Index = () => {
               </p>
 
               <div className="glass-card rounded-xl p-6 neon-border">
-                <Quiz 
-                  questions={moduleQuestions} 
+                <Quiz
+                  questions={moduleQuestions}
                   onComplete={handleModuleTestComplete}
                   passingThreshold={70}
                 />
@@ -268,13 +268,13 @@ const Index = () => {
         <MatrixRain />
         <div className="relative z-10">
           {/* Sticky header с кнопкой назад */}
-          <motion.div 
+          <motion.div
             className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
             animate={{
               y: isHeaderVisible ? 0 : -100,
               opacity: isHeaderVisible ? 1 : 0,
             }}
-            transition={{ 
+            transition={{
               duration: 0.5,
               ease: [0.4, 0, 0.2, 1]
             }}
@@ -318,11 +318,10 @@ const Index = () => {
                 <button
                   onClick={handleModuleTestClick}
                   disabled={!allLessonsCompleted || currentModule.isCompleted}
-                  className={`w-full glass-card rounded-xl p-4 neon-border transition-all duration-300 flex items-center justify-center gap-3 font-display font-semibold text-lg ${
-                    allLessonsCompleted && !currentModule.isCompleted
+                  className={`w-full glass-card rounded-xl p-4 neon-border transition-all duration-300 flex items-center justify-center gap-3 font-display font-semibold text-lg ${allLessonsCompleted && !currentModule.isCompleted
                       ? 'hover:bg-primary/10 cursor-pointer'
                       : 'opacity-50 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   <Brain className={`w-6 h-6 ${allLessonsCompleted && !currentModule.isCompleted ? 'text-primary' : 'text-muted-foreground'}`} />
                   <span>{currentModule.isCompleted ? 'Модуль пройден!' : allLessonsCompleted ? 'Пройти тест по модулю' : 'Пройти тест по модулю (пройдите все уроки)'}</span>
@@ -341,19 +340,19 @@ const Index = () => {
     <div className="min-h-screen scanline pb-16">
       <MatrixRain />
       <div className="relative z-10">
-          <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
+        <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
           <div className="max-w-lg w-full mx-auto">
-            <motion.div 
+            <motion.div
               className="relative flex items-center justify-center mb-4 sm:mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
               initial={{ y: 0, opacity: 1 }}
-              animate={{ 
-                y: isHeaderVisible ? 0 : -100, 
-                opacity: isHeaderVisible ? 1 : 0 
+              animate={{
+                y: isHeaderVisible ? 0 : -100,
+                opacity: isHeaderVisible ? 1 : 0
               }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 300, 
-                damping: 30 
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30
               }}
             >
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
@@ -385,6 +384,8 @@ const Index = () => {
                   module={module}
                   onClick={() => handleModuleClick(module)}
                   index={index}
+                  badge="Module"
+                  showArrow={true}
                 />
               ))}
             </div>
@@ -396,7 +397,7 @@ const Index = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-8"
               >
-                <div 
+                <div
                   className={`
                     glass-card rounded-xl p-6 neon-border cursor-pointer
                     transition-all duration-300 hover:scale-[1.02]
@@ -405,11 +406,11 @@ const Index = () => {
                   onClick={handleMasterTestClick}
                 >
                   <div className="flex items-center gap-4">
-                    <motion.div 
+                    <motion.div
                       className={`
                         w-16 h-16 rounded-xl flex items-center justify-center text-3xl
-                        ${masterTestCompleted 
-                          ? 'bg-accent/20 border border-accent/30' 
+                        ${masterTestCompleted
+                          ? 'bg-accent/20 border border-accent/30'
                           : 'bg-gradient-to-br from-accent/30 to-primary/30 border border-primary/30'
                         }
                       `}
@@ -437,8 +438,8 @@ const Index = () => {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
-                        {masterTestCompleted 
-                          ? 'Вы успешно прошли тест "Здоровый трейдер"!' 
+                        {masterTestCompleted
+                          ? 'Вы успешно прошли тест "Здоровый трейдер"!'
                           : 'Тест на "Здоровый трейдер" - финальная проверка знаний'
                         }
                       </p>

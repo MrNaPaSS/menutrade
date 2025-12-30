@@ -61,79 +61,82 @@ const Level1 = () => {
               viewport={{ once: true, amount: 0.1 }}
               className="mb-4 sm:mb-6"
             >
-              <div className="glass-card rounded-xl p-3 sm:p-4 md:p-6 neon-border mb-4 sm:mb-6">
-                <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-blue-400" />
+              <div className="group relative glass-card rounded-2xl p-5 sm:p-6 neon-border mb-6 transition-all duration-300 hover:bg-white/5">
+                <div className="flex items-center gap-4 sm:gap-6 mb-4">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-blue-500/20 blur-xl group-hover:bg-blue-500/30 transition-colors rounded-full" />
+                    <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
+                      <TrendingUp className="w-7 h-7 sm:w-8 sm:h-8 text-blue-400" />
+                    </div>
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h2 className="font-display font-bold text-2xl">{level.title}</h2>
-                      <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <h2 className="font-display font-bold text-2xl sm:text-3xl tracking-tight">{level.title}</h2>
+                      <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 font-bold px-2 py-0">
                         FREE
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">{level.description}</p>
+                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{level.description}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
-                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs sm:text-sm">📋</span>
+              <div className="glass-card rounded-2xl p-5 sm:p-6 neon-border mb-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm">📋</span>
                   </div>
-                  <h3 className="font-display font-bold text-base sm:text-lg">Что входит:</h3>
+                  <h3 className="font-display font-bold text-lg">Что входит:</h3>
                 </div>
-                <ul className="space-y-2 sm:space-y-3">
+                <ul className="space-y-3">
                   {level.features.map((feature, index) => (
                     <motion.li
                       key={index}
-                      initial={{ opacity: 0, x: -20 }}
+                      initial={{ opacity: 0, x: -10 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true, amount: 0.1 }}
                       transition={{ delay: index * 0.05 }}
-                      className="flex items-start gap-2 sm:gap-3"
+                      className="flex items-start gap-3 group"
                     >
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-400 mt-2 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm text-muted-foreground">{feature}</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(96,165,250,0.6)] group-hover:scale-125 transition-transform" />
+                      <span className="text-sm sm:text-base text-muted-foreground group-hover:text-foreground transition-colors">{feature}</span>
                     </motion.li>
                   ))}
                 </ul>
               </div>
 
               {level.forWhom && (
-                <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs sm:text-sm">🎯</span>
+                <div className="glass-card rounded-2xl p-5 sm:p-6 neon-border mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">🎯</span>
                     </div>
-                    <h3 className="font-display font-bold text-base sm:text-lg">Для кого:</h3>
+                    <h3 className="font-display font-bold text-lg">Для кого:</h3>
                   </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">{level.forWhom}</p>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{level.forWhom}</p>
                 </div>
               )}
 
               {level.advantages && (
-                <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border mb-4 sm:mb-6">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-muted/30 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs sm:text-sm">💡</span>
+                <div className="glass-card rounded-2xl p-5 sm:p-6 neon-border mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">💡</span>
                     </div>
-                    <h3 className="font-display font-bold text-base sm:text-lg">Преимущества:</h3>
+                    <h3 className="font-display font-bold text-lg">Преимущества:</h3>
                   </div>
-                  <ul className="space-y-2 sm:space-y-3">
+                  <ul className="space-y-3">
                     {level.advantages.map((advantage, index) => (
                       <motion.li
                         key={index}
-                        initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -10 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, amount: 0.1 }}
                         transition={{ delay: index * 0.05 }}
-                        className="flex items-start gap-2 sm:gap-3"
+                        className="flex items-start gap-3 group"
                       >
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-400 mt-2 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm text-muted-foreground">{advantage}</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(96,165,250,0.6)] group-hover:scale-125 transition-transform" />
+                        <span className="text-sm sm:text-base text-muted-foreground group-hover:text-foreground transition-colors">{advantage}</span>
                       </motion.li>
                     ))}
                   </ul>
