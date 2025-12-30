@@ -193,6 +193,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        hideClose
         className={cn(
           "max-w-full h-full md:max-w-3xl md:h-[80vh] p-0 gap-0",
           "bg-background/80 backdrop-blur-lg",
@@ -214,8 +215,8 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
               </p>
             </div>
 
-            {/* Кнопки управления (внизу справа в заголовке) */}
-            <div className="absolute bottom-0 right-0 flex items-center gap-1 bg-white/5 rounded-full px-1 border border-white/10 z-10 mb-1">
+            {/* Кнопки управления (смещены чуть ниже) */}
+            <div className="absolute -bottom-1.5 right-0 flex items-center gap-1 bg-white/5 rounded-full px-1 border border-white/10 z-10 transition-transform">
               {/* Иконка Brain */}
               <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity">
                 <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />

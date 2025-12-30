@@ -92,17 +92,17 @@ export function BottomNav({
         {/* Glow effect */}
         <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
 
-        <div className="max-w-screen-xl mx-auto px-2 py-0.5 sm:py-1 safe-area-pb">
-          {/* Tighter grouping with smaller gaps */}
-          <div className="flex items-center justify-center gap-1 sm:gap-4 md:gap-10">
+        <div className="max-w-2xl mx-auto px-1 py-1 sm:py-2 safe-area-pb">
+          {/* Expanded layout for all devices as requested */}
+          <div className="flex items-center justify-around">
             {navItems.map((item, index) => (
               <motion.button
                 key={index}
                 onClick={item.onClick}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 px-0.5 py-0.5 rounded-xl touch-feedback min-w-[54px] sm:min-w-[68px]",
+                  "relative flex flex-col items-center gap-0.5 px-1 py-0.5 rounded-xl touch-feedback min-w-[60px] sm:min-w-[80px]",
                   "focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/50",
-                  item.isMain ? "min-w-[65px]" : ""
+                  item.isMain ? "px-2" : ""
                 )}
                 variants={item.isMain ? mainButtonVariants : navItemVariants}
                 initial="initial"
