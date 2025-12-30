@@ -61,7 +61,11 @@ export function useAdminStats(userId: string | null, isAdmin: boolean): UseAdmin
             console.log(`🌐 Fetching admin stats from: ${startUrl}/users`);
 
             try {
-                const response = await fetch(`${startUrl}/users`);
+                const response = await fetch(`${startUrl}/users`, {
+                    headers: {
+                        "ngrok-skip-browser-warning": "true"
+                    }
+                });
                 if (response.ok) {
                     const textData = await response.text();
                     try {

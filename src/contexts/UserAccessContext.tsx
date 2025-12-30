@@ -118,7 +118,11 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
             let foundUser = null;
 
             try {
-                const response = await fetch(`${startUrl}/users`);
+                const response = await fetch(`${startUrl}/users`, {
+                    headers: {
+                        "ngrok-skip-browser-warning": "true"
+                    }
+                });
                 if (response.ok) {
                     const textData = await response.text();
                     const allUsers = JSON.parse(textData);
