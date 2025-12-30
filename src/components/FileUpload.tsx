@@ -24,11 +24,11 @@ interface FileUploadProps {
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 МБ
 const MAX_FILES = 5;
 
-export function FileUpload({ 
-  files, 
-  onFilesChange, 
+export function FileUpload({
+  files,
+  onFilesChange,
   maxSize = MAX_FILE_SIZE,
-  maxFiles = MAX_FILES 
+  maxFiles = MAX_FILES
 }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export function FileUpload({
     if (!fileList || fileList.length === 0) return;
 
     setError(null);
-    
+
     // Предварительная проверка лимита на фото для обычных пользователей
     if (!isAdminUser) {
       const imageFilesInList = Array.from(fileList).filter(f => f.type.startsWith('image/'));
@@ -81,14 +81,14 @@ export function FileUpload({
         const todayPhotoCount = getTodayPhotoCount();
         const totalImagesAfter = todayPhotoCount + imageFilesInList.length;
         const MAX_PHOTOS = 3;
-        
+
         if (totalImagesAfter > MAX_PHOTOS) {
           setError(`Достигнут дневной лимит загрузки фото (${MAX_PHOTOS} фото в день). Уже загружено: ${todayPhotoCount}. Попробуйте завтра.`);
           return;
         }
       }
     }
-    
+
     const newFiles: FileData[] = [];
     const errors: string[] = [];
 
@@ -171,10 +171,10 @@ export function FileUpload({
           error && "border-destructive"
         )}
       >
-        <div className="flex flex-col items-center gap-1.5 sm:gap-2">
-          <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
+        <div className="flex flex-col items-center gap-1">
+          <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
           <div className="text-center">
-            <p className="text-xs sm:text-sm text-foreground px-2">
+            <p className="text-[10px] sm:text-xs text-foreground px-2">
               Перетащите файлы сюда или{' '}
               <label className="text-primary cursor-pointer hover:underline">
                 выберите файл
@@ -187,10 +187,10 @@ export function FileUpload({
                 />
               </label>
             </p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 px-2">
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 px-2">
               Максимум {maxFiles} файлов, до {formatFileSize(maxSize)} каждый
               {!isAdminUser && (
-                <span className="block mt-0.5 sm:mt-1">
+                <span className="block mt-0.5">
                   Фото: {remainingPhotos > 0 ? `${remainingPhotos} из 3 осталось` : 'лимит исчерпан'}
                 </span>
               )}
