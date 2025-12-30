@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { ChartEngine, useLessonEngine, InteractionEngine } from "@/core";
+import { ChartEngine, useLessonEngine, InteractionEngine, validatePattern, type ChartOverlay } from "@/core";
 import { Levels, RSI, MACD } from "@/charts";
 import { type Lesson, getLessonById } from "@/data/course";
 import { getPatternById } from "@/data/patterns";
@@ -14,13 +14,40 @@ interface LessonPageProps {
 }
 
 export function LessonPage({ lessonId, candles, levels = [] }: LessonPageProps) {
-  const lesson = getLessonById(lessonId);
+  const lesson = useMemo(() => getLessonById(lessonId), [lessonId]);
+
+  // Создаем фейковый урок если настоящий не найден, чтобы хук useLessonEngine вызывался всегда
+  const safeLesson = useMemo(() => lesson || {
+    id: "empty",
+    title: "",
+    description: "",
+    type: "theory" as const,
+    duration: "0",
+    steps: []
+  }, [lesson]);
+
   const [interactionEngine] = useState(() => new InteractionEngine());
-  
+
+  const lessonEngine = useLessonEngine({
+    lesson: safeLesson,
+    candles,
+    levels,
+    onStepComplete: (stepId) => {
+      console.log("Шаг завершен:", stepId);
+    },
+    onLessonComplete: () => {
+      console.log("Урок завершен!");
+    },
+  });
+
   if (!lesson) {
-    return <div>Урок не найден</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl font-bold">Урок не найден</div>
+      </div>
+    );
   }
-  
+
   const {
     currentStep,
     isStepComplete,
@@ -31,22 +58,12 @@ export function LessonPage({ lessonId, candles, levels = [] }: LessonPageProps) 
     progress,
     canGoNext,
     canGoPrev,
-  } = useLessonEngine({
-    lesson,
-    candles,
-    levels,
-    onStepComplete: (stepId) => {
-      console.log("Шаг завершен:", stepId);
-    },
-    onLessonComplete: () => {
-      console.log("Урок завершен!");
-    },
-  });
-  
+  } = lessonEngine;
+
   // Формируем оверлеи для графика
   const overlays = useMemo(() => {
-    const result: any[] = [];
-    
+    const result: ChartOverlay[] = [];
+
     // Уровни поддержки/сопротивления
     if (levels.length > 0) {
       result.push({
@@ -66,13 +83,13 @@ export function LessonPage({ lessonId, candles, levels = [] }: LessonPageProps) 
         zIndex: 5,
       });
     }
-    
+
     // Индикаторы
     if (lesson.data?.indicatorId) {
       const indicatorConfig = getIndicatorById(lesson.data.indicatorId);
       if (indicatorConfig) {
         const indicatorData = indicatorConfig.calculate(candles);
-        
+
         if (indicatorConfig.type === "RSI") {
           result.push({
             type: "indicator" as const,
@@ -108,24 +125,24 @@ export function LessonPage({ lessonId, candles, levels = [] }: LessonPageProps) 
         }
       }
     }
-    
+
     return result;
   }, [lesson, candles, levels, interactionEngine, recordAction]);
-  
+
   // Обработчики взаимодействий
   const handleCandleClick = (candle: CandleData, index: number) => {
     interactionEngine.handleCandleClick(candle, index);
     recordAction("candle-click", { candle, index });
-    
+
     // Если текущий шаг требует действия с паттерном
     if (currentStep?.requireAction === "find-pattern" && currentStep.validation?.type === "pattern") {
       const patternId = currentStep.validation.patternId;
       if (patternId) {
         const pattern = getPatternById(patternId);
         if (pattern) {
-          const patternCandles = candles.slice(Math.max(0, index - pattern.candles + 1), index + 1);
-          const validation = pattern.validate(patternCandles);
-          
+          const patternCandles = candles.slice(Math.max(0, index - (pattern.candles || 1) + 1), index + 1);
+          const validation = validatePattern(patternId, patternCandles);
+
           if (validation.valid) {
             completeStep(currentStep.id);
           }
@@ -133,7 +150,7 @@ export function LessonPage({ lessonId, candles, levels = [] }: LessonPageProps) 
       }
     }
   };
-  
+
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const chartWidth = isMobile ? Math.min(window.innerWidth - 32, 800) : 800;
   const chartHeight = isMobile ? 300 : 400;
@@ -141,86 +158,86 @@ export function LessonPage({ lessonId, candles, levels = [] }: LessonPageProps) 
   return (
     <div className="lesson-page p-4 sm:p-5 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 flex justify-center">
       <div className="w-full max-w-4xl mx-auto">
-      {/* Заголовок урока */}
-      <div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">{lesson.title}</h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">{lesson.description}</p>
-        <div className="mt-3 sm:mt-4">
-          <div className="w-full bg-secondary rounded-full h-1.5 sm:h-2">
-            <div
-              className="bg-primary h-1.5 sm:h-2 rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            />
+        {/* Заголовок урока */}
+        <div>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">{lesson.title}</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">{lesson.description}</p>
+          <div className="mt-3 sm:mt-4">
+            <div className="w-full bg-secondary rounded-full h-1.5 sm:h-2">
+              <div
+                className="bg-primary h-1.5 sm:h-2 rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 sm:mt-2">
+              Прогресс: {Math.round(progress)}%
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground mt-1 sm:mt-2">
-            Прогресс: {Math.round(progress)}%
-          </p>
         </div>
-      </div>
-      
-      {/* Текущий шаг */}
-      {currentStep && (
-        <div className="bg-card border rounded-lg p-3 sm:p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">
-                Шаг {currentStep.id}
-              </h3>
-              <p className="text-sm sm:text-base text-foreground break-words">{currentStep.content}</p>
-              
-              {currentStep.requireAction && (
-                <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-primary/10 rounded border border-primary/20">
-                  <p className="text-xs sm:text-sm text-primary">
-                    ⚡ Требуется действие: {currentStep.requireAction}
-                  </p>
+
+        {/* Текущий шаг */}
+        {currentStep && (
+          <div className="bg-card border rounded-lg p-3 sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">
+                  Шаг {currentStep.id}
+                </h3>
+                <p className="text-sm sm:text-base text-foreground break-words">{currentStep.content}</p>
+
+                {currentStep.requireAction && (
+                  <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-primary/10 rounded border border-primary/20">
+                    <p className="text-xs sm:text-sm text-primary">
+                      ⚡ Требуется действие: {currentStep.requireAction}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {isStepComplete(currentStep.id) && (
+                <div className="ml-2 text-green-500 text-sm sm:text-base flex-shrink-0">
+                  ✓ Выполнено
                 </div>
               )}
             </div>
-            
-            {isStepComplete(currentStep.id) && (
-              <div className="ml-2 text-green-500 text-sm sm:text-base flex-shrink-0">
-                ✓ Выполнено
-              </div>
-            )}
           </div>
+        )}
+
+        {/* График */}
+        <div className="bg-card border rounded-lg p-2 sm:p-4 overflow-x-auto">
+          <ChartEngine
+            data={candles}
+            width={chartWidth}
+            height={chartHeight}
+            overlays={overlays}
+            interactions={{
+              onCandleClick: handleCandleClick,
+              onLevelClick: (level, type) => {
+                interactionEngine.handleLevelClick({ price: level, type, strength: 0.5 });
+                recordAction("level-click", { level, type });
+              },
+            }}
+          />
         </div>
-      )}
-      
-      {/* График */}
-      <div className="bg-card border rounded-lg p-2 sm:p-4 overflow-x-auto">
-        <ChartEngine
-          data={candles}
-          width={chartWidth}
-          height={chartHeight}
-          overlays={overlays}
-          interactions={{
-            onCandleClick: handleCandleClick,
-            onLevelClick: (level, type) => {
-              interactionEngine.handleLevelClick({ ...level, type });
-              recordAction("level-click", { level, type });
-            },
-          }}
-        />
-      </div>
-      
-      {/* Навигация */}
-      <div className="flex justify-between items-center gap-2">
-        <button
-          onClick={prevStep}
-          disabled={!canGoPrev}
-          className="px-3 sm:px-4 py-2 bg-secondary rounded disabled:opacity-50 text-sm sm:text-base touch-manipulation"
-        >
-          ← Назад
-        </button>
-        
-        <button
-          onClick={nextStep}
-          disabled={!canGoNext}
-          className="px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50 text-sm sm:text-base touch-manipulation"
-        >
-          Далее →
-        </button>
-      </div>
+
+        {/* Навигация */}
+        <div className="flex justify-between items-center gap-2">
+          <button
+            onClick={prevStep}
+            disabled={!canGoPrev}
+            className="px-3 sm:px-4 py-2 bg-secondary rounded disabled:opacity-50 text-sm sm:text-base touch-manipulation"
+          >
+            ← Назад
+          </button>
+
+          <button
+            onClick={nextStep}
+            disabled={!canGoNext}
+            className="px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50 text-sm sm:text-base touch-manipulation"
+          >
+            Далее →
+          </button>
+        </div>
       </div>
     </div>
   );

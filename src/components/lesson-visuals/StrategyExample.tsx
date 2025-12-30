@@ -45,16 +45,16 @@ export function StrategyExample({
     if (data && data.length > 0) {
       return data;
     }
-    
+
     // Генерируем данные в зависимости от стратегии
     const basePrice = 1.1000;
     const count = 50;
     const generated: CandlestickData[] = [];
     let currentPrice = basePrice;
     const now = new Date();
-    
+
     switch (strategy) {
-      case 'trend':
+      case 'trend': {
         // Восходящий тренд
         for (let i = count - 1; i >= 0; i--) {
           const time = new Date(now.getTime() - i * 15 * 60 * 1000);
@@ -65,7 +65,7 @@ export function StrategyExample({
           const close = open + change;
           const high = Math.max(open, close) + Math.random() * volatility * 0.3;
           const low = Math.min(open, close) - Math.random() * volatility * 0.3;
-          
+
           generated.push({
             time: time.toISOString(),
             open,
@@ -74,29 +74,30 @@ export function StrategyExample({
             close,
             volume: Math.floor(Math.random() * 1000 + 500),
           });
-          
+
           currentPrice = close;
         }
         break;
-        
-      case 'bounce':
+      }
+
+      case 'bounce': {
         // Данные с уровнями для отскока
         const supportLevel = basePrice - 0.002;
         for (let i = count - 1; i >= 0; i--) {
           const time = new Date(now.getTime() - i * 15 * 60 * 1000);
           const volatility = 0.001;
           let change = (Math.random() - 0.5) * volatility;
-          
+
           // Отскок от поддержки
           if (currentPrice < supportLevel + 0.0005) {
             change = Math.abs(change) * 0.5; // Отскок вверх
           }
-          
+
           const open = currentPrice;
           const close = open + change;
           const high = Math.max(open, close) + Math.random() * volatility * 0.3;
           const low = Math.min(open, close, supportLevel - 0.0001);
-          
+
           generated.push({
             time: time.toISOString(),
             open,
@@ -105,19 +106,20 @@ export function StrategyExample({
             close,
             volume: Math.floor(Math.random() * 1000 + 500),
           });
-          
+
           currentPrice = close;
         }
         break;
-        
-      case 'breakout':
+      }
+
+      case 'breakout': {
         // Данные с пробоем уровня
         const resistanceLevel = basePrice + 0.001;
         for (let i = count - 1; i >= 0; i--) {
           const time = new Date(now.getTime() - i * 15 * 60 * 1000);
           const volatility = 0.001;
           let change = (Math.random() - 0.5) * volatility;
-          
+
           // Пробой сопротивления
           if (i < count / 2) {
             // До пробоя - консолидация
@@ -130,12 +132,12 @@ export function StrategyExample({
               change = Math.abs(change) * 1.5;
             }
           }
-          
+
           const open = currentPrice;
           const close = open + change;
           const high = Math.max(open, close) + Math.random() * volatility * 0.3;
           const low = Math.min(open, close) - Math.random() * volatility * 0.3;
-          
+
           generated.push({
             time: time.toISOString(),
             open,
@@ -144,11 +146,12 @@ export function StrategyExample({
             close,
             volume: Math.floor(Math.random() * 1000 + 500),
           });
-          
+
           currentPrice = close;
         }
         break;
-        
+      }
+
       default:
         // Стандартные данные
         for (let i = count - 1; i >= 0; i--) {
@@ -159,7 +162,7 @@ export function StrategyExample({
           const close = open + change;
           const high = Math.max(open, close) + Math.random() * volatility * 0.5;
           const low = Math.min(open, close) - Math.random() * volatility * 0.5;
-          
+
           generated.push({
             time: time.toISOString(),
             open,
@@ -168,11 +171,11 @@ export function StrategyExample({
             close,
             volume: Math.floor(Math.random() * 1000 + 500),
           });
-          
+
           currentPrice = close;
         }
     }
-    
+
     return generated;
   }, [data, strategy]);
 
@@ -188,7 +191,7 @@ export function StrategyExample({
             height={height}
           />
         );
-        
+
       case 'bounce':
         return (
           <SupportResistanceChart
@@ -198,7 +201,7 @@ export function StrategyExample({
             height={height}
           />
         );
-        
+
       case 'breakout':
         return (
           <SupportResistanceChart
@@ -208,7 +211,7 @@ export function StrategyExample({
             height={height}
           />
         );
-        
+
       case 'news':
       case 'strike_zone':
       default:
@@ -226,7 +229,7 @@ export function StrategyExample({
   return (
     <div className={cn('relative', className)}>
       {renderStrategy()}
-      
+
       {/* Подсказка стратегии */}
       <div className="mt-2 p-2 sm:p-3 glass-card rounded-lg neon-border bg-primary/5 break-words overflow-wrap-anywhere">
         <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 break-words whitespace-normal">

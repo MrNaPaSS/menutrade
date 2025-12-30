@@ -1,6 +1,6 @@
 // ВАЖНО: В продакшене ОБЯЗАТЕЛЬНО используем прокси - ключ НЕ должен попадать в клиентский код!
 // В разработке можно использовать прямой запрос с локальным ключом
-const OPENROUTER_API_URL = import.meta.env.PROD 
+const OPENROUTER_API_URL = import.meta.env.PROD
   ? (import.meta.env.VITE_OPENROUTER_PROXY_URL || '/api/proxy-openrouter')
   : 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'openai/gpt-4o-mini';
@@ -18,6 +18,7 @@ export interface FileData {
   type: string;
   size: number;
   data: string; // base64
+  thumbnail?: string;
 }
 
 export interface TradingContext {
@@ -121,7 +122,7 @@ export async function fileToBase64(file: File): Promise<string> {
 // Подготовка контента сообщения с файлами
 function prepareMessageContent(text: string, files?: FileData[]): Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> {
   const content: Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = [];
-  
+
   if (text.trim()) {
     content.push({ type: 'text', text });
   }
@@ -158,10 +159,10 @@ export async function sendMessage(
 ): Promise<string> {
   // ВАЖНО: В продакшене НЕ используем ключ вообще - только прокси!
   // В разработке используем локальный ключ (может быть обфусцирован)
-  const rawKey = import.meta.env.PROD 
+  const rawKey = import.meta.env.PROD
     ? null // В продакшене ключ НЕ используется - только прокси на сервере
     : import.meta.env.VITE_OPENROUTER_API_KEY; // В разработке используем локальный ключ
-  
+
   // Деобфусцируем ключ если нужно (только для разработки)
   const apiKey = rawKey ? getApiKey(rawKey) : null;
 
@@ -188,7 +189,7 @@ export async function sendMessage(
 
   // Подготовка системного промпта с контекстом
   const systemPrompt = getSystemPrompt(context);
-  
+
   // Подготовка сообщений для API
   const apiMessages: ChatMessage[] = [
     {
@@ -239,7 +240,7 @@ export async function sendMessage(
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        
+
         if (response.status === 429) {
           // Rate limit - ждем перед повтором
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
@@ -248,13 +249,13 @@ export async function sendMessage(
         }
 
         throw new Error(
-          errorData.error?.message || 
+          errorData.error?.message ||
           `Ошибка API: ${response.status} ${response.statusText}`
         );
       }
 
       const data = await response.json();
-      
+
       if (!data.choices || !data.choices[0] || !data.choices[0].message) {
         throw new Error('Неожиданный формат ответа от API');
       }
@@ -263,7 +264,7 @@ export async function sendMessage(
 
     } catch (error) {
       lastError = error as Error;
-      
+
       // Если это последняя попытка или не временная ошибка, выбрасываем ошибку
       if (attempt === retries || (error as Error).message.includes('API ключ')) {
         throw error;

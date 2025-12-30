@@ -88,5 +88,12 @@ export interface ChartConfig {
   title?: string;
   description?: string;
   timeframeDescription?: Record<'M1' | 'M5' | 'M15' | 'M30' | 'H1' | 'H4', string>;
+  showBounces?: boolean;
+  showZones?: boolean;
+  showDynamicLevels?: boolean;
+  strategy?: string;
+  indicatorType?: 'rsi' | 'macd' | 'ma' | 'bb' | 'stochastic';
+  trendType?: 'up' | 'down' | 'both';
+  pattern?: string;
 }
 

@@ -144,7 +144,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
     } catch (error) {
       console.error('Ошибка отправки сообщения:', error);
       const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при отправке сообщения';
-      
+
       toast({
         title: 'Ошибка',
         description: errorMessage
@@ -196,7 +196,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
         )}
       >
         {/* Заголовок */}
-        <DialogHeader className="px-3 sm:px-4 md:px-6 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 border-b border-border/30 relative">
+        <DialogHeader className="px-3 sm:px-4 md:px-6 pt-[calc(env(safe-area-inset-top)+0.75rem)] sm:pt-5 md:pt-6 pb-3 sm:pb-4 border-b border-border/30 relative flex-shrink-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
               <div className="min-w-0">
@@ -204,7 +204,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                 <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Эксперт по бинарным опционам и Forex</p>
               </div>
             </div>
-            <div className="flex items-center gap-1 flex-shrink-0 absolute top-2 sm:top-3 md:top-4 right-12 sm:right-14 md:right-16 z-10">
+            <div className="flex items-center gap-1 flex-shrink-0 absolute top-[calc(env(safe-area-inset-top)+0.35rem)] sm:top-3 md:top-4 right-12 sm:right-14 md:right-16 z-10">
               {/* Иконка Brain */}
               <div className="w-7 h-7 sm:w-8 sm:w-8 md:h-9 md:w-9 rounded-sm opacity-70 hover:opacity-100 transition-opacity flex items-center justify-center ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                 <Brain className="w-3.5 h-3.5 sm:w-4 sm:w-4 md:h-4 md:w-4 text-foreground" />
@@ -265,7 +265,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
         </ScrollArea>
 
         {/* Поле ввода */}
-        <div className="px-2 sm:px-3 md:px-4 pb-3 sm:pb-4 pt-2 border-t border-border/30">
+        <div className="px-2 sm:px-3 md:px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:pb-4 pt-2 border-t border-border/30 bg-background/50">
           {/* Загрузка файлов */}
           <div className="mb-2">
             <FileUpload

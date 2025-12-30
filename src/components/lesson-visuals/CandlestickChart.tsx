@@ -75,40 +75,40 @@ export const CandlestickChart = React.memo(function CandlestickChart({
     let trend = 0.00005; // Небольшой восходящий тренд
     let momentum = 0;
     const now = new Date();
-    
+
     // Определяем интервал в зависимости от таймфрейма
     const intervalMinutes = timeframe === 'M1' ? 1 : timeframe === 'M5' ? 5 : timeframe === 'M15' ? 15 : timeframe === 'M30' ? 30 : timeframe === 'H1' ? 60 : 240;
-    
+
     for (let i = count - 1; i >= 0; i--) {
       const time = new Date(now.getTime() - i * intervalMinutes * 60 * 1000);
-      
+
       // Динамический тренд с коррекциями
       if (i % 10 === 0) {
         trend = (Math.random() - 0.5) * 0.0001; // Периодические изменения тренда
       }
-      
+
       // Инерция движения
       momentum = momentum * 0.7 + trend * 0.3;
-      
+
       // Реалистичное движение цены
       const randomWalk = (Math.random() - 0.5) * volatility;
       const change = momentum + randomWalk;
-      
+
       const open = currentPrice;
       const close = open + change;
-      
+
       // Реалистичные тени свечей
       const bodySize = Math.abs(close - open);
       const upperShadow = Math.random() * volatility * 0.6;
       const lowerShadow = Math.random() * volatility * 0.6;
-      
+
       const high = Math.max(open, close) + upperShadow;
       const low = Math.min(open, close) - lowerShadow;
-      
+
       // Объём коррелирует с размером движения
       const volumeMultiplier = 1 + (bodySize / volatility) * 2;
       const volume = Math.floor((Math.random() * 500 + 300) * volumeMultiplier);
-      
+
       generated.push({
         time: time.toISOString(),
         open,
@@ -117,23 +117,30 @@ export const CandlestickChart = React.memo(function CandlestickChart({
         close,
         volume,
       });
-      
+
       currentPrice = close;
     }
-    
+
     return generated;
-  }, [externalData, timeframe]);
+  }, [externalData, timeframe, lessonData]);
 
   // Вычисляем масштаб и границы
   const priceRange = useMemo(() => {
-    const prices = data.flatMap(d => [d.high, d.low]);
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
+    let min = Infinity;
+    let max = -Infinity;
+
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].high > max) max = data[i].high;
+      if (data[i].low < min) min = data[i].low;
+    }
+
+    if (min === Infinity) return { min: 0, max: 100, range: 100 };
+
     const range = max - min;
     return {
       min: min - range * 0.1,
       max: max + range * 0.1,
-      range: range * 1.2,
+      range: range * 1.2 || 0.0001,
     };
   }, [data]);
 
@@ -150,7 +157,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!interactive) return;
-    
+
     if (e.touches.length === 1) {
       // Одиночное касание - начало панорамирования
       setIsDragging(true);
@@ -170,9 +177,9 @@ export const CandlestickChart = React.memo(function CandlestickChart({
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!interactive) return;
-    
+
     e.preventDefault(); // Предотвращаем скролл страницы
-    
+
     if (e.touches.length === 1 && isDragging) {
       // Pan - перемещение графика
       const deltaX = e.touches[0].clientX - dragStart.x;
@@ -187,7 +194,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
         touch2.clientX - touch1.clientX,
         touch2.clientY - touch1.clientY
       );
-      
+
       const scale = currentDistance / pinchStartDistance.current;
       const newZoom = Math.max(0.5, Math.min(3, pinchStartZoom.current * scale));
       setZoom(newZoom);
@@ -209,36 +216,36 @@ export const CandlestickChart = React.memo(function CandlestickChart({
 
   // Отрисовка свечи с улучшенной интерактивностью
   const [hoveredCandle, setHoveredCandle] = useState<number | null>(null);
-  
+
   const renderCandle = useCallback((candle: CandlestickData, index: number, isHighlightedPattern: boolean = false, globalIndex?: number) => {
     const x = index * candleWidth + candleWidth / 2;
     const isBullish = candle.close >= candle.open;
     const bodyTop = isBullish ? candle.close : candle.open;
     const bodyBottom = isBullish ? candle.open : candle.close;
-    
+
     const bodyTopY = chartHeight - ((bodyTop - priceRange.min) / priceRange.range) * chartHeight;
     const bodyBottomY = chartHeight - ((bodyBottom - priceRange.min) / priceRange.range) * chartHeight;
     const highY = chartHeight - ((candle.high - priceRange.min) / priceRange.range) * chartHeight;
     const lowY = chartHeight - ((candle.low - priceRange.min) / priceRange.range) * chartHeight;
-    
+
     const bodyHeight = Math.abs(bodyTopY - bodyBottomY) || 1;
     const wickColor = isBullish ? '#22c55e' : '#ef4444';
     const bodyColor = isBullish ? '#22c55e' : '#ef4444';
     const isHovered = hoveredCandle === index;
-    
+
     // Определяем паттерны свечей
     const bodySize = Math.abs(candle.close - candle.open);
     const upperShadow = candle.high - Math.max(candle.open, candle.close);
     const lowerShadow = Math.min(candle.open, candle.close) - candle.low;
     const totalRange = candle.high - candle.low;
-    
+
     // Молот - длинная нижняя тень, маленькое тело (может быть и медвежьим)
     const isHammer = lowerShadow > bodySize * 2 && upperShadow < bodySize * 0.5 && totalRange > 0;
     // Перевёрнутый молот - длинная верхняя тень
     const isInvertedHammer = upperShadow > bodySize * 2 && lowerShadow < bodySize * 0.5 && totalRange > 0;
     // Доджи - очень маленькое тело
     const isDoji = bodySize < totalRange * 0.15 && totalRange > 0;
-    
+
     // Определяем поглощение (нужно проверить предыдущую свечу)
     let isEngulfing = false;
     let engulfingType: 'bullish' | 'bearish' | null = null;
@@ -247,21 +254,21 @@ export const CandlestickChart = React.memo(function CandlestickChart({
       const prevCandle = data[actualIndex - 1];
       const prevIsBullish = prevCandle.close >= prevCandle.open;
       const currentIsBullish = isBullish;
-      
+
       // Бычье поглощение: предыдущая медвежья, текущая бычья, текущая полностью поглощает предыдущую
-      if (!prevIsBullish && currentIsBullish && 
-          candle.open < prevCandle.close && candle.close > prevCandle.open) {
+      if (!prevIsBullish && currentIsBullish &&
+        candle.open < prevCandle.close && candle.close > prevCandle.open) {
         isEngulfing = true;
         engulfingType = 'bullish';
       }
       // Медвежье поглощение: предыдущая бычья, текущая медвежья, текущая полностью поглощает предыдущую
-      else if (prevIsBullish && !currentIsBullish && 
-               candle.open > prevCandle.close && candle.close < prevCandle.open) {
+      else if (prevIsBullish && !currentIsBullish &&
+        candle.open > prevCandle.close && candle.close < prevCandle.open) {
         isEngulfing = true;
         engulfingType = 'bearish';
       }
     }
-    
+
     // Определяем утреннюю/вечернюю звезду (нужно проверить предыдущие 2 свечи)
     let isStar = false;
     let starType: 'morning' | 'evening' | null = null;
@@ -272,7 +279,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
       const secondBodySize = Math.abs(secondCandle.close - secondCandle.open);
       const secondTotalRange = secondCandle.high - secondCandle.low;
       const isSecondSmall = secondBodySize < secondTotalRange * 0.3; // Маленькая звезда
-      
+
       // Утренняя звезда: медвежья -> маленькая -> бычья (закрывается выше середины первой)
       if (!firstIsBullish && isSecondSmall && isBullish) {
         const firstMid = firstCandle.open + (firstCandle.close - firstCandle.open) / 2;
@@ -290,7 +297,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
         }
       }
     }
-    
+
     // Определяем, является ли свеча частью паттерна (для синей обводки)
     // Для поглощения выделяем обе свечи
     let isPrevEngulfing = false;
@@ -302,16 +309,16 @@ export const CandlestickChart = React.memo(function CandlestickChart({
       if (actualIndex > 1) {
         const prevPrevCandle = data[actualIndex - 2];
         const prevPrevIsBullish = prevPrevCandle.close >= prevPrevCandle.open;
-        if (!prevPrevIsBullish && prevIsBullish && 
-            prevCandle.open < prevPrevCandle.close && prevCandle.close > prevPrevCandle.open) {
+        if (!prevPrevIsBullish && prevIsBullish &&
+          prevCandle.open < prevPrevCandle.close && prevCandle.close > prevPrevCandle.open) {
           isPrevEngulfing = true;
-        } else if (prevPrevIsBullish && !prevIsBullish && 
-                   prevCandle.open > prevPrevCandle.close && prevCandle.close < prevPrevCandle.open) {
+        } else if (prevPrevIsBullish && !prevIsBullish &&
+          prevCandle.open > prevPrevCandle.close && prevCandle.close < prevPrevCandle.open) {
           isPrevEngulfing = true;
         }
       }
     }
-    
+
     // Для звезды выделяем все 3 свечи
     let isStarPart = false;
     if (actualIndex >= 1 && data && actualIndex < data.length - 1) {
@@ -324,7 +331,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
       const currentBodySize = bodySize;
       const currentTotalRange = totalRange;
       const isCurrentSmall = currentBodySize < currentTotalRange * 0.3;
-      
+
       // Если предыдущая маленькая и текущая большая - это может быть третья свеча звезды
       if (isPrevSmall && !isCurrentSmall) {
         if (actualIndex >= 2) {
@@ -348,7 +355,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
         isStarPart = true;
       }
     }
-    
+
     // Для внутреннего/внешнего бара
     let isInsideBar = false;
     let isOutsideBar = false;
@@ -363,10 +370,10 @@ export const CandlestickChart = React.memo(function CandlestickChart({
         isOutsideBar = true;
       }
     }
-    
+
     // isHighlightedPattern имеет приоритет - если свеча в highlightedIndices, она должна быть выделена
     const isPatternCandle = isHighlightedPattern || isHammer || isInvertedHammer || isDoji || isEngulfing || isPrevEngulfing || isStar || isStarPart || isInsideBar || isOutsideBar;
-    
+
     return (
       <g
         key={index}
@@ -375,14 +382,14 @@ export const CandlestickChart = React.memo(function CandlestickChart({
         onMouseEnter={() => interactive && setHoveredCandle(index)}
         onMouseLeave={() => setHoveredCandle(null)}
         className={interactive ? 'cursor-pointer' : ''}
-        style={{ 
-          filter: isHovered && interactive 
-            ? 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.8))' 
+        style={{
+          filter: isHovered && interactive
+            ? 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.8))'
             : (isPatternCandle || isHammer || isInvertedHammer || isDoji) && interactive
-            ? 'drop-shadow(0 0 6px rgba(34, 197, 94, 0.6))'
-            : interactive 
-            ? 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.3))' 
-            : 'none',
+              ? 'drop-shadow(0 0 6px rgba(34, 197, 94, 0.6))'
+              : interactive
+                ? 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.3))'
+                : 'none',
           transition: 'filter 0.2s ease',
         }}
       >
@@ -447,42 +454,46 @@ export const CandlestickChart = React.memo(function CandlestickChart({
   }, [chartHeight, priceRange, candleWidth, interactive, handleCandleClick, hoveredCandle, timeframe, data, highlightedIndices]);
 
   const visibleData = data.slice(startIndex, startIndex + visibleCandles);
-  
+
   // Вычисляем локальные экстремумы для визуализации (оптимизировано)
   const localExtremes = useMemo(() => {
     if (!showLevels || data.length < 10) return [];
-    
+
     const extremes: Array<{ index: number; type: 'high' | 'low'; price: number }> = [];
     const lookback = 3;
-    const step = Math.max(1, Math.floor(data.length / 20)); // Ограничиваем количество экстремумов
-    
+    const step = Math.max(1, Math.floor(data.length / 20));
+
     for (let i = lookback; i < data.length - lookback; i += step) {
-      const window = data.slice(i - lookback, i + lookback + 1);
       const currentHigh = data[i].high;
       const currentLow = data[i].low;
-      
-      if (currentHigh === Math.max(...window.map(d => d.high))) {
-        extremes.push({ index: i, type: 'high', price: currentHigh });
+      let isMax = true;
+      let isMin = true;
+
+      for (let j = i - lookback; j <= i + lookback; j++) {
+        if (i === j) continue;
+        if (data[j].high > currentHigh) isMax = false;
+        if (data[j].low < currentLow) isMin = false;
+        if (!isMax && !isMin) break;
       }
-      if (currentLow === Math.min(...window.map(d => d.low))) {
-        extremes.push({ index: i, type: 'low', price: currentLow });
-      }
+
+      if (isMax) extremes.push({ index: i, type: 'high', price: currentHigh });
+      if (isMin) extremes.push({ index: i, type: 'low', price: currentLow });
     }
-    
+
     return extremes;
   }, [data, showLevels]);
-  
+
   // Вычисляем уровни поддержки/сопротивления из локальных экстремумов (оптимизировано)
   const supportResistanceLevels = useMemo(() => {
     if (!showLevels || localExtremes.length === 0) return [];
-    
+
     const levels: Array<{ price: number; type: 'support' | 'resistance'; strength: number }> = [];
     const tolerance = 0.0005;
-    
+
     // Группируем близкие экстремумы (ограничиваем количество)
     const highs = localExtremes.filter(e => e.type === 'high').slice(0, 10).map(e => e.price);
     const lows = localExtremes.filter(e => e.type === 'low').slice(0, 10).map(e => e.price);
-    
+
     // Находим уровни сопротивления (максимумы) - максимум 3 уровня
     const resistanceGroups: number[][] = [];
     for (let i = 0; i < Math.min(highs.length, 5); i++) {
@@ -494,7 +505,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
         resistanceGroups.push([high]);
       }
     }
-    
+
     // Находим уровни поддержки (минимумы) - максимум 3 уровня
     const supportGroups: number[][] = [];
     for (let i = 0; i < Math.min(lows.length, 5); i++) {
@@ -506,7 +517,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
         supportGroups.push([low]);
       }
     }
-    
+
     // Создаём уровни с силой (количество касаний) - только сильные уровни
     resistanceGroups.forEach(group => {
       if (group.length >= 2) {
@@ -514,14 +525,14 @@ export const CandlestickChart = React.memo(function CandlestickChart({
         levels.push({ price: avgPrice, type: 'resistance', strength: Math.min(group.length, 5) });
       }
     });
-    
+
     supportGroups.forEach(group => {
       if (group.length >= 2) {
         const avgPrice = group.reduce((a, b) => a + b, 0) / group.length;
         levels.push({ price: avgPrice, type: 'support', strength: Math.min(group.length, 5) });
       }
     });
-    
+
     return levels.slice(0, 4); // Максимум 4 уровня
   }, [localExtremes, showLevels]);
 
@@ -534,7 +545,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
           'bg-[#0a0a0a]',
           className
         )}
-        style={{ 
+        style={{
           height: `${height}px`,
           touchAction: interactive ? 'none' : 'auto',
           WebkitOverflowScrolling: 'touch',
@@ -602,7 +613,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
             const y = chartHeight - ((level.price - priceRange.min) / priceRange.range) * chartHeight;
             const color = level.type === 'support' ? '#22c55e' : '#ef4444';
             const lineWidth = Math.min(3, level.strength);
-            
+
             return (
               <g key={`level-${levelIdx}`}>
                 <line
@@ -642,16 +653,16 @@ export const CandlestickChart = React.memo(function CandlestickChart({
               </g>
             );
           })}
-          
+
           {/* Локальные экстремумы */}
           {localExtremes.map((extreme, idx) => {
             const visibleIndex = extreme.index - startIndex;
             if (visibleIndex < 0 || visibleIndex >= visibleData.length) return null;
-            
+
             const x = visibleIndex * candleWidth + candleWidth / 2;
             const y = chartHeight - ((extreme.price - priceRange.min) / priceRange.range) * chartHeight;
             const color = extreme.type === 'high' ? '#ef4444' : '#22c55e';
-            
+
             return (
               <g key={`extreme-${idx}`}>
                 <circle
@@ -677,7 +688,7 @@ export const CandlestickChart = React.memo(function CandlestickChart({
               </g>
             );
           })}
-          
+
           {/* Свечи */}
           <g transform={`translate(${panX}, 0)`}>
             {visibleData.map((candle, idx) => {
@@ -701,11 +712,11 @@ export const CandlestickChart = React.memo(function CandlestickChart({
       </div>
 
       {/* Модальное окно с деталями свечи */}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="w-[95vw] max-w-md bg-background border-primary/20 max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-primary text-base sm:text-lg">Детали свечи</DialogTitle>
-              </DialogHeader>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="w-[95vw] max-w-md bg-background border-primary/20 max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-primary text-base sm:text-lg">Детали свечи</DialogTitle>
+          </DialogHeader>
           {selectedCandle && (
             <div className="space-y-3 mt-4">
               <div className="grid grid-cols-2 gap-2 sm:gap-3">

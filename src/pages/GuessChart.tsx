@@ -8,6 +8,7 @@ import { ArrowUpCircle, ArrowDownCircle, Clock, ArrowRight, ArrowLeft, RefreshCw
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { useProgress } from '@/hooks/useProgress';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { chartScenarios, ChartScenario, ChartDataPoint } from '@/data/chartGameData';
 import { toast } from "@/components/ui/sonner";
 import { CandlestickChart } from '@/components/lesson-visuals/CandlestickChart';
@@ -22,7 +23,7 @@ function useWindowSize() {
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
-        
+
         function handleResize() {
             setWindowSize({
                 width: window.innerWidth,
@@ -51,9 +52,9 @@ function seededRandom(seed: number) {
 // Функция преобразования ChartDataPoint[] в CandlestickData[] с детерминированной генерацией
 function convertToCandlestickData(dataPoints: ChartDataPoint[]): CandlestickData[] {
     if (dataPoints.length === 0) return [];
-    
+
     const candles: CandlestickData[] = [];
-    
+
     // Используем хэш от всех точек данных как seed для детерминированности
     // Это гарантирует, что одни и те же данные всегда дают одинаковый результат
     const dataHash = dataPoints.reduce((acc, point, idx) => {
@@ -61,39 +62,39 @@ function convertToCandlestickData(dataPoints: ChartDataPoint[]): CandlestickData
     }, 0);
     const seed = Math.abs(dataHash) % 1000000;
     let seedValue = seed;
-    
+
     for (let i = 0; i < dataPoints.length; i++) {
         const point = dataPoints[i];
         const value = point.value;
-        
+
         // open берём из close предыдущей свечи, или из текущего value для первой свечи
         const open = i === 0 ? value : candles[i - 1].close;
-        
+
         // close - это текущее value
         const close = value;
-        
+
         // Вычисляем диапазон движения для тени
         const priceRange = Math.abs(close - open);
-        const avgRange = dataPoints.length > 1 
-            ? Math.abs(dataPoints[1].value - dataPoints[0].value) 
+        const avgRange = dataPoints.length > 1
+            ? Math.abs(dataPoints[1].value - dataPoints[0].value)
             : priceRange;
-        
+
         // Генерируем детерминированные тени на основе seed
         const shadowMultiplier = Math.max(0.3, Math.min(1.5, avgRange / (Math.abs(close - open) || 0.001)));
         seedValue = seedValue * 9301 + 49297;
         const upperShadow = seededRandom(seedValue + i) * avgRange * shadowMultiplier * 0.5;
         seedValue = seedValue * 9301 + 49297;
         const lowerShadow = seededRandom(seedValue + i * 2) * avgRange * shadowMultiplier * 0.5;
-        
+
         const high = Math.max(open, close) + upperShadow;
         const low = Math.min(open, close) - lowerShadow;
-        
+
         // Детерминированный объём
         const bodySize = Math.abs(close - open);
         const volumeMultiplier = 1 + (bodySize / (avgRange || 1)) * 2;
         seedValue = seedValue * 9301 + 49297;
         const volume = Math.floor((seededRandom(seedValue + i * 3) * 500 + 300) * volumeMultiplier);
-        
+
         candles.push({
             time: point.time,
             open,
@@ -103,7 +104,7 @@ function convertToCandlestickData(dataPoints: ChartDataPoint[]): CandlestickData
             volume,
         });
     }
-    
+
     return candles;
 }
 
@@ -113,11 +114,11 @@ function getCandlestickDataForScenario(scenarioId: number, dataPoints: ChartData
     if (scenarioCandlesCache.has(scenarioId)) {
         return scenarioCandlesCache.get(scenarioId)!;
     }
-    
+
     // Генерируем данные один раз и сохраняем в кэш
-    const candles = convertToCandlestickData(dataPoints, scenarioId);
+    const candles = convertToCandlestickData(dataPoints);
     scenarioCandlesCache.set(scenarioId, candles);
-    
+
     return candles;
 }
 
@@ -126,7 +127,12 @@ const GuessChart = () => {
     const { getProgress } = useProgress();
     const progress = getProgress();
     const { width } = useWindowSize();
-    
+
+    useSwipeBack({
+        onSwipeBack: () => navigate('/home'),
+        enabled: true
+    });
+
     // Адаптивная высота графика в зависимости от размера экрана
     const chartHeight = useMemo(() => {
         if (width < 640) return 250; // мобильные
@@ -194,7 +200,7 @@ const GuessChart = () => {
     // Initialization - только выбираем сценарий, не стартуем игру
     useEffect(() => {
         if (!currentScenario) {
-        startNewRound();
+            startNewRound();
         }
     }, [startNewRound, currentScenario]);
 
@@ -249,7 +255,7 @@ const GuessChart = () => {
 
         setGameState('RESULT');
         setShowingFullChart(true);
-        
+
         // Устанавливаем начальное значение для анимации (точно совпадает с начальными свечами)
         const initialCount = splitIndexRef.current + 1;
         setAnimatedCandlesCount(initialCount);
@@ -271,7 +277,7 @@ const GuessChart = () => {
             animationTimerRef.current = setInterval(() => {
                 currentAnimated++;
                 setAnimatedCandlesCount(currentAnimated);
-                
+
                 if (currentAnimated >= currentScenario.data.length) {
                     if (animationTimerRef.current) {
                         clearInterval(animationTimerRef.current);
@@ -308,19 +314,19 @@ const GuessChart = () => {
         if (!currentScenario || fullCandlesRef.current.length === 0) {
             return [];
         }
-        
+
         // До ответа - показываем только начальные свечи (стабильная ссылка на массив)
         if (!showingFullChart) {
             return initialCandlesRef.current;
         }
-        
+
         // После ответа - показываем полный график, но используем стабильные начальные свечи
         if (animatedCandlesCount > splitIndexRef.current) {
             // Анимация идет: используем начальные свечи (те же объекты) + новые анимируемые
             const newCandles = fullCandlesRef.current.slice(splitIndexRef.current + 1, animatedCandlesCount);
             return [...initialCandlesRef.current, ...newCandles];
         }
-        
+
         // Если анимация еще не началась, показываем только начальные свечи (не полный график сразу)
         return initialCandlesRef.current;
     }, [currentScenario, showingFullChart, animatedCandlesCount]);
@@ -378,116 +384,129 @@ const GuessChart = () => {
                 <main className="flex-1 flex items-center justify-center px-4 md:px-5">
                     <div className="container max-w-4xl mx-auto w-full">
                         <div className="flex flex-col items-center gap-3 md:gap-6">
-                        {/* Chart Area - центрирован */}
-                        <Card className="w-full max-w-2xl p-3 md:p-6 glass-card neon-border relative overflow-hidden">
-                            <div className="mb-2 md:mb-4 flex justify-between items-center">
-                                <h2 className="text-base md:text-xl font-bold font-display">Куда пойдет цена?</h2>
-                                {gameState === 'RESULT' && (
-                                <span className="text-muted-foreground text-xs md:text-sm font-mono">
-                                    {currentScenario.name}
-                                </span>
-                                )}
-                            </div>
+                            {/* Chart Area - центрирован */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true, amount: 0.1 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                className="w-full max-w-2xl"
+                            >
+                                <Card className="w-full p-3 md:p-6 glass-card neon-border relative overflow-hidden">
+                                    <div className="mb-2 md:mb-4 flex justify-between items-center">
+                                        <h2 className="text-base md:text-xl font-bold font-display">Куда пойдет цена?</h2>
+                                        {gameState === 'RESULT' && (
+                                            <span className="text-muted-foreground text-xs md:text-sm font-mono">
+                                                {currentScenario.name}
+                                            </span>
+                                        )}
+                                    </div>
 
-                            <div className="h-[35vh] sm:h-[40vh] md:h-[400px] max-h-[400px] w-full flex items-center justify-center">
-                                <div className="w-full h-full">
-                                    <CandlestickChart
-                                        data={candlestickData}
-                                        height={chartHeight}
-                                        interactive={false}
-                                        showLevels={false}
-                                        showVolume={false}
-                                        showPatterns={false}
-                                    />
-                                </div>
-                            </div>
-                        </Card>
+                                    <div className="h-[35vh] sm:h-[40vh] md:h-[400px] max-h-[400px] w-full flex items-center justify-center">
+                                        <div className="w-full h-full">
+                                            <CandlestickChart
+                                                data={candlestickData}
+                                                height={chartHeight}
+                                                interactive={false}
+                                                showLevels={false}
+                                                showVolume={false}
+                                                showPatterns={false}
+                                            />
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
 
-                        {/* Controls & Result Area - центрированы */}
-                        <div className="w-full max-w-2xl space-y-3 md:space-y-4">
-                            <AnimatePresence mode="wait">
-                                {gameState === 'NOT_STARTED' ? (
-                                    <motion.div
-                                        key="not-started"
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        className="space-y-3 md:space-y-4"
-                                    >
-                                        <Card className="p-4 md:p-6 glass-card neon-border">
-                                            <div className="text-center mb-3 md:mb-4">
-                                                <h3 className="text-lg md:text-2xl font-bold text-foreground mb-1 md:mb-2">
-                                                    Готовы начать?
-                                                </h3>
-                                                <p className="text-muted-foreground text-xs md:text-sm mb-3 md:mb-4">
-                                                    Изучите график японских свечей и угадайте направление цены
-                                                </p>
-                                            </div>
-                                            <Button 
-                                                className="w-full h-16 md:h-24 text-lg md:text-xl font-bold bg-primary/20 hover:bg-primary/30 text-primary border-primary/50"
+                            {/* Controls & Result Area - центрированы */}
+                            <div className="w-full max-w-2xl space-y-3 md:space-y-4">
+                                <AnimatePresence mode="wait">
+                                    {gameState === 'NOT_STARTED' ? (
+                                        <motion.div
+                                            key="not-started"
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.9 }}
+                                            className="space-y-3 md:space-y-4"
+                                        >
+                                            <Card className="p-4 md:p-6 glass-card neon-border">
+                                                <div className="text-center mb-3 md:mb-4">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-foreground mb-1 md:mb-2">
+                                                        Готовы начать?
+                                                    </h3>
+                                                    <p className="text-muted-foreground text-xs md:text-sm mb-3 md:mb-4">
+                                                        Изучите график японских свечей и угадайте направление цены
+                                                    </p>
+                                                </div>
+                                                <Button
+                                                    className="w-full h-16 md:h-24 text-lg md:text-xl font-bold bg-primary/20 hover:bg-primary/30 text-primary border-primary/50"
+                                                    variant="outline"
+                                                    size="lg"
+                                                    onClick={handleStart}
+                                                >
+                                                    <Play className="mr-2 h-6 w-6 md:h-8 md:w-8" /> Старт
+                                                </Button>
+                                            </Card>
+                                        </motion.div>
+                                    ) : gameState === 'PLAYING' ? (
+                                        <motion.div
+                                            key="playing"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            className="space-y-3 md:space-y-4"
+                                        >
+                                            <Button
+                                                className="w-full h-16 md:h-20 lg:h-24 text-lg md:text-xl font-bold bg-green-500/10 hover:bg-green-500/20 active:bg-green-500/30 text-green-500 border-green-500/50 touch-manipulation hidden md:flex"
                                                 variant="outline"
-                                                size="lg"
-                                                onClick={handleStart}
+                                                onClick={() => handleGuess('UP')}
                                             >
-                                                <Play className="mr-2 h-6 w-6 md:h-8 md:w-8" /> Старт
+                                                <ArrowUpCircle className="mr-2 h-6 w-6 md:h-8 md:w-8" /> UP
                                             </Button>
-                                        </Card>
-                                    </motion.div>
-                                ) : gameState === 'PLAYING' ? (
-                                    <motion.div
-                                        key="playing"
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="space-y-3 md:space-y-4"
-                                    >
-                                        <Button
-                                            className="w-full h-16 md:h-20 lg:h-24 text-lg md:text-xl font-bold bg-green-500/10 hover:bg-green-500/20 active:bg-green-500/30 text-green-500 border-green-500/50 touch-manipulation hidden md:flex"
-                                            variant="outline"
-                                            onClick={() => handleGuess('UP')}
-                                        >
-                                            <ArrowUpCircle className="mr-2 h-6 w-6 md:h-8 md:w-8" /> UP
-                                        </Button>
-                                        <Button
-                                            className="w-full h-16 md:h-20 lg:h-24 text-lg md:text-xl font-bold bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 text-red-500 border-red-500/50 touch-manipulation hidden md:flex"
-                                            variant="outline"
-                                            onClick={() => handleGuess('DOWN')}
-                                        >
-                                            <ArrowDownCircle className="mr-2 h-6 w-6 md:h-8 md:w-8" /> DOWN
-                                        </Button>
-                                    </motion.div>
-                                ) : (
-                                    <motion.div
-                                        key="result"
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        className="space-y-3 md:space-y-4"
-                                    >
-                                        <Card className={`p-4 md:p-6 border-2 ${result === 'CORRECT' ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10'}`}>
-                                            <div className="text-center mb-3 md:mb-4">
-                                                {result === 'CORRECT' && <Trophy className="h-8 w-8 md:h-12 md:w-12 text-green-500 mx-auto mb-2" />}
-                                                <h3 className={`text-lg md:text-2xl font-bold ${result === 'CORRECT' ? 'text-green-500' : 'text-red-500'}`}>
-                                                    {result === 'CORRECT' ? 'Правильно!' : result === 'TIMEOUT' ? 'Время вышло' : 'Ошибка'}
-                                                </h3>
-                                            </div>
-
-                                            <div className="text-xs md:text-sm rounded-lg bg-background/50 p-2 md:p-3 mb-3 md:mb-4">
-                                                <p className="font-semibold mb-1">Анализ:</p>
-                                                <p className="text-muted-foreground">{currentScenario.explanation}</p>
-                                            </div>
-
-                                            <Button className="w-full" size="lg" onClick={startNewRound}>
-                                                <RefreshCw className="mr-2 h-4 w-4" /> Следующий график
+                                            <Button
+                                                className="w-full h-16 md:h-20 lg:h-24 text-lg md:text-xl font-bold bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 text-red-500 border-red-500/50 touch-manipulation hidden md:flex"
+                                                variant="outline"
+                                                onClick={() => handleGuess('DOWN')}
+                                            >
+                                                <ArrowDownCircle className="mr-2 h-6 w-6 md:h-8 md:w-8" /> DOWN
                                             </Button>
-                                        </Card>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            key="result"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            className="space-y-3 md:space-y-4"
+                                        >
+                                            <Card className={`p-4 md:p-6 border-2 ${result === 'CORRECT' ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10'}`}>
+                                                <div className="text-center mb-3 md:mb-4">
+                                                    {result === 'CORRECT' && <Trophy className="h-8 w-8 md:h-12 md:w-12 text-green-500 mx-auto mb-2" />}
+                                                    <h3 className={`text-lg md:text-2xl font-bold ${result === 'CORRECT' ? 'text-green-500' : 'text-red-500'}`}>
+                                                        {result === 'CORRECT' ? 'Правильно!' : result === 'TIMEOUT' ? 'Время вышло' : 'Ошибка'}
+                                                    </h3>
+                                                </div>
 
-                            <div className="glass-card p-3 md:p-4 rounded-xl text-xs text-muted-foreground">
-                                <p>Подсказка: Анализируйте тренд и свечные паттерны. У вас всего {GAME_DURATION} секунд на решение!</p>
+                                                <div className="text-xs md:text-sm rounded-lg bg-background/50 p-2 md:p-3 mb-3 md:mb-4">
+                                                    <p className="font-semibold mb-1">Анализ:</p>
+                                                    <p className="text-muted-foreground">{currentScenario.explanation}</p>
+                                                </div>
+
+                                                <Button className="w-full" size="lg" onClick={startNewRound}>
+                                                    <RefreshCw className="mr-2 h-4 w-4" /> Следующий график
+                                                </Button>
+                                            </Card>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, amount: 0.1 }}
+                                    className="glass-card p-3 md:p-4 rounded-xl text-xs text-muted-foreground"
+                                >
+                                    <p>Подсказка: Анализируйте тренд и свечные паттерны. У вас всего {GAME_DURATION} секунд на решение!</p>
+                                </motion.div>
                             </div>
-                        </div>
                         </div>
                     </div>
                 </main>

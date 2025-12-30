@@ -4,6 +4,7 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Gift, ExternalLink, HelpCircle, TrendingUp, Code, Users, Crown, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { levels, platformLinks } from '@/data/traderMenu';
@@ -12,6 +13,11 @@ const TraderMenu = () => {
   const navigate = useNavigate();
   const { getProgress } = useProgress();
   const progress = getProgress();
+
+  useSwipeBack({
+    onSwipeBack: () => navigate('/home'),
+    enabled: true
+  });
 
   const handleHomeClick = () => {
     navigate('/home');
@@ -64,7 +70,8 @@ const TraderMenu = () => {
             {/* Промокоды - верхняя кнопка */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
               transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
               className="mb-6"
             >
@@ -152,7 +159,8 @@ const TraderMenu = () => {
                   <motion.div
                     key={level.id}
                     initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, amount: 0.1 }}
                     transition={{ delay: 0.2 + index * 0.1, type: "spring", stiffness: 300, damping: 25 }}
                   >
                     <div
@@ -190,8 +198,9 @@ const TraderMenu = () => {
               {/* PocketOptions */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, type: "spring", stiffness: 300, damping: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 300, damping: 25 }}
               >
                 <div
                   className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
@@ -234,8 +243,9 @@ const TraderMenu = () => {
               {/* BlackMirror ULTRA */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, type: "spring", stiffness: 300, damping: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ delay: 0.4, type: "spring", stiffness: 300, damping: 25 }}
               >
                 <div
                   className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
@@ -278,8 +288,9 @@ const TraderMenu = () => {
               {/* FAQ */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, type: "spring", stiffness: 300, damping: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 25 }}
               >
                 <div
                   className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"

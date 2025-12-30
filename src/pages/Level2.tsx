@@ -4,6 +4,7 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Code, ExternalLink, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +15,11 @@ const Level2 = () => {
   const { getProgress } = useProgress();
   const progress = getProgress();
   const level = levels[1];
+
+  useSwipeBack({
+    onSwipeBack: () => navigate('/trader-menu'),
+    enabled: true
+  });
 
   const handleHomeClick = () => {
     navigate('/home');
@@ -51,7 +57,8 @@ const Level2 = () => {
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
               className="mb-6"
             >
               <div className="glass-card rounded-xl p-6 neon-border mb-6">
@@ -83,8 +90,9 @@ const Level2 = () => {
                     <motion.li
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true, amount: 0.1 }}
+                      transition={{ delay: index * 0.05 }}
                       className="flex items-start gap-2 sm:gap-3"
                     >
                       <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
@@ -119,8 +127,9 @@ const Level2 = () => {
                       <motion.li
                         key={index}
                         initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, amount: 0.1 }}
+                        transition={{ delay: index * 0.05 }}
                         className="flex items-start gap-2 sm:gap-3"
                       >
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
@@ -136,8 +145,9 @@ const Level2 = () => {
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.1 }}
+                    transition={{ delay: 0.1 + index * 0.05 }}
                   >
                     <Button
                       variant="outline"

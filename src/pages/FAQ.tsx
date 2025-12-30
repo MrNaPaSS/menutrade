@@ -4,6 +4,7 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, HelpCircle, ChevronDown, ChevronUp, BookOpen, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -14,6 +15,12 @@ const FAQ = () => {
   const navigate = useNavigate();
   const { getProgress } = useProgress();
   const progress = getProgress();
+
+  useSwipeBack({
+    onSwipeBack: () => navigate('/trader-menu'),
+    enabled: true
+  });
+
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [isInstructionOpen, setIsInstructionOpen] = useState(false);
 
@@ -63,7 +70,8 @@ const FAQ = () => {
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
                   transition={{ delay: index * 0.1 }}
                 >
                   <div className="glass-card rounded-xl neon-border overflow-hidden">
@@ -83,7 +91,7 @@ const FAQ = () => {
                         <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                       )}
                     </button>
-                    
+
                     {openItem === item.id && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
@@ -106,10 +114,11 @@ const FAQ = () => {
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
               transition={{ delay: 0.4 }}
             >
-              <div 
+              <div
                 className="glass-card rounded-xl p-6 neon-border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:bg-primary/5"
                 onClick={() => setIsInstructionOpen(true)}
               >

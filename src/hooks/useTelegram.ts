@@ -81,6 +81,7 @@ export interface TelegramWebApp {
     notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
     selectionChanged: () => void;
   };
+  isVersionAtLeast: (version: string) => boolean;
 }
 
 declare global {
@@ -114,47 +115,22 @@ export function useTelegram() {
     let checkInterval: NodeJS.Timeout | null = null;
 
     const initTelegram = () => {
-      // Проверяем наличие Telegram Web App
       if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
 
-        // Разворачиваем на весь экран
-        tg.expand();
-        if (tg.requestFullscreen) {
-          tg.requestFullscreen();
-        }
-
-        // Скрываем стандартную кнопку Back
-        tg.BackButton.hide();
-
-        // Настройка высоты через viewport
-        const setViewportHeight = () => {
-          if (tg.viewportHeight) {
-            document.documentElement.style.setProperty('--tg-viewport-height', `${tg.viewportHeight}px`);
-            document.body.style.height = `${tg.viewportHeight}px`;
-          }
-        };
-
-        setViewportHeight();
-
-        // Обновляем высоту при изменении viewport
-        tg.onEvent('viewportChanged', () => {
-          setViewportHeight();
-        });
-
-        console.log('Telegram WebApp найден:', {
-          version: tg.version,
-          platform: tg.platform,
-          user: tg.initDataUnsafe?.user,
-          initData: tg.initData ? 'present' : 'missing'
-        });
-
-        // Инициализация
         try {
+          // Инициализация
           tg.ready();
-
-          // Разворачиваем на весь экран
           tg.expand();
+
+          // Fullscreen доступен начиная с версии 7.2
+          if (tg.isVersionAtLeast?.('7.2') && tg.requestFullscreen) {
+            try {
+              tg.requestFullscreen();
+            } catch (fsError) {
+              console.warn('Ошибка при входе в полноэкранный режим:', fsError);
+            }
+          }
 
           // Скрываем стандартную кнопку Back
           tg.BackButton.hide();
@@ -174,42 +150,38 @@ export function useTelegram() {
             setViewportHeight();
           });
 
+          console.log('Telegram WebApp найден:', {
+            version: tg.version,
+            platform: tg.platform,
+            user: tg.initDataUnsafe?.user,
+            initData: tg.initData ? 'present' : 'missing'
+          });
+
           // Валидация данных Telegram
           const validation = validateTelegramData(tg.initData, tg.initDataUnsafe);
 
           if (!validation.isValid) {
             console.warn('Валидация данных Telegram не прошла:', validation.error);
-            // В production блокируем доступ, если валидация не прошла
             if (import.meta.env.PROD) {
               console.error('❌ В production режиме доступ заблокирован из-за ошибки валидации');
               setIsReady(true);
               return;
             }
-            // В development продолжаем работу с предупреждением
           } else {
             console.log('✅ Данные Telegram прошли базовую валидацию');
-            // ВАЖНО: Для полной безопасности нужно проверить hash на сервере!
           }
 
           setWebApp(tg);
 
-          // Получаем данные пользователя только если валидация прошла
+          // Получаем данные пользователя
           if (validation.isValid && tg.initDataUnsafe?.user) {
             const telegramUser = tg.initDataUnsafe.user;
             console.log('Пользователь Telegram авторизован:', {
               id: telegramUser.id,
               name: `${telegramUser.first_name} ${telegramUser.last_name || ''}`,
-              username: telegramUser.username,
-              auth_date: tg.initDataUnsafe.auth_date
+              username: telegramUser.username
             });
             setUser(telegramUser);
-          } else {
-            if (!validation.isValid) {
-              console.warn('Пользователь не установлен из-за ошибки валидации');
-            } else {
-              console.warn('Данные пользователя не найдены в initDataUnsafe');
-              console.log('initDataUnsafe:', tg.initDataUnsafe);
-            }
           }
 
           // Настройка темы

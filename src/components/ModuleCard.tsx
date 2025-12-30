@@ -26,13 +26,14 @@ export function ModuleCard({ module, onClick, index }: ModuleCardProps) {
         isLocked ? "opacity-50 cursor-not-allowed bg-muted/20" : "glass-card-hover cursor-pointer"
       )}
       initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.1 }}
       transition={{ delay: index * 0.1, type: "spring", stiffness: 300, damping: 25 }}
       whileHover={!isLocked ? { y: -4, scale: 1.02 } : undefined}
       whileTap={!isLocked ? { scale: 0.98 } : undefined}
     >
       <div className="flex items-start gap-2 sm:gap-3 md:gap-4">
-        <motion.div 
+        <motion.div
           className={cn(
             "relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0",
             "bg-gradient-to-br from-primary/15 to-secondary/15 border border-primary/20",
@@ -53,7 +54,7 @@ export function ModuleCard({ module, onClick, index }: ModuleCardProps) {
             {module.title}
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 line-clamp-1 break-words overflow-wrap-anywhere word-break-break-word whitespace-normal">{module.description}</p>
-          
+
           <div className="mt-2 sm:mt-3">
             <div className="flex justify-between text-[10px] sm:text-xs mb-1 sm:mb-1.5">
               <span className="text-muted-foreground font-medium">{completedLessons}/{totalLessons} уроков</span>

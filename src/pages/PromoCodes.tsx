@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Gift, ExternalLink, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,12 @@ import { useState } from 'react';
 
 const PromoCodes = () => {
   const navigate = useNavigate();
+
+  useSwipeBack({
+    onSwipeBack: () => navigate('/trader-menu'),
+    enabled: true
+  });
+
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const handleHomeClick = () => {
@@ -58,20 +65,21 @@ const PromoCodes = () => {
                 <motion.div
                   key={promo.id}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
                   transition={{ delay: index * 0.1 }}
                 >
                   <div className="glass-card rounded-xl p-4 sm:p-6 neon-border">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                          <Gift className="w-6 h-6 text-primary" />
-                        </div>
+                        <Gift className="w-6 h-6 text-primary" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-display font-bold text-lg sm:text-xl">{promo.code}</h3>
                           <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
-                              {promo.bonus}
-                            </Badge>
+                            {promo.bonus}
+                          </Badge>
                         </div>
                       </div>
                     </div>

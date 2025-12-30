@@ -26,26 +26,27 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
         "w-full p-4 sm:p-5 rounded-lg sm:rounded-xl text-left touch-manipulation min-h-[60px]",
         "border border-border/40",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
-        lesson.isLocked 
-          ? "opacity-50 cursor-not-allowed bg-muted/10" 
+        lesson.isLocked
+          ? "opacity-50 cursor-not-allowed bg-muted/10"
           : "glass-card-hover cursor-pointer",
         lesson.isCompleted && "border-primary/30"
       )}
       initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, amount: 0.1 }}
       transition={{ delay: index * 0.08, type: "spring", stiffness: 300, damping: 25 }}
       whileHover={!lesson.isLocked ? { x: 8, scale: 1.02 } : undefined}
       whileTap={!lesson.isLocked ? { scale: 0.98 } : undefined}
     >
       <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-        <motion.div 
+        <motion.div
           className={cn(
             "relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0",
             "border",
-            lesson.isLocked 
-              ? "bg-muted/30 border-border/30" 
-              : lesson.isCompleted 
-                ? "bg-primary/15 border-primary/30 shadow-[0_0_15px_-5px_hsl(142,76%,52%,0.4)]" 
+            lesson.isLocked
+              ? "bg-muted/30 border-border/30"
+              : lesson.isCompleted
+                ? "bg-primary/15 border-primary/30 shadow-[0_0_15px_-5px_hsl(142,76%,52%,0.4)]"
                 : "bg-primary/10 border-primary/20"
           )}
           whileHover={!lesson.isLocked ? { scale: 1.1 } : undefined}
