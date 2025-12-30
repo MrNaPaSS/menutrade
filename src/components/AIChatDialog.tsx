@@ -19,6 +19,7 @@ import {
 import { useChatHistory, type ChatMessage } from '@/hooks/useChatHistory';
 import { useTradingContext } from '@/hooks/useTradingContext';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { useUserAccess } from '@/contexts/UserAccessContext';
 import { sendMessage, type FileData } from '@/services/openRouterService';
 import { ChatMessage as ChatMessageComponent } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
@@ -44,6 +45,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
   const { history, addMessage, updateMessage, clearHistory } = useChatHistory();
   const context = useTradingContext();
+  const { hasFullAccess, aiMessagesLeft, decrementAIMessages } = useUserAccess();
 
   useSwipeBack({
     onSwipeBack: () => onOpenChange(false),
@@ -89,6 +91,16 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   const handleSend = useCallback(async () => {
     if (!input.trim() && files.length === 0) return;
     if (isLoading) return;
+
+    // Проверка лимита для пользователей без доступа
+    if (!hasFullAccess && aiMessagesLeft <= 0) {
+      toast({
+        title: '❌ Лимит исчерпан',
+        description: 'Для безлимитного доступа пройдите регистрацию и внесите депозит',
+        duration: 5000
+      });
+      return;
+    }
 
     const userMessage = input.trim();
     const userFiles = [...files];
@@ -147,6 +159,11 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
         role: 'assistant',
         content: response
       });
+
+      // Уменьшаем счетчик для пользователей без доступа
+      if (!hasFullAccess) {
+        decrementAIMessages();
+      }
     } catch (error) {
       console.error('Ошибка отправки сообщения:', error);
       const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при отправке сообщения';
@@ -164,7 +181,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [input, files, history, isLoading, addMessage, context, toast]);
+  }, [input, files, history, isLoading, addMessage, context, toast, hasFullAccess, aiMessagesLeft, decrementAIMessages]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -213,6 +230,11 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
                 Эксперт по форекс рынку
               </p>
+              {!hasFullAccess && (
+                <p className="text-[10px] sm:text-xs text-orange-400 mt-1 font-semibold">
+                  Осталось вопросов: {aiMessagesLeft}/3
+                </p>
+              )}
             </div>
 
             {/* Кнопки управления (смещены чуть ниже) */}

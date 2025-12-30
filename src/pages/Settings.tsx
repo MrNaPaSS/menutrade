@@ -6,9 +6,10 @@ import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { useTelegramContext } from '@/contexts/TelegramContext';
+import { useAdminStats } from '@/hooks/useAdminStats';
 import { AdminStatsView } from '@/components/AdminStatsView';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
-import { ArrowLeft, Settings as SettingsIcon, RotateCcw, Globe, Bell, Info, Trash2, AlertTriangle, Shield, BarChart3, Users, FileDown, History } from 'lucide-react';
+import { ArrowLeft, Settings as SettingsIcon, RotateCcw, Globe, Bell, Info, Trash2, AlertTriangle, Shield, BarChart3, Users, FileDown, History, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -19,9 +20,10 @@ import { Separator } from '@/components/ui/separator';
 const Settings = () => {
   const navigate = useNavigate();
   const { getProgress, resetProgress } = useProgress();
-  const { isAdmin, user } = useTelegramContext();
+  const { isAdmin, user, userId } = useTelegramContext();
+  const { stats, isLoading: statsLoading, refetch: refetchStats } = useAdminStats(userId, isAdmin);
   const progress = getProgress();
-  
+
   const [notifications, setNotifications] = useState(true);
   const [language, setLanguage] = useState('ru');
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -32,7 +34,7 @@ const Settings = () => {
   };
 
   // Хук для свайпа назад
-  useSwipeBack({ 
+  useSwipeBack({
     onSwipeBack: handleHomeClick,
     enabled: true
   });
@@ -164,6 +166,15 @@ const Settings = () => {
                         <p className="text-xs text-muted-foreground">Управление системой</p>
                       </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={refetchStats}
+                      disabled={statsLoading}
+                      className="h-8 w-8 p-0"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${statsLoading ? 'animate-spin' : ''}`} />
+                    </Button>
                   </div>
 
                   {/* Вкладки админ-панели */}
@@ -179,11 +190,10 @@ const Settings = () => {
                         <button
                           key={tab.id}
                           onClick={() => setAdminView(tab.id as typeof adminView)}
-                          className={`p-1.5 sm:p-2 rounded-lg text-[10px] sm:text-xs font-medium transition-all touch-manipulation ${
-                            adminView === tab.id
-                              ? 'bg-primary/20 text-primary border border-primary/30'
-                              : 'bg-muted/20 text-muted-foreground active:bg-muted/30'
-                          }`}
+                          className={`p-1.5 sm:p-2 rounded-lg text-[10px] sm:text-xs font-medium transition-all touch-manipulation ${adminView === tab.id
+                            ? 'bg-primary/20 text-primary border border-primary/30'
+                            : 'bg-muted/20 text-muted-foreground active:bg-muted/30'
+                            }`}
                         >
                           <Icon className="w-3 h-3 sm:w-4 sm:h-4 mx-auto mb-0.5 sm:mb-1" />
                           <span className="hidden sm:inline">{tab.label}</span>
@@ -198,55 +208,65 @@ const Settings = () => {
                     {adminView === 'stats' && (
                       <div className="space-y-4">
                         <h4 className="font-semibold text-sm mb-3">Общая статистика</h4>
-                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
-                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-[10px] sm:text-xs text-muted-foreground">Всего пользователей</div>
+                        {statsLoading ? (
+                          <div className="text-center text-sm text-muted-foreground py-4">Загрузка...</div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                              <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{stats?.totalUsers || 0}</div>
+                              <div className="text-[10px] sm:text-xs text-muted-foreground">Всего пользователей</div>
+                            </div>
+                            <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                              <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{stats?.verified || 0}</div>
+                              <div className="text-[10px] sm:text-xs text-muted-foreground">Верифицированные</div>
+                            </div>
+                            <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                              <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{stats?.withPocketOption || 0}</div>
+                              <div className="text-[10px] sm:text-xs text-muted-foreground">С PO ID</div>
+                            </div>
+                            <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                              <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{stats?.deposited || 0}</div>
+                              <div className="text-[10px] sm:text-xs text-muted-foreground">С депозитом</div>
+                            </div>
+                            <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                              <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{stats?.newToday || 0}</div>
+                              <div className="text-[10px] sm:text-xs text-muted-foreground">Новых сегодня</div>
+                            </div>
+                            <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
+                              <div className="text-xl sm:text-2xl font-bold text-primary mb-1">{stats?.newThisWeek || 0}</div>
+                              <div className="text-[10px] sm:text-xs text-muted-foreground">Новых за неделю</div>
+                            </div>
                           </div>
-                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
-                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-[10px] sm:text-xs text-muted-foreground">Верифицированные</div>
-                          </div>
-                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
-                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-[10px] sm:text-xs text-muted-foreground">С PO ID</div>
-                          </div>
-                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
-                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-[10px] sm:text-xs text-muted-foreground">С депозитом</div>
-                          </div>
-                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
-                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-[10px] sm:text-xs text-muted-foreground">Новых сегодня</div>
-                          </div>
-                          <div className="p-2 sm:p-3 rounded-lg bg-muted/20">
-                            <div className="text-xl sm:text-2xl font-bold text-primary mb-1">0</div>
-                            <div className="text-[10px] sm:text-xs text-muted-foreground">Новых за неделю</div>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     )}
 
                     {adminView === 'referrals' && (
                       <div className="space-y-4">
                         <h4 className="font-semibold text-sm mb-3">Реферальная система</h4>
-                        <div className="space-y-3">
-                          <div className="p-3 rounded-lg bg-muted/20">
-                            <div className="text-lg font-bold text-primary mb-1">0</div>
-                            <div className="text-xs text-muted-foreground">Всего переходов</div>
-                          </div>
-                          <div className="p-3 rounded-lg bg-muted/20">
-                            <div className="text-lg font-bold text-primary mb-1">0</div>
-                            <div className="text-xs text-muted-foreground">Активированных рефералов</div>
-                          </div>
-                          <div className="p-3 rounded-lg bg-muted/20">
-                            <div className="text-lg font-bold text-primary mb-1">0</div>
-                            <div className="text-xs text-muted-foreground">Заявок на бонусы</div>
-                          </div>
-                        </div>
-                        <Button variant="outline" className="w-full mt-4" disabled>
-                          Просмотр заявок
-                        </Button>
+                        {statsLoading ? (
+                          <div className="text-center text-sm text-muted-foreground py-4">Загрузка...</div>
+                        ) : (
+                          <>
+                            <div className="space-y-3">
+                              <div className="p-3 rounded-lg bg-muted/20">
+                                <div className="text-lg font-bold text-primary mb-1">{stats?.referrals.totalClicks || 0}</div>
+                                <div className="text-xs text-muted-foreground">Всего переходов</div>
+                              </div>
+                              <div className="p-3 rounded-lg bg-muted/20">
+                                <div className="text-lg font-bold text-primary mb-1">{stats?.referrals.activatedCount || 0}</div>
+                                <div className="text-xs text-muted-foreground">Активированных рефералов</div>
+                              </div>
+                              <div className="p-3 rounded-lg bg-muted/20">
+                                <div className="text-lg font-bold text-primary mb-1">{stats?.referrals.bonusRequests || 0}</div>
+                                <div className="text-xs text-muted-foreground">Заявок на бонусы</div>
+                              </div>
+                            </div>
+                            <Button variant="outline" className="w-full mt-4" disabled>
+                              Просмотр заявок
+                            </Button>
+                          </>
+                        )}
                       </div>
                     )}
 
@@ -294,12 +314,12 @@ const Settings = () => {
                       {section.id === 'about' && <Info className="w-5 h-5 text-primary" />}
                       {section.title}
                     </h3>
-                    
+
                     <div className="space-y-4">
                       {section.items.map((item, itemIndex) => (
                         <div key={item.id}>
                           {itemIndex > 0 && <Separator className="my-4" />}
-                          
+
                           {item.type === 'switch' && (
                             <div className="flex items-center justify-between">
                               <div className="flex-1">

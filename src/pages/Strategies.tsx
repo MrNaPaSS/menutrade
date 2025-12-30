@@ -3,15 +3,17 @@ import { motion, useScroll, useMotionValueEvent, Variants } from 'framer-motion'
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
+import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
+import { useNavigate } from 'react-router-dom';
+import { useUserAccess } from '@/contexts/UserAccessContext';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ModuleCard } from '@/components/ModuleCard';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { strategyModules } from '@/data/strategies';
 import { Module } from '@/types/lesson';
 import { CheckCircle2, AlertCircle, AlertTriangle, Lightbulb, Info, Calculator, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { cn } from '@/lib/utils';
 
 // Функция для правильного извлечения текста из children ReactMarkdown
@@ -62,7 +64,7 @@ function convertEmojiLinesToLists(content: string): string {
       }
 
       // Добавляем как элемент списка
-      emojiBlock.push(`- ${text}`);
+      emojiBlock.push(`- ${text} `);
     } else {
       // Если была группа эмодзи, закрываем её
       if (inEmojiBlock && emojiBlock.length > 0) {
@@ -152,11 +154,11 @@ const MarkdownComponents: any = {
 
     return (
       <h3 className={cn("font-display text-sm font-semibold mt-3 mb-2 flex items-center gap-2 break-words overflow-wrap-anywhere", textColor)}>
-        <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center border flex-shrink-0", bgColor, `border-${textColor.replace('text-', '')}/20`)}>
+        <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center border flex-shrink-0", bgColor, `border - ${textColor.replace('text-', '')}/20`)}>
           {icon}
-        </div>
+        </div >
         <span className="break-words overflow-wrap-anywhere">{children}</span>
-      </h3>
+      </h3 >
     );
   },
   p: ({ children, ...props }: any) => {
@@ -373,6 +375,7 @@ type View = 'modules' | 'content';
 
 const Strategies = () => {
   const navigate = useNavigate();
+  const { hasFullAccess, isLoading: accessLoading } = useUserAccess();
   const [view, setView] = useState<View>('modules');
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [api, setApi] = useState<CarouselApi>(null);
@@ -382,6 +385,11 @@ const Strategies = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [loadedCardIndex, setLoadedCardIndex] = useState<Set<number>>(new Set([0]));
   const { scrollY } = useScroll();
+
+  // Проверка доступа
+  if (!accessLoading && !hasFullAccess) {
+    return <AccessDeniedScreen feature="стратегии" onBack={() => navigate('/home')} />;
+  }
 
   // Логика скрытия заголовка при прокрутке
   useMotionValueEvent(scrollY, "change", (latest) => {

@@ -9,8 +9,10 @@ import { LessonContent } from '@/components/LessonContent';
 import { BottomNav } from '@/components/BottomNav';
 import { MasterTest } from '@/components/MasterTest';
 import { Quiz } from '@/components/Quiz';
+import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
 import { useProgress } from '@/hooks/useProgress';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { useUserAccess } from '@/contexts/UserAccessContext';
 import { Module, Lesson, QuizQuestion } from '@/types/lesson';
 import { ArrowLeft, RotateCcw, Trophy, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +25,7 @@ const Index = () => {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { scrollY } = useScroll();
+  const { hasFullAccess, isLoading: accessLoading } = useUserAccess();
 
   const {
     modules,
@@ -37,6 +40,11 @@ const Index = () => {
   const [view, setView] = useState<View>('modules');
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+
+  // Проверка доступа
+  if (!accessLoading && !hasFullAccess) {
+    return <AccessDeniedScreen feature="обучение" onBack={() => navigate('/home')} />;
+  }
 
   const handleModuleClick = (module: Module) => {
     setSelectedModule(module);
@@ -319,8 +327,8 @@ const Index = () => {
                   onClick={handleModuleTestClick}
                   disabled={!allLessonsCompleted || currentModule.isCompleted}
                   className={`w-full glass-card rounded-xl p-4 neon-border transition-all duration-300 flex items-center justify-center gap-3 font-display font-semibold text-lg ${allLessonsCompleted && !currentModule.isCompleted
-                      ? 'hover:bg-primary/10 cursor-pointer'
-                      : 'opacity-50 cursor-not-allowed'
+                    ? 'hover:bg-primary/10 cursor-pointer'
+                    : 'opacity-50 cursor-not-allowed'
                     }`}
                 >
                   <Brain className={`w-6 h-6 ${allLessonsCompleted && !currentModule.isCompleted ? 'text-primary' : 'text-muted-foreground'}`} />

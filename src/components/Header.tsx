@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ProgressBar } from './ProgressBar';
 import { PepeIcon } from './PepeIcon';
 import { TelegramAuthStatus } from './TelegramAuthStatus';
-import { Menu, Globe, Settings } from 'lucide-react';
+import { Menu, Globe, Settings, Home, User } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -134,6 +134,18 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 glass-card neon-border">
               <DropdownMenuLabel>Меню</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem onClick={() => navigate('/home')} className="cursor-pointer">
+                <Home className="mr-2 h-4 w-4" />
+                На главную
+              </DropdownMenuItem>
+
+              <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                Профиль пользователя
+              </DropdownMenuItem>
+
               <DropdownMenuSeparator />
 
               <DropdownMenuLabel className="flex items-center gap-2">

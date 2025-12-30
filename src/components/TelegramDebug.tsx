@@ -24,9 +24,36 @@ export function TelegramDebug() {
     window.location.reload();
   };
 
+  const handleLoginAsAdmin = () => {
+    // Пользователь с регистрацией и депозитом (ID из info_bot_users.json)
+    const adminUser = {
+      id: 511442168,
+      first_name: 'VIP',
+      last_name: 'User',
+      username: 'kaktotakxm'
+    };
+    localStorage.clear(); // Очищаем все данные для чистого теста
+    localStorage.setItem('telegram_test_user', JSON.stringify(adminUser));
+    localStorage.setItem('admin_bypass', '511442168'); // Обход авторизации
+    window.location.reload();
+  };
+
+  const handleLoginAsUser = () => {
+    // Пользователь без регистрации и депозита (ID из info_bot_users.json)
+    const regularUser = {
+      id: 8447308589,
+      first_name: 'Guest',
+      last_name: 'User',
+      username: 'Mark'
+    };
+    localStorage.clear(); // Очищаем все данные для чистого теста
+    localStorage.setItem('telegram_test_user', JSON.stringify(regularUser));
+    localStorage.setItem('admin_bypass', '8447308589'); // Обход авторизации
+    window.location.reload();
+  };
+
   const handleClearTestAuth = () => {
-    localStorage.removeItem('telegram_test_user');
-    localStorage.removeItem('admin_bypass');
+    localStorage.clear();
     window.location.reload();
   };
 
@@ -59,7 +86,7 @@ export function TelegramDebug() {
       >
         {showDebug ? 'Скрыть' : 'Показать'} Debug
       </Button>
-      
+
       {showDebug && (
         <div className="p-4 max-w-xs bg-background/95 backdrop-blur-sm glass-card rounded-xl border border-border/30">
           <div className="space-y-2 text-xs">
@@ -97,19 +124,25 @@ export function TelegramDebug() {
               <Button size="sm" variant="outline" onClick={handleValidateData} className="w-full text-xs">
                 Проверить валидацию
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={handleAdminBypass} 
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAdminBypass}
                 className="w-full text-xs bg-yellow-500/20 border-yellow-500/50 hover:bg-yellow-500/30"
               >
                 🔓 Админ-обход авторизации
               </Button>
-              <Button size="sm" variant="outline" onClick={handleTestAuth} className="w-full text-xs">
-                Тест авторизация (Admin)
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleClearTestAuth} className="w-full text-xs">
-                Очистить тест
+              <div className="pt-2 border-t border-border/30">
+                <div className="text-xs font-bold mb-1 text-muted-foreground">Тестовые пользователи:</div>
+                <Button size="sm" variant="outline" onClick={handleLoginAsAdmin} className="w-full text-xs bg-green-500/10 border-green-500/30">
+                  ✅ С доступом (ID: 511442168)
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleLoginAsUser} className="w-full text-xs bg-orange-500/10 border-orange-500/30">
+                  ❌ Без доступа (ID: 8447308589)
+                </Button>
+              </div>
+              <Button size="sm" variant="outline" onClick={handleClearTestAuth} className="w-full text-xs bg-red-500/10 border-red-500/30">
+                🗑️ Очистить и сбросить
               </Button>
             </div>
           </div>

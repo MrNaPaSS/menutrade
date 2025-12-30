@@ -111,6 +111,20 @@ export function useTelegram() {
     return null;
   };
 
+  // Для дебаг-режима: проверяем debug_user
+  const getDebugUser = (): TelegramUser | null => {
+    if (typeof window === 'undefined') return null;
+    const debugUser = localStorage.getItem('debug_user');
+    if (debugUser) {
+      try {
+        return JSON.parse(debugUser);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
   useEffect(() => {
     let checkInterval: NodeJS.Timeout | null = null;
 
@@ -217,14 +231,17 @@ export function useTelegram() {
             if (checkInterval) clearInterval(checkInterval);
             console.log('Telegram WebApp не найден после ожидания');
 
-            // Для тестирования в режиме разработки: используем тестового пользователя из localStorage
+            // Для тестирования в режиме разработки: используем дебаг или тестового пользователя из localStorage
             // ВАЖНО: В продакшене это не работает, так как проверка isTelegram все равно будет false
             if (import.meta.env.DEV) {
+              const debugUser = getDebugUser();
               const testUser = getTestUser();
-              if (testUser) {
-                console.log('⚠️ РЕЖИМ РАЗРАБОТКИ: Используется тестовый пользователь:', testUser);
+              const userToUse = debugUser || testUser;
+
+              if (userToUse) {
+                console.log('⚠️ РЕЖИМ РАЗРАБОТКИ: Используется дебаг/тестовый пользователь:', userToUse);
                 console.warn('⚠️ В продакшене доступ будет заблокирован, так как isTelegram = false');
-                setUser(testUser);
+                setUser(userToUse);
               }
             }
 
