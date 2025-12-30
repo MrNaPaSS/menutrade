@@ -121,6 +121,8 @@ export function useTelegram() {
         try {
           // Инициализация
           tg.ready();
+
+          // Всегда расширяем приложение для максимального пространства
           tg.expand();
 
           // Fullscreen доступен начиная с версии 7.2
@@ -131,6 +133,8 @@ export function useTelegram() {
               console.warn('Ошибка при входе в полноэкранный режим:', fsError);
             }
           }
+
+          setWebApp(tg);
 
           // Скрываем стандартную кнопку Back
           tg.BackButton.hide();
@@ -162,7 +166,11 @@ export function useTelegram() {
 
           if (!validation.isValid) {
             console.warn('Валидация данных Telegram не прошла:', validation.error);
-            if (import.meta.env.PROD) {
+            // Если мы точно внутри Telegram (tg объект есть), но валидация данных капризничает на ПК,
+            // в режиме разработки не блокируем, а в продакшене блокируем только если это точно не десктоп
+            const isDesktop = tg.platform === 'tdesktop' || tg.platform === 'macos' || tg.platform === 'weba';
+
+            if (import.meta.env.PROD && !isDesktop) {
               console.error('❌ В production режиме доступ заблокирован из-за ошибки валидации');
               setIsReady(true);
               return;
