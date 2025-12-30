@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, ReactNode } from 'react';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion, useScroll, useMotionValueEvent, Variants } from 'framer-motion';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { cn } from '@/lib/utils';
 
 // Функция для правильного извлечения текста из children ReactMarkdown
 function extractTextFromChildren(children: ReactNode): string {
@@ -90,26 +91,282 @@ function removeEmojiFromChildren(children: ReactNode): ReactNode {
     return children;
   }
   if (Array.isArray(children)) {
-    return children.map((child, index) => {
+    return (children as ReactNode[]).map((child, index) => {
       const processed = removeEmojiFromChildren(child);
-      // Если первый элемент - строка с эмодзи, удаляем эмодзи
       if (index === 0 && typeof child === 'string' && /^(✅|❌|⚠️|💡)/u.test(child)) {
         return child.replace(/^(✅|❌|⚠️|💡)\s*/u, '').trim();
       }
       return processed;
     });
   }
-  if (children && typeof children === 'object' && 'props' in children && children.props) {
+  if (children && typeof children === 'object' && 'props' in (children as any) && (children as any).props) {
     return {
-      ...children,
+      ...(children as any),
       props: {
-        ...children.props,
-        children: removeEmojiFromChildren(children.props.children)
+        ...(children as any).props,
+        children: removeEmojiFromChildren((children as any).props.children)
       }
-    };
+    } as ReactNode;
   }
   return children;
 }
+
+// Markdown Components for Strategies
+const MarkdownComponents: any = {
+  h1: ({ children }: any) => (
+    <h1 className="font-display text-base font-bold text-foreground mt-0 mb-4 neon-text flex items-center gap-2 pt-2 break-words overflow-wrap-anywhere">
+      <span className="w-1 h-4 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
+      <span className="break-words overflow-wrap-anywhere">{children}</span>
+    </h1>
+  ),
+  h2: ({ children }: any) => (
+    <h2 className="font-display text-sm font-semibold text-foreground mt-3 mb-2 flex items-center gap-2 border-b-2 border-primary/30 pb-2 break-words overflow-wrap-anywhere">
+      <span className="w-0.5 h-3 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] flex-shrink-0"></span>
+      <span className="break-words overflow-wrap-anywhere">{children}</span>
+    </h2>
+  ),
+  h3: ({ children }: any) => {
+    const text = extractTextFromChildren(children);
+    let icon = <Info className="w-4 h-4 text-primary" />;
+    let bgColor = 'bg-primary/10';
+    let textColor = 'text-primary';
+
+    if (text.includes('❌')) {
+      icon = <AlertCircle className="w-4 h-4 text-destructive" />;
+      bgColor = 'bg-destructive/10';
+      textColor = 'text-destructive';
+    } else if (text.includes('✅')) {
+      icon = <CheckCircle2 className="w-4 h-4 text-primary" />;
+      bgColor = 'bg-primary/10';
+      textColor = 'text-primary';
+    } else if (text.includes('⚠️')) {
+      icon = <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      bgColor = 'bg-yellow-500/10';
+      textColor = 'text-yellow-500';
+    } else if (text.includes('💡')) {
+      icon = <Lightbulb className="w-4 h-4 text-primary" />;
+      bgColor = 'bg-primary/10';
+      textColor = 'text-primary';
+    }
+
+    return (
+      <h3 className={cn("font-display text-sm font-semibold mt-3 mb-2 flex items-center gap-2 break-words overflow-wrap-anywhere", textColor)}>
+        <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center border flex-shrink-0", bgColor, `border-${textColor.replace('text-', '')}/20`)}>
+          {icon}
+        </div>
+        <span className="break-words overflow-wrap-anywhere">{children}</span>
+      </h3>
+    );
+  },
+  p: ({ children, ...props }: any) => {
+    const isInBlockquote = props.parent?.tagName === 'blockquote';
+    const text = extractTextFromChildren(children);
+    const trimmedText = text.trim();
+
+    const startsWithEmoji = trimmedText.startsWith('✅') ||
+      trimmedText.startsWith('❌') ||
+      trimmedText.startsWith('⚠️') ||
+      trimmedText.startsWith('💡');
+
+    if (startsWithEmoji) {
+      let icon = null;
+      let bgColor = '';
+      let borderColor = '';
+      const displayChildren = removeEmojiFromChildren(children);
+
+      if (trimmedText.startsWith('❌')) {
+        icon = <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />;
+        bgColor = 'bg-destructive/10';
+        borderColor = 'border-destructive/30';
+      } else if (trimmedText.startsWith('✅')) {
+        icon = <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />;
+        bgColor = 'bg-primary/10';
+        borderColor = 'border-primary/30';
+      } else if (trimmedText.startsWith('⚠️')) {
+        icon = <AlertTriangle className="w-4 h-4 text-yellow-500 flex-shrink-0" />;
+        bgColor = 'bg-yellow-500/10';
+        borderColor = 'border-yellow-500/30';
+      } else if (trimmedText.startsWith('💡')) {
+        icon = <Lightbulb className="w-4 h-4 text-primary flex-shrink-0" />;
+        bgColor = 'bg-primary/10';
+        borderColor = 'border-primary/30';
+      }
+
+      return (
+        <div className={cn("flex items-start gap-2 p-3 rounded-lg border-2 mb-3 shadow-lg text-left w-full block", bgColor, borderColor)}>
+          <span className="mt-0.5 flex-shrink-0">{icon}</span>
+          <div className="text-foreground text-sm flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
+        </div>
+      );
+    }
+
+    if (text.includes('✅') || text.includes('❌')) {
+      const Component = isInBlockquote ? 'div' : 'p';
+      return (
+        <Component className="text-sm leading-relaxed mb-4 flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10 break-words overflow-wrap-anywhere">
+          <span className="mt-0.5 flex-shrink-0">
+            {text.includes('✅') ? (
+              <CheckCircle2 className="w-4 h-4 text-primary" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-destructive" />
+            )}
+          </span>
+          <span className="text-foreground flex-1 break-words overflow-wrap-anywhere">{children}</span>
+        </Component>
+      );
+    }
+
+    if (isInBlockquote) {
+      return <div className="text-sm text-foreground/90 leading-relaxed mb-4 break-words overflow-wrap-anywhere hyphens-auto">{children}</div>;
+    }
+
+    return <p className="text-sm text-foreground/90 leading-relaxed mb-4 break-words overflow-wrap-anywhere hyphens-auto">{children}</p>;
+  },
+  ul: ({ children }: any) => (
+    <ul className="list-none space-y-2 mb-4 break-words overflow-wrap-anywhere">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }: any) => (
+    <ol className="list-decimal list-inside space-y-2 text-foreground/90 mb-4 break-words overflow-wrap-anywhere text-sm">
+      {children}
+    </ol>
+  ),
+  li: ({ children }: any) => {
+    const text = extractTextFromChildren(children);
+    const hasEmoji = text.includes('❌') || text.includes('✅') || text.includes('⚠️') || text.includes('💡');
+
+    if (hasEmoji) {
+      let icon = null;
+      let bgColor = '';
+      let borderColor = '';
+      const displayChildren = removeEmojiFromChildren(children);
+
+      if (text.includes('✅')) {
+        icon = <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />;
+        bgColor = 'bg-primary/10';
+        borderColor = 'border-primary/30';
+      } else if (text.includes('❌')) {
+        icon = <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />;
+        bgColor = 'bg-destructive/10';
+        borderColor = 'border-destructive/30';
+      } else if (text.includes('⚠️')) {
+        icon = <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />;
+        bgColor = 'bg-yellow-500/10';
+        borderColor = 'border-yellow-500/30';
+      } else if (text.includes('💡')) {
+        icon = <Lightbulb className="w-5 h-5 text-primary flex-shrink-0" />;
+        bgColor = 'bg-primary/10';
+        borderColor = 'border-primary/30';
+      }
+      return (
+        <li className={cn("flex items-start gap-2 p-3 rounded-lg border-2 mb-3 shadow-lg text-left w-full block", bgColor, borderColor)}>
+          <span className="mt-0.5 flex-shrink-0">{icon}</span>
+          <div className="text-foreground text-sm flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
+        </li>
+      );
+    }
+    return (
+      <li className="text-foreground/90 text-sm flex items-start gap-2 mb-3 p-2 hover:bg-primary/5 rounded-lg transition-colors text-left break-words overflow-wrap-anywhere">
+        <span className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+        <span className="flex-1 text-left break-words overflow-wrap-anywhere">{children}</span>
+      </li>
+    );
+  },
+  strong: ({ children }: any) => (
+    <strong className="text-primary font-bold bg-primary/15 px-1.5 sm:px-2 py-0.5 rounded-md border border-primary/20 neon-text break-words overflow-wrap-anywhere inline-block text-xs sm:text-sm">{children}</strong>
+  ),
+  blockquote: ({ children }: any) => {
+    const text = extractTextFromChildren(children);
+    let icon = <Info className="w-6 h-6" />;
+    let bgColor = 'bg-primary/10 border-primary/40';
+    let iconColor = 'text-primary';
+    let title = '';
+
+    if (text.includes('⚠️') || text.toLowerCase().includes('важно') || text.toLowerCase().includes('критически')) {
+      icon = <AlertTriangle className="w-6 h-6" />;
+      bgColor = 'bg-yellow-500/15 border-yellow-500/40';
+      iconColor = 'text-yellow-400';
+      title = 'Важно';
+    } else if (text.includes('💡') || text.toLowerCase().includes('совет')) {
+      icon = <Lightbulb className="w-6 h-6" />;
+      bgColor = 'bg-blue-500/15 border-blue-500/40';
+      iconColor = 'text-blue-400';
+      title = 'Совет';
+    } else if (text.includes('✅') || text.toLowerCase().includes('правило')) {
+      icon = <CheckCircle2 className="w-6 h-6" />;
+      bgColor = 'bg-green-500/15 border-green-500/40';
+      iconColor = 'text-green-400';
+      title = 'Правило';
+    } else if (text.includes('❌') || text.toLowerCase().includes('ошибка')) {
+      icon = <AlertCircle className="w-6 h-6" />;
+      bgColor = 'bg-destructive/15 border-destructive/40';
+      iconColor = 'text-destructive';
+      title = 'Ошибка';
+    }
+
+    return (
+      <blockquote className={cn("glass-card rounded-lg p-3 neon-border mb-6 flex items-start gap-2 break-words overflow-wrap-anywhere", bgColor)}>
+        <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0", bgColor, iconColor)}>
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          {title && (
+            <div className={cn("font-display font-bold text-xs mb-1", iconColor)}>{title}</div>
+          )}
+          <div className="text-sm text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere [&_p]:contents [&_p_*]:block">{children}</div>
+        </div>
+      </blockquote>
+    );
+  },
+  code: ({ children, className }: any) => {
+    const match = /language-(\w+)/.exec(className || '');
+    const isInline = !match;
+
+    if (isInline) {
+      return <code className="relative rounded bg-muted px-[0.2rem] sm:px-[0.3rem] py-[0.15rem] sm:py-[0.2rem] font-mono text-[10px] sm:text-xs md:text-sm font-semibold text-foreground">{children}</code>;
+    }
+    return (
+      <pre className="mb-3 sm:mb-4 mt-4 sm:mt-6 overflow-x-auto rounded-lg border bg-black/30 p-2 sm:p-3 md:p-4 font-mono text-[10px] sm:text-xs md:text-sm text-foreground">
+        <code className={className}>{children}</code>
+      </pre>
+    );
+  },
+  table: ({ children }: any) => (
+    <div className="my-6 w-full overflow-y-auto rounded-lg border neon-border">
+      <table className="w-full text-foreground">{children}</table>
+    </div>
+  ),
+  th: ({ children }: any) => (
+    <th className="border px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right bg-primary/10 text-primary">{children}</th>
+  ),
+  td: ({ children }: any) => (
+    <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right text-muted-foreground">{children}</td>
+  ),
+};
+
+const moduleListVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const moduleItemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 15
+    }
+  }
+};
 
 type View = 'modules' | 'content';
 
@@ -342,254 +599,7 @@ const Strategies = () => {
                         >
                           <div className="markdown-content text-sm leading-relaxed w-full pb-4 px-0">
                             {loadedCardIndex.has(index) ? (
-                              <ReactMarkdown
-                                components={{
-                                  h1: ({ children }) => (
-                                    <h1 className="font-display text-base font-bold text-foreground mt-0 mb-4 neon-text flex items-center gap-2 pt-2 break-words overflow-wrap-anywhere">
-                                      <span className="w-1 h-4 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
-                                      <span className="break-words overflow-wrap-anywhere">{children}</span>
-                                    </h1>
-                                  ),
-                                  h2: ({ children }) => (
-                                    <h2 className="font-display text-sm font-semibold text-foreground mt-3 mb-2 flex items-center gap-2 border-b-2 border-primary/30 pb-2 break-words overflow-wrap-anywhere">
-                                      <span className="w-0.5 h-3 bg-primary rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] flex-shrink-0"></span>
-                                      <span className="break-words overflow-wrap-anywhere">{children}</span>
-                                    </h2>
-                                  ),
-                                  h3: ({ children }) => {
-                                    const text = extractTextFromChildren(children);
-                                    let icon = <Info className="w-4 h-4 text-primary" />;
-                                    let bgColor = 'bg-primary/10';
-                                    let textColor = 'text-primary';
-
-                                    if (text.includes('❌')) {
-                                      icon = <AlertCircle className="w-4 h-4 text-destructive" />;
-                                      bgColor = 'bg-destructive/10';
-                                      textColor = 'text-destructive';
-                                    } else if (text.includes('✅')) {
-                                      icon = <CheckCircle2 className="w-4 h-4 text-primary" />;
-                                      bgColor = 'bg-primary/10';
-                                      textColor = 'text-primary';
-                                    } else if (text.includes('⚠️')) {
-                                      icon = <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-                                      bgColor = 'bg-yellow-500/10';
-                                      textColor = 'text-yellow-500';
-                                    } else if (text.includes('💡')) {
-                                      icon = <Lightbulb className="w-4 h-4 text-primary" />;
-                                      bgColor = 'bg-primary/10';
-                                      textColor = 'text-primary';
-                                    }
-
-                                    return (
-                                      <h3 className={`font-display text-sm font-semibold ${textColor} mt-3 mb-2 flex items-center gap-2 break-words overflow-wrap-anywhere`}>
-                                        <div className={`w-6 h-6 rounded-lg ${bgColor} flex items-center justify-center border border-${textColor}/20 flex-shrink-0`}>
-                                          {icon}
-                                        </div>
-                                        <span className="break-words overflow-wrap-anywhere">{children}</span>
-                                      </h3>
-                                    );
-                                  },
-                                  p: ({ children, ...props }) => {
-                                    // Проверяем, находится ли параграф внутри blockquote
-                                    const isInBlockquote = (props as { parent?: { tagName: string } }).parent?.tagName === 'blockquote';
-
-                                    const text = extractTextFromChildren(children);
-                                    const trimmedText = text.trim();
-
-                                    // Проверяем, начинается ли параграф с эмодзи
-                                    const startsWithEmoji = trimmedText.startsWith('✅') ||
-                                      trimmedText.startsWith('❌') ||
-                                      trimmedText.startsWith('⚠️') ||
-                                      trimmedText.startsWith('💡');
-
-                                    if (startsWithEmoji) {
-                                      let icon = null;
-                                      let bgColor = '';
-                                      let borderColor = '';
-                                      const displayChildren = removeEmojiFromChildren(children);
-
-                                      if (trimmedText.startsWith('❌')) {
-                                        icon = <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />;
-                                        bgColor = 'bg-destructive/10';
-                                        borderColor = 'border-destructive/30';
-                                      } else if (trimmedText.startsWith('✅')) {
-                                        icon = <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />;
-                                        bgColor = 'bg-primary/10';
-                                        borderColor = 'border-primary/30';
-                                      } else if (trimmedText.startsWith('⚠️')) {
-                                        icon = <AlertTriangle className="w-4 h-4 text-yellow-500 flex-shrink-0" />;
-                                        bgColor = 'bg-yellow-500/10';
-                                        borderColor = 'border-yellow-500/30';
-                                      } else if (trimmedText.startsWith('💡')) {
-                                        icon = <Lightbulb className="w-4 h-4 text-primary flex-shrink-0" />;
-                                        bgColor = 'bg-primary/10';
-                                        borderColor = 'border-primary/30';
-                                      }
-
-                                      return (
-                                        <div className={`flex items-start gap-2 p-3 rounded-lg border-2 ${bgColor} ${borderColor} mb-3 shadow-lg text-left w-full block`}>
-                                          <span className="mt-0.5 flex-shrink-0">{icon}</span>
-                                          <div className="text-foreground text-sm flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
-                                        </div>
-                                      );
-                                    }
-
-                                    // Проверка на специальные блоки в середине текста
-                                    if (text.includes('✅') || text.includes('❌')) {
-                                      const Component = isInBlockquote ? 'div' : 'p';
-                                      return (
-                                        <Component className="text-sm leading-relaxed mb-4 flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10 break-words overflow-wrap-anywhere">
-                                          <span className="mt-0.5 flex-shrink-0">
-                                            {text.includes('✅') ? (
-                                              <CheckCircle2 className="w-4 h-4 text-primary" />
-                                            ) : (
-                                              <AlertCircle className="w-4 h-4 text-destructive" />
-                                            )}
-                                          </span>
-                                          <span className="text-foreground flex-1 break-words overflow-wrap-anywhere">{children}</span>
-                                        </Component>
-                                      );
-                                    }
-
-                                    // Если внутри blockquote, возвращаем div вместо p
-                                    if (isInBlockquote) {
-                                      return <div className="text-sm text-foreground/90 leading-relaxed mb-4 break-words overflow-wrap-anywhere hyphens-auto">{children}</div>;
-                                    }
-
-                                    return <p className="text-sm text-foreground/90 leading-relaxed mb-4 break-words overflow-wrap-anywhere hyphens-auto">{children}</p>;
-                                  },
-                                  ul: ({ children }) => (
-                                    <ul className="list-none space-y-2 mb-4 break-words overflow-wrap-anywhere">
-                                      {children}
-                                    </ul>
-                                  ),
-                                  ol: ({ children }) => (
-                                    <ol className="list-decimal list-inside space-y-2 text-foreground/90 mb-4 break-words overflow-wrap-anywhere text-sm">
-                                      {children}
-                                    </ol>
-                                  ),
-                                  li: ({ children }) => {
-                                    const text = extractTextFromChildren(children);
-                                    const trimmedText = text.trim();
-                                    const hasEmojiAtStart = trimmedText.startsWith('✅') ||
-                                      trimmedText.startsWith('❌') ||
-                                      trimmedText.startsWith('⚠️') ||
-                                      trimmedText.startsWith('💡') ||
-                                      trimmedText.match(/^-\s*(✅|❌|⚠️|💡)/);
-
-                                    const hasEmoji = hasEmojiAtStart || text.includes('❌') || text.includes('✅') || text.includes('⚠️') || text.includes('💡');
-
-                                    if (hasEmoji) {
-                                      let icon = null;
-                                      let bgColor = '';
-                                      let borderColor = '';
-
-                                      // Удаляем эмодзи из children
-                                      const displayChildren = removeEmojiFromChildren(children);
-
-                                      if (text.includes('✅')) {
-                                        icon = <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />;
-                                        bgColor = 'bg-primary/10';
-                                        borderColor = 'border-primary/30';
-                                      } else if (text.includes('❌')) {
-                                        icon = <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />;
-                                        bgColor = 'bg-destructive/10';
-                                        borderColor = 'border-destructive/30';
-                                      } else if (text.includes('⚠️')) {
-                                        icon = <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />;
-                                        bgColor = 'bg-yellow-500/10';
-                                        borderColor = 'border-yellow-500/30';
-                                      } else if (text.includes('💡')) {
-                                        icon = <Lightbulb className="w-5 h-5 text-primary flex-shrink-0" />;
-                                        bgColor = 'bg-primary/10';
-                                        borderColor = 'border-primary/30';
-                                      }
-                                      return (
-                                        <li className={`flex items-start gap-2 p-3 rounded-lg border-2 ${bgColor} ${borderColor} mb-3 shadow-lg text-left w-full block`}>
-                                          <span className="mt-0.5 flex-shrink-0">{icon}</span>
-                                          <div className="text-foreground text-sm flex-1 text-left break-words overflow-wrap-anywhere hyphens-auto [&_strong]:text-primary [&_strong]:font-bold">{displayChildren}</div>
-                                        </li>
-                                      );
-                                    }
-                                    return (
-                                      <li className="text-foreground/90 text-sm flex items-start gap-2 mb-3 p-2 hover:bg-primary/5 rounded-lg transition-colors text-left break-words overflow-wrap-anywhere">
-                                        <span className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-                                        <span className="flex-1 text-left break-words overflow-wrap-anywhere">{children}</span>
-                                      </li>
-                                    );
-                                  },
-                                  strong: ({ children }) => (
-                                    <strong className="text-primary font-bold bg-primary/15 px-1.5 sm:px-2 py-0.5 rounded-md border border-primary/20 neon-text break-words overflow-wrap-anywhere inline-block text-xs sm:text-sm">{children}</strong>
-                                  ),
-                                  blockquote: ({ children }) => {
-                                    const text = extractTextFromChildren(children);
-                                    let icon = <Info className="w-6 h-6" />;
-                                    let bgColor = 'bg-primary/10 border-primary/40';
-                                    let iconColor = 'text-primary';
-                                    let title = '';
-
-                                    if (text.includes('⚠️') || text.toLowerCase().includes('важно') || text.toLowerCase().includes('критически')) {
-                                      icon = <AlertTriangle className="w-6 h-6" />;
-                                      bgColor = 'bg-yellow-500/15 border-yellow-500/40';
-                                      iconColor = 'text-yellow-400';
-                                      title = 'Важно';
-                                    } else if (text.includes('💡') || text.toLowerCase().includes('совет')) {
-                                      icon = <Lightbulb className="w-6 h-6" />;
-                                      bgColor = 'bg-blue-500/15 border-blue-500/40';
-                                      iconColor = 'text-blue-400';
-                                      title = 'Совет';
-                                    } else if (text.includes('✅') || text.toLowerCase().includes('правило')) {
-                                      icon = <CheckCircle2 className="w-6 h-6" />;
-                                      bgColor = 'bg-green-500/15 border-green-500/40';
-                                      iconColor = 'text-green-400';
-                                      title = 'Правило';
-                                    } else if (text.includes('❌') || text.toLowerCase().includes('ошибка')) {
-                                      icon = <AlertCircle className="w-6 h-6" />;
-                                      bgColor = 'bg-destructive/15 border-destructive/40';
-                                      iconColor = 'text-destructive';
-                                      title = 'Ошибка';
-                                    }
-
-                                    return (
-                                      <blockquote className={`glass-card rounded-lg p-3 neon-border mb-6 flex items-start gap-2 ${bgColor} break-words overflow-wrap-anywhere`}>
-                                        <div className={`w-6 h-6 rounded-lg ${bgColor} flex items-center justify-center flex-shrink-0 ${iconColor}`}>
-                                          {icon}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          {title && (
-                                            <div className={`font-display font-bold text-xs mb-1 ${iconColor}`}>{title}</div>
-                                          )}
-                                          <div className="text-sm text-muted-foreground leading-relaxed break-words overflow-wrap-anywhere [&_p]:contents [&_p_*]:block">{children}</div>
-                                        </div>
-                                      </blockquote>
-                                    );
-                                  },
-                                  code: ({ children, className }) => {
-                                    const match = /language-(\w+)/.exec(className || '');
-                                    const isInline = !match;
-
-                                    if (isInline) {
-                                      return <code className="relative rounded bg-muted px-[0.2rem] sm:px-[0.3rem] py-[0.15rem] sm:py-[0.2rem] font-mono text-[10px] sm:text-xs md:text-sm font-semibold text-foreground">{children}</code>;
-                                    }
-                                    return (
-                                      <pre className="mb-3 sm:mb-4 mt-4 sm:mt-6 overflow-x-auto rounded-lg border bg-black/30 p-2 sm:p-3 md:p-4 font-mono text-[10px] sm:text-xs md:text-sm text-foreground">
-                                        <code className={className}>{children}</code>
-                                      </pre>
-                                    );
-                                  },
-                                  table: ({ children }) => (
-                                    <div className="my-6 w-full overflow-y-auto rounded-lg border neon-border">
-                                      <table className="w-full text-foreground">{children}</table>
-                                    </div>
-                                  ),
-                                  th: ({ children }) => (
-                                    <th className="border px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right bg-primary/10 text-primary">{children}</th>
-                                  ),
-                                  td: ({ children }) => (
-                                    <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right text-muted-foreground">{children}</td>
-                                  ),
-                                }}
-                              >
+                              <ReactMarkdown components={MarkdownComponents}>
                                 {convertEmojiLinesToLists(lesson.content)}
                               </ReactMarkdown>
                             ) : (
@@ -657,31 +667,67 @@ const Strategies = () => {
           </div>
         </motion.div>
 
-        <main className="p-2.5 sm:p-3 md:p-4 pb-12 sm:pb-14 flex justify-center">
-          <div className="max-w-lg w-full mx-auto">
+        <main className="p-4 sm:p-6 md:p-8 pb-16 flex justify-center">
+          <div className="max-w-4xl w-full mx-auto">
 
-            {/* Modules */}
-            <div className="space-y-3">
+            {/* Modules with Staggered Animation */}
+            <motion.div
+              className="grid gap-4 sm:gap-5"
+              variants={moduleListVariants}
+              initial="hidden"
+              animate="visible"
+            >
               {strategyModules.map((module) => (
-                <button
+                <motion.button
                   key={module.id}
+                  variants={moduleItemVariants}
                   onClick={() => handleModuleClick(module)}
-                  className="w-full glass-card rounded-xl p-4 neon-border text-left transition-all duration-300 active:scale-[0.98] hover:scale-[1.02] hover:bg-primary/5 touch-manipulation min-h-[60px]"
+                  className={cn(
+                    "group relative w-full glass-card rounded-2xl p-5 md:p-6 text-left transition-all duration-300",
+                    "neon-border hover:bg-primary/5 active:scale-[0.98] touch-manipulation",
+                    "flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 lg:gap-8"
+                  )}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="text-2xl flex-shrink-0">{module.icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display font-bold text-base mb-1 break-words overflow-wrap-anywhere">{module.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-2 break-words overflow-wrap-anywhere">{module.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {module.lessons.length} {module.lessons.length === 1 ? 'материал' : 'материалов'}
-                      </p>
+                  {/* Icon Container with Glow */}
+                  <div className="relative flex-shrink-0">
+                    <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/30 transition-colors rounded-full" />
+                    <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-background/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-3xl sm:text-4xl shadow-xl">
+                      {module.icon}
                     </div>
-                    <ArrowLeft className="w-5 h-5 text-muted-foreground rotate-180 flex-shrink-0" />
                   </div>
-                </button>
+
+                  {/* Text Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <h3 className="font-display font-bold text-lg sm:text-xl group-hover:text-primary transition-colors line-clamp-1">
+                        {module.title}
+                      </h3>
+                      <div className="hidden sm:block px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary uppercase tracking-wider">
+                        Strategy
+                      </div>
+                    </div>
+                    <p className="text-sm sm:text-base text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
+                      {module.description}
+                    </p>
+                    <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground/80">
+                      <span className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                        {module.lessons.length} {module.lessons.length === 1 ? 'материал' : 'материалов'}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                        Доступно сейчас
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Arrow Indicator */}
+                  <div className="hidden sm:flex w-10 h-10 rounded-full items-center justify-center bg-white/5 border border-white/10 group-hover:bg-primary/10 group-hover:border-primary/30 transition-all">
+                    <ArrowLeft className="w-5 h-5 text-muted-foreground group-hover:text-primary rotate-180 transition-colors" />
+                  </div>
+                </motion.button>
               ))}
-            </div>
+            </motion.div>
           </div>
         </main>
       </div>
