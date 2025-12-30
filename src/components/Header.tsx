@@ -36,18 +36,18 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (!hideOnScroll) return;
-    
+
     const currentScrollY = latest;
-    
+
     // Показываем при прокрутке вверх или если прокрутка меньше 50px
     if (currentScrollY < lastScrollY || currentScrollY < 50) {
       setIsVisible(true);
-    } 
+    }
     // Скрываем при прокрутке вниз больше 50px
     else if (currentScrollY > lastScrollY && currentScrollY > 50) {
       setIsVisible(false);
     }
-    
+
     setLastScrollY(currentScrollY);
   });
 
@@ -58,50 +58,50 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
   };
 
   return (
-    <motion.header 
+    <motion.header
       className={`sticky top-0 z-50 glass-card border-b border-border/30 ${hideOnScroll && !isVisible ? 'pointer-events-none' : ''}`}
       initial={{ y: -100, opacity: 0 }}
-      animate={{ 
-        y: hideOnScroll ? (isVisible ? 0 : -100) : 0, 
-        opacity: hideOnScroll ? (isVisible ? 1 : 0) : 1 
+      animate={{
+        y: hideOnScroll ? (isVisible ? 0 : -100) : 0,
+        opacity: hideOnScroll ? (isVisible ? 1 : 0) : 1
       }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 30 
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 30
       }}
     >
-      <div className="max-w-lg mx-auto px-4 py-4">
+      <div className="max-w-lg mx-auto px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:pt-6">
         <div className="flex items-center gap-4 mb-4">
           {/* Animated GIF logo */}
-          <motion.div 
+          <motion.div
             className="relative"
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 200, 
+            transition={{
+              type: "spring",
+              stiffness: 200,
               damping: 15,
-              delay: 0.2 
+              delay: 0.2
             }}
           >
             {/* Glow effect behind logo */}
-            <motion.div 
+            <motion.div
               className="absolute inset-0 rounded-2xl bg-primary/20 blur-xl"
-              animate={{ 
+              animate={{
                 scale: [1, 1.1, 1],
-                opacity: [0.2, 0.4, 0.2] 
+                opacity: [0.2, 0.4, 0.2]
               }}
-              transition={{ 
-                duration: 3, 
+              transition={{
+                duration: 3,
                 repeat: Infinity,
-                ease: "easeInOut" 
+                ease: "easeInOut"
               }}
             />
-            
+
             <PepeIcon size={56} />
           </motion.div>
-          
+
           <motion.div
             className="flex-1"
             initial={{ opacity: 0, x: -20 }}
@@ -135,7 +135,7 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
             <DropdownMenuContent align="end" className="w-56 glass-card neon-border">
               <DropdownMenuLabel>Меню</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuLabel className="flex items-center gap-2">
                 <Globe className="h-4 w-4" />
                 Язык интерфейса
@@ -148,9 +148,9 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
                   English
                 </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
-              
+
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
                 <Settings className="mr-2 h-4 w-4" />
                 Настройки
@@ -158,7 +158,7 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

@@ -28,7 +28,7 @@ export function SimpleMenu() {
   };
 
   return (
-    <div className="fixed top-2 right-4 z-50">
+    <div className="fixed top-[calc(env(safe-area-inset-top)+0.5rem)] right-4 z-[60]">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -40,14 +40,14 @@ export function SimpleMenu() {
         <DropdownMenuContent align="end" className="w-56 glass-card neon-border">
           <DropdownMenuLabel>Меню</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          
+
           <DropdownMenuItem onClick={() => navigate('/home')} className="cursor-pointer">
             <Home className="mr-2 h-4 w-4" />
             На главную
           </DropdownMenuItem>
-          
+
           <DropdownMenuSeparator />
-          
+
           <DropdownMenuLabel className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             Язык интерфейса
@@ -60,9 +60,9 @@ export function SimpleMenu() {
               English
             </DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
-          
+
           <DropdownMenuSeparator />
-          
+
           <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
             Настройки
