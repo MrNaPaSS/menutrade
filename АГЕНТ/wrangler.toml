@@ -1,0 +1,7 @@
+name = "agent-proxy"
+main = "cloudflare-worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Здесь можно указать публичные переменные, но секреты лучше добавлять через команду secret put
+# X_TITLE = "AI Agent"
