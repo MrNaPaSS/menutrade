@@ -3,6 +3,8 @@ import { X, Plus, Trash2, MessageSquare, Send, Briefcase, GraduationCap } from '
 import { ChatSession } from '@/hooks/useChatHistory';
 import { cn } from '@/lib/utils';
 
+import { TelegramUser } from '@/hooks/useTelegramApp';
+
 interface SidebarProps {
     isOpen: boolean;
     onClose: () => void;
@@ -11,6 +13,7 @@ interface SidebarProps {
     onSelectSession: (id: string) => void;
     onNewChat: () => void;
     onDeleteSession: (id: string) => void;
+    user: TelegramUser | null;
 }
 
 export function Sidebar({
@@ -21,6 +24,7 @@ export function Sidebar({
     onSelectSession,
     onNewChat,
     onDeleteSession,
+    user,
 }: SidebarProps) {
     const handleNewChat = () => {
         onNewChat();
@@ -67,7 +71,27 @@ export function Sidebar({
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border/30">
-                            <h2 className="font-display font-semibold text-sm neon-text-subtle">Чаты</h2>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 border border-primary/30 flex items-center justify-center overflow-hidden relative font-bold text-primary text-xs">
+                                    {user?.photo_url ? (
+                                        <img
+                                            src={user.photo_url}
+                                            alt={user.first_name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span>{user?.first_name?.[0] || 'U'}</span>
+                                    )}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-semibold truncate max-w-[150px]">
+                                        {user?.first_name || 'Пользователь'} {user?.last_name || ''}
+                                    </span>
+                                    {user?.username && (
+                                        <span className="text-[10px] text-muted-foreground">@{user.username}</span>
+                                    )}
+                                </div>
+                            </div>
                             <button
                                 onClick={onClose}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"

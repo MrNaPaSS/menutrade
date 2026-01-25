@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Send, Trash2, MoreVertical, Paperclip, Zap, Menu, GraduationCap, BarChart3 } from 'lucide-react';
 import { useChatHistory } from '@/hooks/useChatHistory';
@@ -10,8 +10,13 @@ import { QuickTemplates } from './QuickTemplates';
 import { Sidebar } from '@/components/Sidebar';
 import { ModeSelector } from '@/components/ModeSelector';
 import { cn } from '@/lib/utils';
+import { TelegramUser } from '@/hooks/useTelegramApp';
 
-export function ChatWindow() {
+interface ChatWindowProps {
+    user: TelegramUser | null;
+}
+
+export function ChatWindow({ user }: ChatWindowProps) {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [files, setFiles] = useState<FileData[]>([]);
@@ -211,6 +216,7 @@ export function ChatWindow() {
                 onSelectSession={switchSession}
                 onNewChat={handleNewChat}
                 onDeleteSession={deleteSession}
+                user={user}
             />
 
             <div className="flex flex-col h-full max-h-screen overflow-hidden bg-background">
@@ -225,10 +231,18 @@ export function ChatWindow() {
                             >
                                 <Menu className="w-5 h-5" />
                             </button>
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 border border-primary/30 flex items-center justify-center">
-                                <span className="text-[10px] font-bold text-primary">
-                                    {(window as any).Telegram?.WebApp?.initDataUnsafe?.user?.first_name?.[0] || 'U'}
-                                </span>
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 border border-primary/30 flex items-center justify-center overflow-hidden relative">
+                                {user?.photo_url ? (
+                                    <img
+                                        src={user.photo_url}
+                                        alt={user.first_name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-xs font-bold text-primary">
+                                        {user?.first_name?.[0] || 'U'}
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -364,6 +378,7 @@ export function ChatWindow() {
                                 key={message.id}
                                 message={message}
                                 onEdit={message.role === 'user' ? handleEditMessage : undefined}
+                                user={user}
                             />
                         ))}
 

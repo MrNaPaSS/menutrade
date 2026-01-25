@@ -298,3 +298,5 @@ function validateDoji(candles: CandleData[], context?: any): ValidationResult {
 
 
 
+
+

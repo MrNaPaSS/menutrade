@@ -1696,10 +1696,20 @@
     "username": "Mark",
     "registered_at": "2025-12-25T16:39:48.052277",
     "status": "new",
-    "pocket_option_id": null,
+    "pocket_option_id": "PO564654654",
     "verified": false,
     "deposited": false,
-    "language": "ru"
+    "language": "ru",
+    "referral": {
+      "code": "ref_8590579043",
+      "invited_by": null,
+      "referrals": [],
+      "activated_referrals": [],
+      "bonuses_claimed": [],
+      "tradingview_username": null,
+      "pending_bonus_request": null,
+      "bonus_requests_history": []
+    }
   },
   "484202382": {
     "username": "Brauer_Nikita",
@@ -1727,7 +1737,17 @@
     "pocket_option_id": null,
     "verified": false,
     "deposited": false,
-    "language": "ru"
+    "language": "ru",
+    "referral": {
+      "code": "ref_8452393513",
+      "invited_by": null,
+      "referrals": [],
+      "activated_referrals": [],
+      "bonuses_claimed": [],
+      "tradingview_username": null,
+      "pending_bonus_request": null,
+      "bonus_requests_history": []
+    }
   },
   "7132513690": {
     "username": "Alexeo2299",
@@ -1942,7 +1962,17 @@
     "pocket_option_id": null,
     "verified": false,
     "deposited": false,
-    "language": "ru"
+    "language": "ru",
+    "referral": {
+      "code": "ref_8015511111",
+      "invited_by": null,
+      "referrals": [],
+      "activated_referrals": [],
+      "bonuses_claimed": [],
+      "tradingview_username": null,
+      "pending_bonus_request": null,
+      "bonus_requests_history": []
+    }
   },
   "5184518880": {
     "username": "Андрей",
@@ -2822,7 +2852,17 @@
     "pocket_option_id": null,
     "verified": false,
     "deposited": false,
-    "language": "ru"
+    "language": "ru",
+    "referral": {
+      "code": "ref_5573915954",
+      "invited_by": null,
+      "referrals": [],
+      "activated_referrals": [],
+      "bonuses_claimed": [],
+      "tradingview_username": null,
+      "pending_bonus_request": null,
+      "bonus_requests_history": []
+    }
   },
   "382113045": {
     "username": "Артур",
@@ -2869,7 +2909,17 @@
     "pocket_option_id": null,
     "verified": false,
     "deposited": false,
-    "language": "ru"
+    "language": "ru",
+    "referral": {
+      "code": "ref_7037281406",
+      "invited_by": null,
+      "referrals": [],
+      "activated_referrals": [],
+      "bonuses_claimed": [],
+      "tradingview_username": null,
+      "pending_bonus_request": null,
+      "bonus_requests_history": []
+    }
   },
   "705857743": {
     "username": "Masha",
@@ -2908,5 +2958,24 @@
       "bonus_requests_history": []
     },
     "language": "ru"
+  },
+  "8447308589": {
+    "username": "Mark",
+    "registered_at": "2026-01-02T16:36:45.734855",
+    "status": "new",
+    "pocket_option_id": "PO6545456544",
+    "verified": true,
+    "deposited": true,
+    "language": "ru",
+    "referral": {
+      "code": "ref_8447308589",
+      "invited_by": null,
+      "referrals": [],
+      "activated_referrals": [],
+      "bonuses_claimed": [],
+      "tradingview_username": null,
+      "pending_bonus_request": null,
+      "bonus_requests_history": []
+    }
   }
 }

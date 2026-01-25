@@ -23,6 +23,7 @@ declare global {
                         last_name?: string;
                         username?: string;
                         language_code?: string;
+                        photo_url?: string;
                     };
                 };
                 MainButton: {
@@ -54,6 +55,7 @@ export interface TelegramUser {
     last_name?: string;
     username?: string;
     language_code?: string;
+    photo_url?: string;
 }
 
 export function useTelegramApp() {

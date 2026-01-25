@@ -195,12 +195,22 @@ const TraderMenu = () => {
               />
 
               <ActionCard
+                title="WEEX Exchange"
+                description="Криптобиржа для нашего комьюнити"
+                icon={TrendingUp}
+                buttonText="Получить бонусы"
+                onClick={() => window.open(platformLinks.weexExchange, '_blank')}
+                colorClass="secondary"
+                index={4}
+              />
+
+              <ActionCard
                 title="BlackMirror ULTRA"
                 description="TradingView Индикатор"
                 icon={Code}
                 buttonText="Открыть индикатор"
                 onClick={() => window.open(platformLinks.blackMirrorUltra, '_blank')}
-                index={4}
+                index={5}
               />
 
               <ActionCard
@@ -210,7 +220,7 @@ const TraderMenu = () => {
                 buttonText="Открыть FAQ"
                 onClick={() => navigate('/faq')}
                 colorClass="secondary"
-                index={5}
+                index={6}
               />
             </div>
 

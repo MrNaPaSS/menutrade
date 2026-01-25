@@ -37,7 +37,7 @@ export default function App() {
     // Всё ОК - показываем приложение
     return (
         <div className="fixed inset-0 flex flex-col bg-background">
-            <ChatWindow />
+            <ChatWindow user={user} />
         </div>
     );
 }

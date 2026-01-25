@@ -5,12 +5,15 @@ import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import type { ChatMessage as ChatMessageType } from '@/hooks/useChatHistory';
 
+import { TelegramUser } from '@/hooks/useTelegramApp';
+
 interface ChatMessageProps {
     message: ChatMessageType;
     onEdit?: (messageId: string, newContent: string) => void;
+    user?: TelegramUser | null;
 }
 
-export function ChatMessage({ message, onEdit }: ChatMessageProps) {
+export function ChatMessage({ message, onEdit, user }: ChatMessageProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(message.content);
     const [copied, setCopied] = useState(false);
@@ -54,8 +57,16 @@ export function ChatMessage({ message, onEdit }: ChatMessageProps) {
         >
             {/* Avatar */}
             {isUser ? (
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-neon">
-                    <User className="w-4 h-4 text-primary-foreground" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-neon overflow-hidden">
+                    {user?.photo_url ? (
+                        <img
+                            src={user.photo_url}
+                            alt={user.first_name}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <User className="w-4 h-4 text-primary-foreground" />
+                    )}
                 </div>
             ) : (
                 <div className="w-9 h-9 rounded-xl glass-card border border-primary/30 flex items-center justify-center flex-shrink-0 neon-border">
