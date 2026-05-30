@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, Bitcoin, ArrowLeft, Clock, CheckCircle2, Loader2, GraduationCap } from 'lucide-react';
+import {
+  TrendingUp, Bitcoin, ArrowLeft, Clock, CheckCircle2, Loader2,
+  GraduationCap, ChevronRight, ExternalLink, ShieldCheck, Sparkles,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MatrixRain } from '@/components/MatrixRain';
 import { useTelegram } from '@/hooks/useTelegram';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 
@@ -15,13 +19,12 @@ const REGISTRATION_LINKS: Record<Market, string> = {
   crypto: 'https://www.weex.com/ru/register?vipCode=kaktotakxme',
 };
 
-const MARKET_LABEL: Record<Market, string> = {
-  forex: '📈 FOREX',
-  crypto: '🪙 CRYPTO',
+const MARKET_META: Record<Market, { label: string; tagline: string }> = {
+  forex: { label: 'FOREX', tagline: 'Брокер · бонус к депозиту' },
+  crypto: { label: 'CRYPTO', tagline: 'Биржа WEEX' },
 };
 
 const TIMER_SECONDS = 15 * 60;
-const STATUS_POLL_MS = 20_000;
 
 function getBotApiBase(): string {
   return import.meta.env.DEV
@@ -67,15 +70,6 @@ export function RegistrationGate() {
     return () => clearInterval(id);
   }, [step, market]);
 
-  // Экран ожидания: периодически проверяем, не подтвердил ли админ доступ
-  useEffect(() => {
-    if (!hasSubmittedAccount) return;
-    const id = setInterval(() => {
-      fetchUserStatus();
-    }, STATUS_POLL_MS);
-    return () => clearInterval(id);
-  }, [hasSubmittedAccount, fetchUserStatus]);
-
   const chooseMarket = (selected: Market) => {
     setMarket(selected);
     setError(null);
@@ -103,17 +97,11 @@ export function RegistrationGate() {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
         },
-        body: JSON.stringify({
-          userId,
-          market,
-          accountId: acc,
-          username: user?.username || '',
-        }),
+        body: JSON.stringify({ userId, market, accountId: acc, username: user?.username || '' }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
-        // Подтянет hasSubmittedAccount=true из базы → переключит на экран ожидания
-        await fetchUserStatus();
+        await fetchUserStatus(true);
       } else {
         setError(data.error || 'Не удалось отправить заявку. Попробуйте ещё раз.');
       }
@@ -129,27 +117,36 @@ export function RegistrationGate() {
     return (
       <Shell>
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
           className="text-center space-y-6"
         >
-          <div className="mx-auto w-20 h-20 rounded-full bg-emerald-500/15 flex items-center justify-center">
-            <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+          <div className="relative mx-auto w-24 h-24">
+            <motion.div
+              className="absolute inset-0 rounded-full bg-primary/20 blur-xl"
+              animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0.85, 0.5] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <div className="relative w-24 h-24 rounded-full glass-card neon-border flex items-center justify-center">
+              <CheckCircle2 className="w-11 h-11 text-primary" />
+            </div>
           </div>
+
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-white">Заявка отправлена!</h2>
-            <p className="text-gray-300 leading-relaxed">
-              Мы проверяем ваш аккаунт и пополнение. Как только доступ будет подтверждён —
-              Академия откроется автоматически.
+            <h2 className="font-display font-bold text-2xl text-foreground neon-text-subtle">
+              Заявка отправлена
+            </h2>
+            <p className="text-muted-foreground leading-relaxed text-sm">
+              Проверяем регистрацию и пополнение. Как только доступ подтвердится —
+              Академия откроется <span className="text-primary font-semibold">автоматически</span>,
+              ничего нажимать не нужно.
             </p>
           </div>
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+
+          <div className="flex items-center justify-center gap-2 text-xs text-primary/80 font-mono">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Ожидаем подтверждения...
+            ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ…
           </div>
-          <Button variant="outline" onClick={() => fetchUserStatus()} className="w-full">
-            Проверить статус
-          </Button>
         </motion.div>
       </Shell>
     );
@@ -157,72 +154,99 @@ export function RegistrationGate() {
 
   // ── Шаг 2: таймер + ввод аккаунта ────────────────────────────────────────
   if (step === 'register') {
+    const progress = ((TIMER_SECONDS - secondsLeft) / TIMER_SECONDS) * 100;
+    const meta = MARKET_META[market];
+    const Icon = market === 'forex' ? TrendingUp : Bitcoin;
+
     return (
       <Shell>
         <AnimatePresence mode="wait">
           <motion.div
             key="register"
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            className="space-y-6"
+            exit={{ opacity: 0, x: -24 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-5"
           >
             <button
               onClick={() => setStep('welcome')}
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" /> Назад
             </button>
 
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-sm font-semibold text-white">
-                {MARKET_LABEL[market]}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/25 to-accent/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-6 h-6 text-primary" />
               </div>
-              <h2 className="text-xl font-bold text-white">Завершите регистрацию</h2>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                Зарегистрируйтесь по открывшейся ссылке и пополните счёт на любую сумму.
-                Затем введите ID вашего аккаунта ниже.
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center gap-1 py-2">
-              <div className="flex items-center gap-2 text-gray-400 text-xs uppercase tracking-wide">
-                <Clock className="w-4 h-4" /> Время на регистрацию и пополнение
-              </div>
-              <div className={`text-4xl font-mono font-bold ${secondsLeft === 0 ? 'text-gray-500' : 'text-emerald-400'}`}>
-                {formatTime(secondsLeft)}
+              <div>
+                <div className="font-display font-bold text-lg leading-none text-foreground">{meta.label}</div>
+                <div className="text-xs text-muted-foreground mt-1">{meta.tagline}</div>
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              className="w-full"
+            <div className="space-y-2.5">
+              {[
+                'Зарегистрируйтесь по открывшейся ссылке',
+                'Пополните счёт на любую сумму',
+                'Введите ID аккаунта ниже и отправьте',
+              ].map((stepText, i) => (
+                <div key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                  <span className="mt-0.5 w-5 h-5 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    {i + 1}
+                  </span>
+                  {stepText}
+                </div>
+              ))}
+            </div>
+
+            {/* Таймер */}
+            <div className="glass-card rounded-xl p-4 neon-border">
+              <div className="flex items-center justify-between mb-2">
+                <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <Clock className="w-3.5 h-3.5" /> Время на регистрацию
+                </span>
+                <span className={`font-mono font-bold text-2xl ${secondsLeft === 0 ? 'text-muted-foreground' : 'text-primary neon-text-subtle'}`}>
+                  {formatTime(secondsLeft)}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-primary to-accent"
+                  initial={false}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ ease: 'linear', duration: 0.9 }}
+                />
+              </div>
+            </div>
+
+            <button
               onClick={() => openRegistration(REGISTRATION_LINKS[market])}
+              className="w-full flex items-center justify-center gap-2 text-sm text-primary/90 hover:text-primary transition-colors"
             >
-              Открыть ссылку регистрации ещё раз
-            </Button>
+              <ExternalLink className="w-4 h-4" /> Открыть ссылку регистрации ещё раз
+            </button>
 
             <div className="space-y-2">
-              <label className="text-sm text-gray-300">ID зарегистрированного аккаунта</label>
+              <label className="text-sm font-medium text-foreground">ID зарегистрированного аккаунта</label>
               <Input
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
                 placeholder="Например: 122004705"
-                inputMode="text"
-                className="bg-white/5 border-white/15 text-white"
+                className="h-12 bg-muted/40 border-border/60 text-foreground font-mono focus-visible:ring-primary"
               />
-              {error && <p className="text-sm text-red-400">{error}</p>}
+              {error && <p className="text-sm text-destructive">{error}</p>}
             </div>
 
             <Button
-              className="w-full"
-              size="lg"
+              className="w-full h-12 font-display font-bold neon-glow"
               disabled={submitting}
               onClick={handleSubmit}
             >
               {submitting ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Отправка...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Отправка…
                 </span>
               ) : (
                 'Отправить на проверку'
@@ -238,52 +262,88 @@ export function RegistrationGate() {
   return (
     <Shell>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6 text-center"
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="space-y-6"
       >
-        <div className="mx-auto w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
-          <GraduationCap className="w-10 h-10 text-primary" />
+        <div className="text-center space-y-4">
+          <div className="relative mx-auto w-20 h-20">
+            <div className="absolute inset-0 rounded-2xl bg-primary/20 blur-xl" />
+            <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/30 to-accent/20 border border-primary/40 flex items-center justify-center neon-border">
+              <GraduationCap className="w-10 h-10 text-primary" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="font-display font-bold text-2xl text-foreground neon-text-subtle">
+              Доступ к Академии
+            </h1>
+            <p className="text-muted-foreground leading-relaxed text-sm px-1">
+              Зарегистрируйте торговый аккаунт и пополните его на любую сумму —
+              этого достаточно, чтобы открыть все материалы.
+            </p>
+          </div>
         </div>
 
         <div className="space-y-3">
-          <h1 className="text-2xl font-bold text-white">Добро пожаловать в Академию</h1>
-          <p className="text-gray-300 leading-relaxed">
-            Чтобы получить доступ к Академии, достаточно зарегистрировать торговый аккаунт
-            (Форекс или Крипто) и пополнить его на любую сумму.
-          </p>
-          <p className="text-gray-400 text-sm">
-            Без подписок и скрытых платежей. Выберите рынок для регистрации:
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          <Button
-            size="lg"
-            className="w-full justify-center gap-2"
+          <MarketCard
+            icon={<TrendingUp className="w-6 h-6 text-primary" />}
+            label="Регистрация FOREX"
+            tagline={MARKET_META.forex.tagline}
             onClick={() => chooseMarket('forex')}
-          >
-            <TrendingUp className="w-5 h-5" /> Регистрация FOREX
-          </Button>
-          <Button
-            size="lg"
-            variant="secondary"
-            className="w-full justify-center gap-2"
+          />
+          <MarketCard
+            icon={<Bitcoin className="w-6 h-6 text-accent" />}
+            label="Регистрация CRYPTO"
+            tagline={MARKET_META.crypto.tagline}
             onClick={() => chooseMarket('crypto')}
-          >
-            <Bitcoin className="w-5 h-5" /> Регистрация CRYPTO
-          </Button>
+          />
+        </div>
+
+        <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-primary/70" /> Без подписок</span>
+          <span className="flex items-center gap-1"><Sparkles className="w-3.5 h-3.5 text-primary/70" /> Без скрытых платежей</span>
         </div>
       </motion.div>
     </Shell>
   );
 }
 
+interface MarketCardProps {
+  icon: React.ReactNode;
+  label: string;
+  tagline: string;
+  onClick: () => void;
+}
+
+function MarketCard({ icon, label, tagline, onClick }: MarketCardProps) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="w-full glass-card glass-card-hover rounded-xl p-4 flex items-center gap-3.5 text-left"
+    >
+      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-display font-bold text-base text-foreground">{label}</div>
+        <div className="text-xs text-muted-foreground mt-0.5">{tagline}</div>
+      </div>
+      <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+    </motion.button>
+  );
+}
+
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background px-5 py-8 overflow-y-auto">
-      <div className="w-full max-w-md glass-card rounded-2xl border border-border/40 p-6 sm:p-8">
-        {children}
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
+      <MatrixRain />
+      <div className="relative z-10 w-full max-w-md px-5 py-8">
+        <div className="glass-card neon-border rounded-2xl p-6 sm:p-7">
+          {children}
+        </div>
       </div>
     </div>
   );

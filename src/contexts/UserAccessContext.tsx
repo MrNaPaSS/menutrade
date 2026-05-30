@@ -14,7 +14,7 @@ interface UserAccessState {
 }
 
 interface UserAccessContextType extends UserAccessState {
-    fetchUserStatus: () => Promise<void>;
+    fetchUserStatus: (silent?: boolean) => Promise<void>;
     decrementAIMessages: () => void;
     resetAIMessages: () => void;
     checkAccess: (feature: 'ai-chat' | 'learning' | 'strategies') => boolean;
@@ -83,7 +83,7 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
     });
 
     // Функция для получения статуса пользователя с API
-    const fetchUserStatus = useCallback(async () => {
+    const fetchUserStatus = useCallback(async (silent = false) => {
         if (!userId) {
             setState(prev => ({
                 ...prev,
@@ -97,7 +97,10 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
             return;
         }
 
-        setState(prev => ({ ...prev, isLoading: true, error: null }));
+        // silent=true — фоновый опрос, не дёргаем загрузочный экран (иначе гейт мигает)
+        if (!silent) {
+            setState(prev => ({ ...prev, isLoading: true, error: null }));
+        }
 
         try {
             // Проверяем кэш
@@ -201,6 +204,33 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
             fetchUserStatus();
         }
     }, [isReady, fetchUserStatus]);
+
+    // Авто-обновление доступа, пока он не получен:
+    // - опрос каждые 5 сек (ловим подтверждение админа из бота без действий юзера)
+    // - мгновенная проверка при возврате в приложение (юзер прочитал сообщение в боте и вернулся)
+    useEffect(() => {
+        if (!userId || state.hasFullAccess) return;
+
+        // Фолбэк-опрос (основной путь — мгновенная проверка при возврате в апп ниже)
+        const POLL_INTERVAL_MS = 30000;
+        const intervalId = setInterval(() => {
+            fetchUserStatus(true);
+        }, POLL_INTERVAL_MS);
+
+        const checkOnReturn = () => {
+            if (document.visibilityState === 'visible') {
+                fetchUserStatus(true);
+            }
+        };
+        document.addEventListener('visibilitychange', checkOnReturn);
+        window.addEventListener('focus', checkOnReturn);
+
+        return () => {
+            clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', checkOnReturn);
+            window.removeEventListener('focus', checkOnReturn);
+        };
+    }, [userId, state.hasFullAccess, fetchUserStatus]);
 
     // Функция для уменьшения счетчика AI сообщений
     const decrementAIMessages = useCallback(() => {
