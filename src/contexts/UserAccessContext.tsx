@@ -97,7 +97,7 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
             return;
         }
 
-        // silent=true — фоновый опрос, не дёргаем загрузочный экран (иначе гейт мигает)
+        // silent=true - фоновый опрос, не дёргаем загрузочный экран (иначе гейт мигает)
         if (!silent) {
             setState(prev => ({ ...prev, isLoading: true, error: null }));
         }
@@ -159,7 +159,7 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
             // Если пользователь не найден нигде, считаем что у него нет доступа (или дефолтный)
             const verified = foundUser?.verified === true;
             const deposited = foundUser?.deposited === true;
-            // Доступ к Академии — по депозиту: пускаем всех, у кого есть депозит
+            // Доступ к Академии - по депозиту: пускаем всех, у кого есть депозит
             const hasFullAccess = deposited;
             // Заявка на доступ к Академии отправлена (определяем по записи в базе бота, не по localStorage)
             const hasSubmittedAccount = !!(foundUser && (foundUser.academy_submitted_at || foundUser.pocket_option_id));
@@ -206,12 +206,12 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
     }, [isReady, fetchUserStatus]);
 
     // Авто-обновление доступа, пока он не получен:
-    // - опрос каждые 5 сек (ловим подтверждение админа из бота без действий юзера)
+    // - опрос каждые 30 сек (ловим подтверждение админа из бота без действий юзера)
     // - мгновенная проверка при возврате в приложение (юзер прочитал сообщение в боте и вернулся)
     useEffect(() => {
         if (!userId || state.hasFullAccess) return;
 
-        // Фолбэк-опрос (основной путь — мгновенная проверка при возврате в апп ниже)
+        // Фолбэк-опрос (основной путь - мгновенная проверка при возврате в апп ниже)
         const POLL_INTERVAL_MS = 30000;
         const intervalId = setInterval(() => {
             fetchUserStatus(true);

@@ -88,7 +88,7 @@ export function AppInitializer({ children }: AppInitializerProps) {
     return <LoadingScreen message="Проверка доступа..." />;
   }
 
-  // Гейт регистрации: пока нет полного доступа — дальше не пускаем (пропустить нельзя).
+  // Гейт регистрации: пока нет полного доступа - дальше не пускаем (пропустить нельзя).
   // Показывается при каждом заходе, пока админ не подтвердит доступ в боте.
   if (authorized && !hasFullAccess) {
     return <RegistrationGate />;

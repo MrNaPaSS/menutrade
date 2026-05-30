@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, Bitcoin, ArrowLeft, Clock, CheckCircle2, Loader2,
-  GraduationCap, ChevronRight, ExternalLink, ShieldCheck, Sparkles,
+  GraduationCap, ChevronRight, ExternalLink, ShieldCheck, Sparkles, AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,9 +13,9 @@ import { useUserAccess } from '@/contexts/UserAccessContext';
 type Market = 'forex' | 'crypto';
 
 const REGISTRATION_LINKS: Record<Market, string> = {
-  // Форекс — та же ссылка, что в боте
+  // Форекс - та же ссылка, что в боте
   forex: 'https://u3.shortink.io/main?utm_campaign=827841&utm_source=affiliate&utm_medium=sr&a=CQQJpdvm2ya9dU&al=1743587&ac=web&cid=948657&code=WELCOME50',
-  // Крипто — WEEX
+  // Крипто - WEEX
   crypto: 'https://www.weex.com/ru/register?vipCode=kaktotakxme',
 };
 
@@ -30,6 +30,21 @@ function getBotApiBase(): string {
   return import.meta.env.DEV
     ? '/bot-api'
     : (import.meta.env.VITE_BOT_API_URL || 'http://localhost:8081');
+}
+
+// Отправка FB-события через бота: только InitiateCheckout (нажал "Зарегистрироваться").
+// ViewContent шлёт сам бот при первом контакте; Lead - при подтверждении депозита.
+// Fire-and-forget - не блокирует UX, дедупликация на стороне бота.
+function sendFbEvent(userId: string | null, event: 'InitiateCheckout', username?: string): void {
+  if (!userId) return;
+  fetch(`${getBotApiBase()}/fb-event`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
+    },
+    body: JSON.stringify({ userId, event, username: username || '', language: 'ru' }),
+  }).catch(() => { /* аналитика не критична */ });
 }
 
 function openRegistration(url: string): void {
@@ -47,7 +62,7 @@ function formatTime(totalSeconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-type Step = 'welcome' | 'register';
+type Step = 'welcome' | 'info' | 'register';
 
 export function RegistrationGate() {
   const { userId, user } = useTelegram();
@@ -60,7 +75,7 @@ export function RegistrationGate() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Таймер на регистрацию и пополнение — стартует на шаге ввода аккаунта
+  // Таймер на регистрацию и пополнение - стартует на шаге ввода аккаунта
   useEffect(() => {
     if (step !== 'register') return;
     setSecondsLeft(TIMER_SECONDS);
@@ -73,7 +88,13 @@ export function RegistrationGate() {
   const chooseMarket = (selected: Market) => {
     setMarket(selected);
     setError(null);
-    openRegistration(REGISTRATION_LINKS[selected]);
+    setStep('info');
+  };
+
+  const goRegister = () => {
+    // FB InitiateCheckout - нажал "Зарегистрироваться" (аналог "получил ссылку регистрации" в боте)
+    sendFbEvent(userId, 'InitiateCheckout', user?.username);
+    openRegistration(REGISTRATION_LINKS[market]);
     setStep('register');
   };
 
@@ -137,7 +158,7 @@ export function RegistrationGate() {
               Заявка отправлена
             </h2>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              Проверяем регистрацию и пополнение. Как только доступ подтвердится —
+              Проверяем регистрацию и пополнение. Как только доступ подтвердится,
               Академия откроется <span className="text-primary font-semibold">автоматически</span>,
               ничего нажимать не нужно.
             </p>
@@ -152,17 +173,16 @@ export function RegistrationGate() {
     );
   }
 
-  // ── Шаг 2: таймер + ввод аккаунта ────────────────────────────────────────
-  if (step === 'register') {
-    const progress = ((TIMER_SECONDS - secondsLeft) / TIMER_SECONDS) * 100;
-    const meta = MARKET_META[market];
-    const Icon = market === 'forex' ? TrendingUp : Bitcoin;
+  const meta = MARKET_META[market];
+  const Icon = market === 'forex' ? TrendingUp : Bitcoin;
 
+  // ── Шаг 2: инфо-окно раздела (как в боте) + кнопка регистрации ────────────
+  if (step === 'info') {
     return (
       <Shell>
         <AnimatePresence mode="wait">
           <motion.div
-            key="register"
+            key={`info-${market}`}
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}
@@ -186,74 +206,98 @@ export function RegistrationGate() {
               </div>
             </div>
 
-            <div className="space-y-2.5">
-              {[
-                'Зарегистрируйтесь по открывшейся ссылке',
-                'Пополните счёт на любую сумму',
-                'Введите ID аккаунта ниже и отправьте',
-              ].map((stepText, i) => (
-                <div key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                  <span className="mt-0.5 w-5 h-5 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0">
-                    {i + 1}
-                  </span>
-                  {stepText}
-                </div>
-              ))}
-            </div>
+            {market === 'forex' ? <ForexInfo /> : <CryptoInfo />}
 
-            {/* Таймер */}
-            <div className="glass-card rounded-xl p-4 neon-border">
-              <div className="flex items-center justify-between mb-2">
-                <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <Clock className="w-3.5 h-3.5" /> Время на регистрацию
-                </span>
-                <span className={`font-mono font-bold text-2xl ${secondsLeft === 0 ? 'text-muted-foreground' : 'text-primary neon-text-subtle'}`}>
-                  {formatTime(secondsLeft)}
-                </span>
-              </div>
-              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-primary to-accent"
-                  initial={false}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ ease: 'linear', duration: 0.9 }}
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={() => openRegistration(REGISTRATION_LINKS[market])}
-              className="w-full flex items-center justify-center gap-2 text-sm text-primary/90 hover:text-primary transition-colors"
-            >
-              <ExternalLink className="w-4 h-4" /> Открыть ссылку регистрации ещё раз
-            </button>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">ID зарегистрированного аккаунта</label>
-              <Input
-                value={accountId}
-                onChange={(e) => setAccountId(e.target.value)}
-                placeholder="Например: 122004705"
-                className="h-12 bg-muted/40 border-border/60 text-foreground font-mono focus-visible:ring-primary"
-              />
-              {error && <p className="text-sm text-destructive">{error}</p>}
-            </div>
-
-            <Button
-              className="w-full h-12 font-display font-bold neon-glow"
-              disabled={submitting}
-              onClick={handleSubmit}
-            >
-              {submitting ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Отправка…
-                </span>
-              ) : (
-                'Отправить на проверку'
-              )}
+            <Button className="w-full h-12 font-display font-bold neon-glow" onClick={goRegister}>
+              Зарегистрироваться
             </Button>
           </motion.div>
         </AnimatePresence>
+      </Shell>
+    );
+  }
+
+  // ── Шаг 3: таймер + ввод аккаунта ────────────────────────────────────────
+  if (step === 'register') {
+    const progress = ((TIMER_SECONDS - secondsLeft) / TIMER_SECONDS) * 100;
+
+    return (
+      <Shell>
+        <motion.div
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-5"
+        >
+          <button
+            onClick={() => setStep('info')}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Назад
+          </button>
+
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/25 to-accent/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+              <Icon className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <div className="font-display font-bold text-lg leading-none text-foreground">{meta.label}</div>
+              <div className="text-xs text-muted-foreground mt-1">Введите ID аккаунта после пополнения</div>
+            </div>
+          </div>
+
+          {/* Таймер */}
+          <div className="glass-card rounded-xl p-4 neon-border">
+            <div className="flex items-center justify-between mb-2">
+              <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+                <Clock className="w-3.5 h-3.5" /> Время на регистрацию
+              </span>
+              <span className={`font-mono font-bold text-2xl ${secondsLeft === 0 ? 'text-muted-foreground' : 'text-primary neon-text-subtle'}`}>
+                {formatTime(secondsLeft)}
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-primary to-accent"
+                initial={false}
+                animate={{ width: `${progress}%` }}
+                transition={{ ease: 'linear', duration: 0.9 }}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={() => openRegistration(REGISTRATION_LINKS[market])}
+            className="w-full flex items-center justify-center gap-2 text-sm text-primary/90 hover:text-primary transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" /> Открыть ссылку регистрации ещё раз
+          </button>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">ID зарегистрированного аккаунта</label>
+            <Input
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              placeholder="Например: 122004705"
+              className="h-12 bg-muted/40 border-border/60 text-foreground font-mono focus-visible:ring-primary"
+            />
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </div>
+
+          <Button
+            className="w-full h-12 font-display font-bold neon-glow"
+            disabled={submitting}
+            onClick={handleSubmit}
+          >
+            {submitting ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" /> Отправка…
+              </span>
+            ) : (
+              'Отправить на проверку'
+            )}
+          </Button>
+        </motion.div>
       </Shell>
     );
   }
@@ -280,7 +324,7 @@ export function RegistrationGate() {
               Доступ к Академии
             </h1>
             <p className="text-muted-foreground leading-relaxed text-sm px-1">
-              Зарегистрируйте торговый аккаунт и пополните его на любую сумму —
+              Зарегистрируйте торговый аккаунт и пополните его на любую сумму,
               этого достаточно, чтобы открыть все материалы.
             </p>
           </div>
@@ -307,6 +351,58 @@ export function RegistrationGate() {
         </div>
       </motion.div>
     </Shell>
+  );
+}
+
+// ── Инфо-блок FOREX (аналог текста в боте) ─────────────────────────────────
+function ForexInfo() {
+  const steps = [
+    <>Зарегистрируйтесь по кнопке ниже</>,
+    <>Пополните счёт от <b className="text-foreground">$20</b> с промокодом <b className="text-primary">WELCOME50</b> (+50% бонус)</>,
+    <>Введите ID аккаунта на следующем шаге</>,
+  ];
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">Как получить доступ за 3 шага:</p>
+
+      <div className="flex items-start gap-2.5 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3">
+        <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-yellow-100/90 leading-relaxed">
+          Уже есть аккаунт на платформе? Удалите его (Настройки → Удалить аккаунт)
+          и зарегистрируйтесь заново по нашей ссылке, иначе верификация невозможна.
+        </p>
+      </div>
+
+      <div className="space-y-2.5">
+        {steps.map((stepText, i) => (
+          <div key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+            <span className="mt-0.5 w-5 h-5 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0">
+              {i + 1}
+            </span>
+            <span>{stepText}</span>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-[11px] text-muted-foreground">⏱ Верификация до 30 мин · 📞 @kaktotakxm</p>
+    </div>
+  );
+}
+
+// ── Инфо-блок CRYPTO (аналог текста в боте) ────────────────────────────────
+function CryptoInfo() {
+  return (
+    <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+      <p>
+        Чтобы получить доступ к торговому форуму, достаточно иметь зарегистрированный
+        аккаунт биржи и пополнить его на любую сумму.
+      </p>
+      <p>Без подписок, без скрытых платежей и дополнительных условий.</p>
+      <p>
+        После этого открывается доступ ко всем материалам, разборам и торговым идеям
+        внутри сообщества.
+      </p>
+    </div>
   );
 }
 
