@@ -733,6 +733,7 @@ function parseContentToCards(content: string): string[] {
 export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [api, setApi] = useState<CarouselApi>(null);
+  const [carouselHeight, setCarouselHeight] = useState<number | undefined>(undefined);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -902,6 +903,17 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
     }
   }, [currentSlide]);
 
+  // Высота карусели = высота активного слайда (убирает пустоту под коротким уроком)
+  useEffect(() => {
+    const el = cardRefs.current.get(currentSlide);
+    if (!el) return;
+    const measure = () => setCarouselHeight(el.getBoundingClientRect().height);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [currentSlide, cards.length, loadedCardIndex]);
+
 
   if (showQuiz) {
     return (
@@ -993,7 +1005,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
               className="w-full"
               style={{ touchAction: 'pan-x' }}
             >
-              <CarouselContent className="-ml-0 items-start">
+              <CarouselContent className="-ml-0 items-start" style={{ height: carouselHeight, transition: 'height 0.25s ease' }}>
                 {cards.map((card, index) => (
                   <CarouselItem key={index} className="pl-0 basis-full">
                     <div

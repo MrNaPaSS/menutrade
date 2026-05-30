@@ -380,6 +380,7 @@ const Strategies = () => {
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [api, setApi] = useState<CarouselApi>(null);
   const [current, setCurrent] = useState(0);
+  const [carouselHeight, setCarouselHeight] = useState<number | undefined>(undefined);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -524,6 +525,17 @@ const Strategies = () => {
     }
   }, [current]);
 
+  // Высота карусели = высота активного слайда (убирает пустоту под коротким текстом)
+  useEffect(() => {
+    const el = cardRefs.current.get(current);
+    if (!el) return;
+    const measure = () => setCarouselHeight(el.getBoundingClientRect().height);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [current, loadedCardIndex, view, selectedModule]);
+
   // Render module content
   if (view === 'content' && selectedModule) {
     const currentModule = strategyModules.find(m => m.id === selectedModule.id);
@@ -586,7 +598,7 @@ const Strategies = () => {
                 className="w-full"
                 style={{ touchAction: 'pan-x' }}
               >
-                <CarouselContent className="-ml-0 items-start">
+                <CarouselContent className="-ml-0 items-start" style={{ height: carouselHeight, transition: 'height 0.25s ease' }}>
                   {currentModule.lessons.map((lesson, index) => (
                     <CarouselItem key={lesson.id} className="pl-0 basis-full">
                       <div
