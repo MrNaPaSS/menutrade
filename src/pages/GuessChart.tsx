@@ -21,29 +21,6 @@ const GuessChart = () => {
 
   useSwipeBack({ onSwipeBack: () => navigate('/home'), enabled: true });
 
-  // Верхний инсет: статус-бар (env) + высота шапки Telegram (contentSafeAreaInset) в fullscreen
-  const [tgHeaderTop, setTgHeaderTop] = useState(0);
-  useEffect(() => {
-    const tg = (window as {
-      Telegram?: {
-        WebApp?: {
-          contentSafeAreaInset?: { top?: number };
-          onEvent?: (e: string, cb: () => void) => void;
-          offEvent?: (e: string, cb: () => void) => void;
-        };
-      };
-    }).Telegram?.WebApp;
-    if (!tg) return;
-    const update = () => setTgHeaderTop(tg.contentSafeAreaInset?.top ?? 0);
-    update();
-    tg.onEvent?.('contentSafeAreaChanged', update);
-    tg.onEvent?.('safeAreaChanged', update);
-    return () => {
-      tg.offEvent?.('contentSafeAreaChanged', update);
-      tg.offEvent?.('safeAreaChanged', update);
-    };
-  }, []);
-
   const [pattern, setPattern] = useState<GeneratedPattern | null>(null);
   const [gameState, setGameState] = useState<GameState>('NOT_STARTED');
   const [result, setResult] = useState<Result | null>(null);
@@ -146,10 +123,7 @@ const GuessChart = () => {
   return (
     <div className="min-h-[100dvh] bg-background relative">
       <MatrixRain />
-      <div
-        className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-6"
-        style={{ paddingTop: `calc(env(safe-area-inset-top) + ${tgHeaderTop + 12}px)` }}
-      >
+      <div className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-6 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
         <SimpleMenu />
 
         {/* Шапка */}
