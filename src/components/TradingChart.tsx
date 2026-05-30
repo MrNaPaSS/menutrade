@@ -12,35 +12,34 @@ interface TradingChartProps {
 
 type SeriesPoint = CandlestickData<UTCTimestamp> | WhitespaceData<UTCTimestamp>;
 
-const UP = '#22e37a';
-const DOWN = '#ff4d6d';
-const GRID = 'rgba(40, 110, 70, 0.16)';
-const AXIS = 'rgba(40, 110, 70, 0.30)';
-const TEXT = 'rgba(150, 220, 170, 0.55)';
+const UP = '#26de81';
+const DOWN = '#fc5c65';
 
 export function TradingChart({ data, className }: TradingChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
 
-  // Создаём график один раз
+  // Создаём график один раз + явная синхронизация размера через ResizeObserver
   useEffect(() => {
-    if (!containerRef.current) return;
+    const el = containerRef.current;
+    if (!el) return;
 
-    const chart = createChart(containerRef.current, {
-      autoSize: true, // сам подстраивается под контейнер на любых экранах/DPR
+    const chart = createChart(el, {
+      width: el.clientWidth || 320,
+      height: el.clientHeight || 320,
       layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: TEXT,
+        background: { type: ColorType.Solid, color: '#0b140f' },
+        textColor: 'rgba(150, 220, 170, 0.6)',
         fontFamily: "'JetBrains Mono', monospace",
         attributionLogo: false,
       },
       grid: {
-        vertLines: { color: GRID },
-        horzLines: { color: GRID },
+        vertLines: { color: 'rgba(45, 120, 80, 0.12)' },
+        horzLines: { color: 'rgba(45, 120, 80, 0.12)' },
       },
-      rightPriceScale: { borderColor: AXIS, scaleMargins: { top: 0.12, bottom: 0.12 } },
-      timeScale: { borderColor: AXIS, timeVisible: true, secondsVisible: false, fixLeftEdge: true, fixRightEdge: true },
+      rightPriceScale: { borderColor: 'rgba(45, 120, 80, 0.25)', scaleMargins: { top: 0.15, bottom: 0.15 } },
+      timeScale: { borderColor: 'rgba(45, 120, 80, 0.25)', timeVisible: true, secondsVisible: false },
       crosshair: { mode: CrosshairMode.Hidden },
       handleScroll: false,
       handleScale: false,
@@ -59,14 +58,24 @@ export function TradingChart({ data, className }: TradingChartProps) {
     chartRef.current = chart;
     seriesRef.current = series;
 
+    const ro = new ResizeObserver((entries) => {
+      const cr = entries[0]?.contentRect;
+      if (cr && cr.width > 0 && cr.height > 0) {
+        chart.resize(cr.width, cr.height);
+        chart.timeScale().fitContent();
+      }
+    });
+    ro.observe(el);
+
     return () => {
+      ro.disconnect();
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
     };
   }, []);
 
-  // Обновляем данные (полная длина с whitespace фиксирует ось X -> reveal без дёргания)
+  // Данные: реальные свечи + whitespace (фиксирует ось X -> reveal без дёргания)
   useEffect(() => {
     if (!seriesRef.current) return;
     seriesRef.current.setData(data as SeriesPoint[]);

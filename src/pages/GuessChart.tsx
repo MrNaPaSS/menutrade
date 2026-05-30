@@ -121,9 +121,9 @@ const GuessChart = () => {
   const isPlaying = gameState === 'PLAYING';
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-background relative">
       <MatrixRain />
-      <div className="relative z-10 flex flex-col flex-1 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-4">
+      <div className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-6">
         <SimpleMenu />
 
         {/* Шапка */}
@@ -144,15 +144,15 @@ const GuessChart = () => {
           <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Тренируй насмотренность: определи направление цены</p>
         </div>
 
-        {/* График - занимает свободное место (flex-1), работает на любом экране */}
-        <div className="glass-card neon-border rounded-2xl p-2 sm:p-3 flex-1 min-h-[240px] flex flex-col">
+        {/* График - конкретная высота (vh), canvas синхронизируется ResizeObserver-ом */}
+        <div className="glass-card neon-border rounded-2xl p-2 sm:p-3 flex flex-col">
           <div className="flex items-center justify-between px-1.5 pb-1.5">
             <span className="text-xs sm:text-sm font-mono text-muted-foreground">EUR/USD · 5m</span>
             {gameState === 'RESULT' && (
               <span className="text-xs sm:text-sm font-display font-bold text-primary">{pattern.name}</span>
             )}
           </div>
-          <div className="flex-1 min-h-0">
+          <div className="h-[46vh] min-h-[300px] sm:h-[50vh] md:h-[460px] w-full overflow-hidden rounded-lg">
             <TradingChart data={display} />
           </div>
         </div>
