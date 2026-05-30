@@ -203,7 +203,7 @@ const Index = () => {
         <div className="relative z-10">
           {/* Sticky header с кнопкой назад */}
           <motion.div
-            className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+            className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]"
             animate={{
               y: isHeaderVisible ? 0 : -100,
               opacity: isHeaderVisible ? 1 : 0,
@@ -277,7 +277,7 @@ const Index = () => {
         <div className="relative z-10">
           {/* Sticky header с кнопкой назад */}
           <motion.div
-            className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+            className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]"
             animate={{
               y: isHeaderVisible ? 0 : -100,
               opacity: isHeaderVisible ? 1 : 0,
@@ -351,7 +351,7 @@ const Index = () => {
         <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
           <div className="max-w-lg w-full mx-auto">
             <motion.div
-              className="relative flex items-center justify-center mb-4 sm:mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+              className="relative flex items-center justify-center mb-4 sm:mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]"
               initial={{ y: 0, opacity: 1 }}
               animate={{
                 y: isHeaderVisible ? 0 : -100,

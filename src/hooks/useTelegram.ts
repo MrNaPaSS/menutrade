@@ -32,6 +32,7 @@ export interface TelegramWebApp {
   isExpanded: boolean;
   viewportHeight: number;
   viewportStableHeight: number;
+  contentSafeAreaInset?: { top: number; bottom: number; left: number; right: number };
   headerColor: string;
   backgroundColor: string;
   ready: () => void;
@@ -167,6 +168,16 @@ export function useTelegram() {
           tg.onEvent('viewportChanged', () => {
             setViewportHeight();
           });
+
+          // Верхний инсет контента: высота шапки Telegram в fullscreen (+ небольшой зазор).
+          // Страницы используют его как pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]
+          const setContentTop = () => {
+            const top = tg.contentSafeAreaInset?.top ?? 0;
+            document.documentElement.style.setProperty('--tg-content-top', `${top + 8}px`);
+          };
+          setContentTop();
+          tg.onEvent('contentSafeAreaChanged', setContentTop);
+          tg.onEvent('safeAreaChanged', setContentTop);
 
           console.log('Telegram WebApp найден:', {
             version: tg.version,

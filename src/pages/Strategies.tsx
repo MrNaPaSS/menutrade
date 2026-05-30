@@ -536,7 +536,7 @@ const Strategies = () => {
         <div className="relative z-10">
           {/* Sticky header с кнопкой назад */}
           <motion.div
-            className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+            className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]"
             animate={{
               y: isHeaderVisible ? 0 : -100,
               opacity: isHeaderVisible ? 1 : 0,
@@ -641,7 +641,7 @@ const Strategies = () => {
       <div className="relative z-10">
         {/* Sticky header с кнопкой назад */}
         <motion.div
-          className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4"
+          className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]"
           animate={{
             y: isHeaderVisible ? 0 : -100,
             opacity: isHeaderVisible ? 1 : 0,
