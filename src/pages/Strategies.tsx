@@ -596,7 +596,7 @@ const Strategies = () => {
                           }
                         }}
                         data-index={index}
-                        className="glass-card rounded-xl p-4 neon-border h-[calc(100dvh-180px)] flex flex-col overflow-hidden relative mx-auto w-full"
+                        className="glass-card rounded-xl p-4 neon-border h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_150px)] flex flex-col overflow-hidden relative mx-auto w-full"
                         style={{ touchAction: 'pan-y pinch-zoom' }}
                       >
                         <h3 className="font-display font-bold text-sm mb-3 text-primary break-words overflow-wrap-anywhere flex-shrink-0">

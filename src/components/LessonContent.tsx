@@ -946,7 +946,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
     <div className="min-h-[100dvh] scanline pb-8 sm:pb-10">
       <div className="relative z-10">
         {/* Sticky header с кнопкой назад */}
-        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm -mx-4 px-4">
+        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]">
           <div className="relative flex items-center justify-center py-1">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Button
@@ -1003,7 +1003,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                         }
                       }}
                       data-index={index}
-                      className="glass-card rounded-xl p-4 neon-border h-[calc(100dvh-180px)] flex flex-col overflow-hidden relative mx-auto w-full"
+                      className="glass-card rounded-xl p-4 neon-border h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_150px)] flex flex-col overflow-hidden relative mx-auto w-full"
                       style={{ touchAction: 'pan-y pinch-zoom' }}
                     >
                       <div className="flex-1 prose prose-invert max-w-none w-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
