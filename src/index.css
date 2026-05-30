@@ -574,8 +574,9 @@
     backface-visibility: visible !important;
   }
 
-  /* Глобальная коррекция для режима оверлея Telegram: сдвигаем все липкие шапки вниз */
+  /* Глобальная коррекция для режима оверлея Telegram: сдвигаем все липкие шапки вниз
+     под статус-бар (env) и шапку Telegram (contentSafeAreaInset через --tg-content-top) */
   .sticky.top-0 {
-    padding-top: env(safe-area-inset-top) !important;
+    padding-top: calc(env(safe-area-inset-top) + var(--tg-content-top, 0px)) !important;
   }
 }
