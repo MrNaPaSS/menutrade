@@ -54,9 +54,9 @@ export function ModuleCard({
       whileInView="visible"
       viewport={{ once: true, amount: 0.1 }}
       className={cn(
-        "group relative w-full glass-card rounded-2xl p-5 md:p-6 text-left transition-all duration-300",
+        "group relative w-full glass-card rounded-2xl p-4 text-left transition-all duration-300",
         "neon-border hover:bg-primary/5 active:scale-[0.98] touch-manipulation",
-        "flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 lg:gap-8",
+        "flex flex-row items-center gap-3 sm:gap-4",
         isLocked && "opacity-50 cursor-not-allowed grayscale",
         className
       )}
@@ -67,7 +67,7 @@ export function ModuleCard({
           <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/30 transition-colors rounded-full" />
         )}
         <div className={cn(
-          "relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl backdrop-blur-md border flex items-center justify-center text-3xl sm:text-4xl shadow-xl transition-all duration-300",
+          "relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl backdrop-blur-md border flex items-center justify-center text-2xl sm:text-3xl shadow-xl transition-all duration-300",
           isLocked
             ? "bg-muted/20 border-white/5"
             : "bg-background/40 border-white/10 group-hover:border-primary/30 group-hover:scale-110"
@@ -82,21 +82,21 @@ export function ModuleCard({
 
       {/* Text Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-center gap-2 mb-1">
           <h3 className={cn(
-            "font-display font-bold text-lg sm:text-xl transition-colors line-clamp-1",
+            "font-display font-bold text-base sm:text-lg transition-colors line-clamp-1 min-w-0",
             !isLocked && "group-hover:text-primary"
           )}>
             {module.title}
           </h3>
           {badge && (
-            <div className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary uppercase tracking-wider">
+            <div className="flex-shrink-0 whitespace-nowrap px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary uppercase tracking-wider">
               {badge}
             </div>
           )}
         </div>
 
-        <p className="text-sm sm:text-base text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
+        <p className="text-xs sm:text-sm text-muted-foreground mb-2.5 line-clamp-2 leading-relaxed">
           {module.description}
         </p>
 

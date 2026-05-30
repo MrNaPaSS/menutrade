@@ -310,8 +310,8 @@ const Index = () => {
           </motion.div>
 
           <main className="p-2.5 sm:p-3 md:p-4 pb-8 sm:pb-10 flex justify-center">
-            <div className="max-w-lg w-full mx-auto">
-              <div className="space-y-3 mb-6">
+            <div className="max-w-lg md:max-w-3xl w-full mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                 {currentModule.lessons.map((lesson, index) => (
                   <LessonCard
                     key={lesson.id}
@@ -349,7 +349,7 @@ const Index = () => {
       <MatrixRain />
       <div className="relative z-10">
         <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
-          <div className="max-w-lg w-full mx-auto">
+          <div className="max-w-lg lg:max-w-5xl w-full mx-auto">
             <motion.div
               className="relative flex items-center justify-center mb-4 sm:mb-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]"
               initial={{ y: 0, opacity: 1 }}
@@ -385,7 +385,7 @@ const Index = () => {
               </div>
             </motion.div>
 
-            <div className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {modules.map((module, index) => (
                 <ModuleCard
                   key={module.id}
