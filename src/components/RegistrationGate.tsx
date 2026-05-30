@@ -365,14 +365,6 @@ function ForexInfo() {
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">Как получить доступ за 3 шага:</p>
 
-      <div className="flex items-start gap-2.5 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3">
-        <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-yellow-100/90 leading-relaxed">
-          Уже есть аккаунт на платформе? Удалите его (Настройки → Удалить аккаунт)
-          и зарегистрируйтесь заново по нашей ссылке, иначе верификация невозможна.
-        </p>
-      </div>
-
       <div className="space-y-2.5">
         {steps.map((stepText, i) => (
           <div key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
@@ -384,6 +376,14 @@ function ForexInfo() {
         ))}
       </div>
 
+      <div className="flex items-start gap-2.5 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3">
+        <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-yellow-100/90 leading-relaxed">
+          Уже есть аккаунт на платформе? Удалите его (Настройки → Удалить аккаунт)
+          и зарегистрируйтесь заново по нашей ссылке, иначе верификация невозможна.
+        </p>
+      </div>
+
       <p className="text-[11px] text-muted-foreground">⏱ Верификация до 30 мин · 📞 @kaktotakxm</p>
     </div>
   );
@@ -391,17 +391,43 @@ function ForexInfo() {
 
 // ── Инфо-блок CRYPTO (аналог текста в боте) ────────────────────────────────
 function CryptoInfo() {
+  const steps = [
+    <>Зарегистрируйтесь на бирже <b className="text-foreground">WEEX</b> (кнопка ниже)</>,
+    <>Пополните счёт на <b className="text-foreground">любую сумму</b></>,
+    <>Введите ID аккаунта на следующем шаге</>,
+  ];
+  const perks = ['Без подписок', 'Без скрытых платежей', 'Без дополнительных условий'];
+
   return (
-    <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
-      <p>
-        Чтобы получить доступ к торговому форуму, достаточно иметь зарегистрированный
-        аккаунт биржи и пополнить его на любую сумму.
-      </p>
-      <p>Без подписок, без скрытых платежей и дополнительных условий.</p>
-      <p>
-        После этого открывается доступ ко всем материалам, разборам и торговым идеям
-        внутри сообщества.
-      </p>
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">Доступ к форуму за 3 шага:</p>
+
+      <div className="space-y-2.5">
+        {steps.map((stepText, i) => (
+          <div key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+            <span className="mt-0.5 w-5 h-5 rounded-full bg-accent/15 text-accent text-xs font-bold flex items-center justify-center flex-shrink-0">
+              {i + 1}
+            </span>
+            <span>{stepText}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+        {perks.map((perk) => (
+          <div key={perk} className="flex items-center gap-2 text-xs text-foreground/90">
+            <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" /> {perk}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-start gap-2.5 rounded-xl bg-gradient-to-br from-primary/15 to-accent/10 border border-primary/25 p-3">
+        <Sparkles className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-foreground/90 leading-relaxed">
+          После пополнения открывается доступ ко всем материалам, разборам и торговым
+          идеям внутри сообщества.
+        </p>
+      </div>
     </div>
   );
 }
