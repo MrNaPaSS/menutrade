@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { LoadingScreen } from './LoadingScreen';
 import { OnboardingSurvey, getSurveyData } from './OnboardingSurvey';
 import { TelegramAuthScreen } from './TelegramAuthScreen';
+import { RegistrationGate } from './RegistrationGate';
 import { useTelegramContext } from '@/contexts/TelegramContext';
+import { useUserAccess } from '@/contexts/UserAccessContext';
 
 interface AppInitializerProps {
   children: React.ReactNode;
@@ -13,6 +15,7 @@ export function AppInitializer({ children }: AppInitializerProps) {
   const [showSurvey, setShowSurvey] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const { isReady, isTelegram, user } = useTelegramContext();
+  const { hasFullAccess, isLoading: accessLoading } = useUserAccess();
 
   useEffect(() => {
     // Имитация загрузки приложения
@@ -76,6 +79,19 @@ export function AppInitializer({ children }: AppInitializerProps) {
   // Показываем загрузочный экран
   if (isLoading || !isReady) {
     return <LoadingScreen message="Инициализация приложения..." />;
+  }
+
+  const authorized = (isTelegram && user) || hasDebugUser;
+
+  // Ждём проверку доступа из базы бота, чтобы не мигать гейтом
+  if (authorized && accessLoading) {
+    return <LoadingScreen message="Проверка доступа..." />;
+  }
+
+  // Гейт регистрации: пока нет полного доступа — дальше не пускаем (пропустить нельзя).
+  // Показывается при каждом заходе, пока админ не подтвердит доступ в боте.
+  if (authorized && !hasFullAccess) {
+    return <RegistrationGate />;
   }
 
   // Показываем опрос для новых пользователей (только если авторизован или есть дебаг-пользователь)

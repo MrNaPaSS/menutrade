@@ -7,6 +7,7 @@ interface UserAccessState {
     verified: boolean;
     deposited: boolean;
     hasFullAccess: boolean;
+    hasSubmittedAccount: boolean;
     aiMessagesLeft: number;
     isLoading: boolean;
     error: string | null;
@@ -75,6 +76,7 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
         verified: false,
         deposited: false,
         hasFullAccess: false,
+        hasSubmittedAccount: false,
         aiMessagesLeft: AI_MESSAGE_LIMIT,
         isLoading: true,
         error: null
@@ -89,6 +91,7 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
                 verified: false,
                 deposited: false,
                 hasFullAccess: false,
+                hasSubmittedAccount: false,
                 aiMessagesLeft: AI_MESSAGE_LIMIT
             }));
             return;
@@ -106,6 +109,7 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
                     verified: cached.verified,
                     deposited: cached.deposited,
                     hasFullAccess: cached.hasFullAccess,
+                    hasSubmittedAccount: !!cached.hasSubmittedAccount,
                     aiMessagesLeft: getAIMessageCount(userId),
                     isLoading: false
                 }));
@@ -152,13 +156,17 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
             // Если пользователь не найден нигде, считаем что у него нет доступа (или дефолтный)
             const verified = foundUser?.verified === true;
             const deposited = foundUser?.deposited === true;
-            const hasFullAccess = verified && deposited;
+            // Доступ к Академии — по депозиту: пускаем всех, у кого есть депозит
+            const hasFullAccess = deposited;
+            // Заявка на доступ к Академии отправлена (определяем по записи в базе бота, не по localStorage)
+            const hasSubmittedAccount = !!(foundUser && (foundUser.academy_submitted_at || foundUser.pocket_option_id));
 
             // Сохраняем в кэш
             setCachedStatus(userId, {
                 verified,
                 deposited,
-                hasFullAccess
+                hasFullAccess,
+                hasSubmittedAccount
             });
 
             setState(prev => ({
@@ -167,6 +175,7 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
                 verified,
                 deposited,
                 hasFullAccess,
+                hasSubmittedAccount,
                 aiMessagesLeft: hasFullAccess ? Infinity : getAIMessageCount(userId),
                 isLoading: false
             }));
@@ -180,6 +189,7 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
                 verified: false,
                 deposited: false,
                 hasFullAccess: false,
+                hasSubmittedAccount: false,
                 aiMessagesLeft: getAIMessageCount(userId)
             }));
         }
