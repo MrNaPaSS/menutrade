@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, ReactNode } from 'react';
 import { motion, useScroll, useMotionValueEvent, Variants } from 'framer-motion';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
+import { GestureHint } from '@/components/GestureHint';
 import { BottomNav } from '@/components/BottomNav';
 import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
 import { useNavigate } from 'react-router-dom';
@@ -380,7 +381,7 @@ const Strategies = () => {
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [api, setApi] = useState<CarouselApi>(null);
   const [current, setCurrent] = useState(0);
-  const [carouselHeight, setCarouselHeight] = useState<number | undefined>(undefined);
+  const [showScrollHint, setShowScrollHint] = useState(false);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -525,16 +526,20 @@ const Strategies = () => {
     }
   }, [current]);
 
-  // Высота карусели = высота активного слайда (убирает пустоту под коротким текстом)
+  // Подсказка-палец «листайте» — только если контент карточки прокручивается
   useEffect(() => {
-    const el = cardRefs.current.get(current);
-    if (!el) return;
-    const measure = () => setCarouselHeight(el.getBoundingClientRect().height);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
+    setShowScrollHint(false);
+    const cardEl = cardRefs.current.get(current);
+    if (!cardEl) return;
+    const t = setTimeout(() => {
+      const scroller = cardEl.querySelector('.overflow-y-auto') as HTMLElement | null;
+      if (scroller && scroller.scrollHeight - scroller.clientHeight > 12) {
+        setShowScrollHint(true);
+      }
+    }, 450);
+    return () => clearTimeout(t);
   }, [current, loadedCardIndex, view, selectedModule]);
+
 
   // Render module content
   if (view === 'content' && selectedModule) {
@@ -598,7 +603,7 @@ const Strategies = () => {
                 className="w-full"
                 style={{ touchAction: 'pan-x' }}
               >
-                <CarouselContent className="-ml-0 items-start" style={{ height: carouselHeight, transition: 'height 0.25s ease' }}>
+                <CarouselContent className="-ml-0">
                   {currentModule.lessons.map((lesson, index) => (
                     <CarouselItem key={lesson.id} className="pl-0 basis-full">
                       <div
@@ -608,7 +613,7 @@ const Strategies = () => {
                           }
                         }}
                         data-index={index}
-                        className="glass-card rounded-xl p-4 neon-border max-h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_150px)] flex flex-col overflow-hidden relative mx-auto w-full"
+                        className="glass-card rounded-xl p-4 neon-border h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_170px)] flex flex-col overflow-hidden relative mx-auto w-full"
                         style={{ touchAction: 'pan-y pinch-zoom' }}
                       >
                         <h3 className="font-display font-bold text-sm mb-3 text-primary break-words overflow-wrap-anywhere flex-shrink-0">
@@ -618,7 +623,7 @@ const Strategies = () => {
                           className="flex-1 min-h-0 prose prose-invert max-w-none w-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
                           style={{ willChange: 'scroll-position', transform: 'translateZ(0)' }}
                         >
-                          <div className="markdown-content text-sm leading-relaxed w-full pb-4 px-0">
+                          <div className="markdown-content text-sm leading-relaxed w-full min-h-full flex flex-col justify-center py-1 px-6">
                             {loadedCardIndex.has(index) ? (
                               <ReactMarkdown components={MarkdownComponents}>
                                 {convertEmojiLinesToLists(lesson.content)}
@@ -631,6 +636,9 @@ const Strategies = () => {
                             )}
                           </div>
                         </div>
+                        {showScrollHint && index === current && (
+                          <GestureHint onDismiss={() => setShowScrollHint(false)} />
+                        )}
                       </div>
                     </CarouselItem>
                   ))}

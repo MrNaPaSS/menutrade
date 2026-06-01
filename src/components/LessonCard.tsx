@@ -23,7 +23,7 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
       onClick={onClick}
       disabled={lesson.isLocked}
       className={cn(
-        "group w-full p-4 sm:p-5 rounded-xl text-left touch-manipulation min-h-[60px] transition-all duration-300",
+        "group w-full p-3 rounded-xl text-left touch-manipulation transition-all duration-300",
         "border border-border/40 neon-border",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
         lesson.isLocked
@@ -43,7 +43,7 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
             <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />
           )}
           <div className={cn(
-            "relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border transition-all duration-300",
+            "relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border transition-all duration-300",
             lesson.isLocked
               ? "bg-muted/10 border-border/30"
               : lesson.isCompleted

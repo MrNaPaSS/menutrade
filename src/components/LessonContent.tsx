@@ -6,6 +6,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Badge } from "@/components/ui/badge";
 import { Quiz } from "./Quiz";
 import { SimpleMenu } from "@/components/SimpleMenu";
+import { GestureHint } from "@/components/GestureHint";
 import { Button } from "@/components/ui/button";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import type { Lesson } from "@/types/lesson";
@@ -733,7 +734,7 @@ function parseContentToCards(content: string): string[] {
 export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [api, setApi] = useState<CarouselApi>(null);
-  const [carouselHeight, setCarouselHeight] = useState<number | undefined>(undefined);
+  const [showScrollHint, setShowScrollHint] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -903,16 +904,20 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
     }
   }, [currentSlide]);
 
-  // Высота карусели = высота активного слайда (убирает пустоту под коротким уроком)
+  // Подсказка-палец «листайте» — только если контент карточки прокручивается
   useEffect(() => {
-    const el = cardRefs.current.get(currentSlide);
-    if (!el) return;
-    const measure = () => setCarouselHeight(el.getBoundingClientRect().height);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [currentSlide, cards.length, loadedCardIndex]);
+    setShowScrollHint(false);
+    const cardEl = cardRefs.current.get(currentSlide);
+    if (!cardEl) return;
+    const t = setTimeout(() => {
+      const scroller = cardEl.querySelector('.overflow-y-auto') as HTMLElement | null;
+      if (scroller && scroller.scrollHeight - scroller.clientHeight > 12) {
+        setShowScrollHint(true);
+      }
+    }, 450);
+    return () => clearTimeout(t);
+  }, [currentSlide, loadedCardIndex, cards.length]);
+
 
 
   if (showQuiz) {
@@ -956,22 +961,23 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
 
   return (
     <div className="min-h-[100dvh] scanline pb-8 sm:pb-10">
-      <div className="relative z-10">
+      <div className="relative z-10 pt-4 sm:pt-5 md:pt-6">
         {/* Sticky header с кнопкой назад */}
-        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]">
-          <div className="relative flex items-center justify-center py-1">
+        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]">
+          <div className="relative flex items-center justify-center py-2 sm:py-3">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onBack}
-                className="text-muted-foreground hover:text-foreground text-xs h-8 px-2 focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0"
               >
-                <ArrowLeft className="w-3 h-3" />
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Назад</span>
               </Button>
             </div>
-            <div className="flex flex-col items-center">
-              <h2 className="font-display font-bold text-sm">{lesson.title}</h2>
+            <div className="flex flex-col items-center px-12">
+              <h2 className="font-display font-bold text-lg sm:text-xl text-center leading-tight">{lesson.title}</h2>
               <div className="flex items-center gap-1 mt-0.5">
                 {cards.map((_, index) => (
                   <div
@@ -984,7 +990,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                 ))}
               </div>
             </div>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <div className="absolute right-4 -top-3">
               <SimpleMenu />
             </div>
           </div>
@@ -1005,7 +1011,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
               className="w-full"
               style={{ touchAction: 'pan-x' }}
             >
-              <CarouselContent className="-ml-0 items-start" style={{ height: carouselHeight, transition: 'height 0.25s ease' }}>
+              <CarouselContent className="-ml-0">
                 {cards.map((card, index) => (
                   <CarouselItem key={index} className="pl-0 basis-full">
                     <div
@@ -1015,12 +1021,12 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                         }
                       }}
                       data-index={index}
-                      className="glass-card rounded-xl p-4 neon-border max-h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_150px)] flex flex-col overflow-hidden relative mx-auto w-full"
+                      className="glass-card rounded-xl p-4 neon-border h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_170px)] flex flex-col overflow-hidden relative mx-auto w-full"
                       style={{ touchAction: 'pan-y pinch-zoom' }}
                     >
                       <div className="flex-1 min-h-0 prose prose-invert max-w-none w-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
                         style={{ willChange: 'scroll-position', transform: 'translateZ(0)' }}>
-                        <div className="markdown-content text-sm leading-relaxed w-full pb-4 px-0">
+                        <div className="markdown-content text-sm leading-relaxed w-full min-h-full flex flex-col justify-center py-1 px-6">
                           {/* Рендерим части карточки - чередуем markdown и компоненты */}
                           {cards[index].map((part, partIdx) => {
                             if (typeof part === 'string') {
@@ -1382,6 +1388,9 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                           })}
                         </div>
                       </div>
+                      {showScrollHint && index === currentSlide && (
+                        <GestureHint onDismiss={() => setShowScrollHint(false)} />
+                      )}
                     </div>
                   </CarouselItem>
                 ))}

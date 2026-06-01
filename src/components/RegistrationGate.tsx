@@ -393,7 +393,7 @@ function ForexInfo() {
 function CryptoInfo() {
   const steps = [
     <>Зарегистрируйтесь на бирже <b className="text-foreground">WEEX</b> (кнопка ниже)</>,
-    <>Пополните счёт на <b className="text-foreground">любую сумму</b></>,
+    <>Пополните счёт от <b className="text-foreground">$100</b></>,
     <>Введите ID аккаунта на следующем шаге</>,
   ];
   const perks = ['Без подписок', 'Без скрытых платежей', 'Без дополнительных условий'];

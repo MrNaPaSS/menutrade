@@ -274,7 +274,7 @@ const Index = () => {
     return (
       <div className="min-h-[100dvh] scanline pb-16">
         <MatrixRain />
-        <div className="relative z-10">
+        <div className="relative z-10 pt-4 sm:pt-5 md:pt-6">
           {/* Sticky header с кнопкой назад */}
           <motion.div
             className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]"
@@ -309,9 +309,9 @@ const Index = () => {
             </div>
           </motion.div>
 
-          <main className="p-2.5 sm:p-3 md:p-4 pb-8 sm:pb-10 flex justify-center">
+          <main className="p-4 sm:p-5 md:p-6 pb-8 sm:pb-10 flex justify-center">
             <div className="max-w-lg md:max-w-3xl w-full mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-2.5 mb-3">
                 {currentModule.lessons.map((lesson, index) => (
                   <LessonCard
                     key={lesson.id}
@@ -326,12 +326,12 @@ const Index = () => {
                 <button
                   onClick={handleModuleTestClick}
                   disabled={!allLessonsCompleted || currentModule.isCompleted}
-                  className={`w-full glass-card rounded-xl p-4 neon-border transition-all duration-300 flex items-center justify-center gap-3 font-display font-semibold text-lg ${allLessonsCompleted && !currentModule.isCompleted
+                  className={`w-full glass-card rounded-xl p-3 neon-border transition-all duration-300 flex items-center justify-center gap-2.5 font-display font-semibold text-sm sm:text-base ${allLessonsCompleted && !currentModule.isCompleted
                     ? 'hover:bg-primary/10 cursor-pointer'
                     : 'opacity-50 cursor-not-allowed'
                     }`}
                 >
-                  <Brain className={`w-6 h-6 ${allLessonsCompleted && !currentModule.isCompleted ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <Brain className={`w-5 h-5 flex-shrink-0 ${allLessonsCompleted && !currentModule.isCompleted ? 'text-primary' : 'text-muted-foreground'}`} />
                   <span>{currentModule.isCompleted ? 'Модуль пройден!' : allLessonsCompleted ? 'Пройти тест по модулю' : 'Пройти тест по модулю (пройдите все уроки)'}</span>
                 </button>
               )}
