@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, Bitcoin, ArrowLeft, Clock, CheckCircle2, Loader2,
-  GraduationCap, ChevronRight, ExternalLink, ShieldCheck, Sparkles, AlertTriangle,
+  GraduationCap, ChevronRight, ExternalLink, ShieldCheck, Sparkles, AlertTriangle, Gift,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -411,6 +411,16 @@ function CryptoInfo() {
             <span>{stepText}</span>
           </div>
         ))}
+      </div>
+
+      <div className="rounded-xl border border-accent/40 bg-accent/10 p-3">
+        <div className="flex items-center gap-2 mb-1">
+          <Gift className="w-4 h-4 text-accent flex-shrink-0" />
+          <span className="text-sm font-display font-bold text-accent">Бонус от меня: +100% к первому депозиту</span>
+        </div>
+        <p className="text-xs text-foreground/90 leading-relaxed">
+          Вносишь $100 - получаешь $200 рабочих. Максимум бонуса $100. Это реальные деньги для торговли.
+        </p>
       </div>
 
       <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
