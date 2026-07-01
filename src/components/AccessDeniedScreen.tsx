@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, ArrowLeft, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { RegistrationGate } from './RegistrationGate';
 
 interface AccessDeniedScreenProps {
     feature: 'обучение' | 'стратегии';
@@ -8,9 +10,16 @@ interface AccessDeniedScreenProps {
 }
 
 export function AccessDeniedScreen({ feature, onBack }: AccessDeniedScreenProps) {
+    const [showGate, setShowGate] = useState(false);
+
+    // Регистрация внутри аппа: человек не уходит в бота, проходит все шаги здесь.
+    // Когда админ подтвердит депозит - hasFullAccess обновится и страница откроется сама.
+    if (showGate) {
+        return <RegistrationGate />;
+    }
+
     const handleGetAccess = () => {
-        // Открываем бота для регистрации
-        window.open('https://t.me/moneyhoney7_bot', '_blank');
+        setShowGate(true);
     };
 
     return (
