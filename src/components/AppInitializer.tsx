@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { LoadingScreen } from './LoadingScreen';
-import { OnboardingSurvey, getSurveyData } from './OnboardingSurvey';
 import { TelegramAuthScreen } from './TelegramAuthScreen';
 import { useTelegramContext } from '@/contexts/TelegramContext';
 
@@ -10,7 +9,6 @@ interface AppInitializerProps {
 
 export function AppInitializer({ children }: AppInitializerProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [showSurvey, setShowSurvey] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const { isReady, isTelegram, user } = useTelegramContext();
 
@@ -48,22 +46,10 @@ export function AppInitializer({ children }: AppInitializerProps) {
         return;
       }
 
-      // Проверяем, прошел ли пользователь опрос
-      const surveyData = getSurveyData();
-
-      // Если опрос не пройден, показываем его
-      if (!surveyData || !surveyData.completed) {
-        setShowSurvey(true);
-      } else {
-        setIsInitialized(true);
-      }
+      // Опрос убран: сразу пускаем в приложение (каждый лишний экран режет конверсию)
+      setIsInitialized(true);
     }
   }, [isLoading, isReady, isTelegram, user]);
-
-  const handleSurveyComplete = () => {
-    setShowSurvey(false);
-    setIsInitialized(true);
-  };
 
   // В режиме разработки проверяем дебаг-пользователя
   const hasDebugUser = import.meta.env.DEV && typeof window !== 'undefined' && !!localStorage.getItem('debug_user');
@@ -81,11 +67,6 @@ export function AppInitializer({ children }: AppInitializerProps) {
   // Глобальной стены больше нет: приложение открыто всем из Telegram.
   // Доступ к урокам и стратегиям проверяется на самих страницах
   // (Index.tsx / Strategies.tsx показывают AccessDeniedScreen без депозита).
-
-  // Показываем опрос для новых пользователей (только если авторизован или есть дебаг-пользователь)
-  if (showSurvey && ((isTelegram && user) || hasDebugUser)) {
-    return <OnboardingSurvey onComplete={handleSurveyComplete} />;
-  }
 
   // Показываем основное приложение (только если авторизован или есть дебаг-пользователь)
   if (isInitialized && ((isTelegram && user) || hasDebugUser)) {

@@ -15,7 +15,7 @@ export function AccessDeniedScreen({ feature, onBack }: AccessDeniedScreenProps)
     // Регистрация внутри аппа: человек не уходит в бота, проходит все шаги здесь.
     // Когда админ подтвердит депозит - hasFullAccess обновится и страница откроется сама.
     if (showGate) {
-        return <RegistrationGate />;
+        return <RegistrationGate onBack={() => setShowGate(false)} />;
     }
 
     const handleGetAccess = () => {

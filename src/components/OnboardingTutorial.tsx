@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { X, ArrowRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getSurveyData } from './OnboardingSurvey';
 
 interface TutorialStep {
     targetId: string;
@@ -89,9 +88,7 @@ export function OnboardingTutorial() {
     // Check if tutorial should run
     useEffect(() => {
         const checkTutorialStatus = () => {
-            // Check if survey is completed
-            const surveyData = getSurveyData();
-            if (!surveyData?.completed) return;
+            // Опрос убран из онбординга - туториал показываем сразу новым пользователям
 
             // Check if tutorial is already completed
             const tutorialCompleted = localStorage.getItem('tutorial_completed');

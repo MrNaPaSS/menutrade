@@ -64,7 +64,7 @@ function formatTime(totalSeconds: number): string {
 
 type Step = 'welcome' | 'info' | 'register';
 
-export function RegistrationGate() {
+export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
   const { userId, user } = useTelegram();
   const { hasSubmittedAccount, fetchUserStatus } = useUserAccess();
 
@@ -168,6 +168,15 @@ export function RegistrationGate() {
             <Loader2 className="w-4 h-4 animate-spin" />
             ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ…
           </div>
+
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="mx-auto flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" /> Вернуться в приложение
+            </button>
+          )}
         </motion.div>
       </Shell>
     );
@@ -311,6 +320,15 @@ export function RegistrationGate() {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-6"
       >
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Назад
+          </button>
+        )}
+
         <div className="text-center space-y-4">
           <div className="relative mx-auto w-20 h-20">
             <div className="absolute inset-0 rounded-2xl bg-primary/20 blur-xl" />
