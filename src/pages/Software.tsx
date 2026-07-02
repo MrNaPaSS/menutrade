@@ -5,7 +5,7 @@ import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
-import { ArrowLeft, Code, ExternalLink, Sparkles, Shield, Zap, Signal, Eye, Brain } from 'lucide-react';
+import { ArrowLeft, Code, ExternalLink, Sparkles, Shield, Zap, Signal, Eye, Brain, Bitcoin, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -297,6 +297,85 @@ const Software = () => {
                   <div className="mt-4 sm:mt-5 md:mt-6 p-2.5 sm:p-3 md:p-4 rounded-lg bg-muted/10 border border-border/30">
                     <p className="text-[10px] sm:text-xs text-muted-foreground text-center">
                       📌 Устанавливай прямо сейчас абсолютно бесплатно. Это не бот, который шлёт сигналы, а твой помощник.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* NMNH.TRADE - крипто-платформа */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="glass-card rounded-xl p-3 sm:p-4 md:p-6 neon-border">
+                  <div className="flex items-start gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-6">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                      <Bitcoin className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1 sm:mb-2">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-display font-bold text-base sm:text-lg md:text-xl mb-0.5 sm:mb-1">NMNH.TRADE</h3>
+                          <p className="text-xs text-muted-foreground">Веб-платформа · Crypto</p>
+                        </div>
+                        <Badge className="bg-accent/20 text-accent border-accent/30 text-xs flex-shrink-0">CRYPTO</Badge>
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                        Платформа крипто-сигналов: персональные сигналы с расчётом позиции под твой депозит. Реальный расчёт - реальный результат.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-4 sm:mb-5 md:mb-6 space-y-2 sm:space-y-3">
+                    <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 md:p-3 rounded-lg bg-muted/20">
+                      <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm font-semibold">Сигналы под твой депозит</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Платформа сама считает объём позиции под твой баланс</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 md:p-3 rounded-lg bg-muted/20">
+                      <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm font-semibold">Полная версия - на ПК</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">С телефона доступен просмотр, торговля - с компьютера</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-4 sm:mb-5 md:mb-6">
+                    <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2 sm:mb-3">Что внутри:</h4>
+                    <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
+                      <p>🟡 живые сигналы с точками входа и выхода</p>
+                      <p>🟡 дашборд: график, стакан и рынок в реальном времени</p>
+                      <p>🟡 аналитика PnL, лидерборд и калькулятор позиции</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-4 sm:mb-5 md:mb-6">
+                    <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2 sm:mb-3">Как получить доступ:</h4>
+                    <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
+                      <p>1. Зарегистрируйся на WEEX по нашей ссылке</p>
+                      <p>2. Введи свой WEEX UID на платформе</p>
+                      <p>3. Доступ откроется автоматически - бесплатно</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 sm:gap-3">
+                    <Button
+                      className="flex-1 min-h-[44px] text-xs sm:text-sm"
+                      onClick={() => window.open('https://www.nmnh.trade', '_blank')}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
+                      Открыть NMNH.TRADE
+                    </Button>
+                  </div>
+
+                  <div className="mt-4 sm:mt-5 md:mt-6 p-2.5 sm:p-3 md:p-4 rounded-lg bg-muted/10 border border-border/30">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground text-center">
+                      💻 Открой с компьютера для полного функционала торгового терминала
                     </p>
                   </div>
                 </div>

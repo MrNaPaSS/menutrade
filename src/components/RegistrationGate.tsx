@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, Bitcoin, ArrowLeft, Clock, CheckCircle2, Loader2,
   GraduationCap, ChevronRight, ExternalLink, ShieldCheck, Sparkles, AlertTriangle, Gift,
+  Radio, Bot,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -345,6 +346,21 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
               Зарегистрируйте торговый аккаунт и пополните его на любую сумму,
               этого достаточно, чтобы открыть все материалы.
             </p>
+          </div>
+        </div>
+
+        <div className="glass-card rounded-xl p-4 neon-border space-y-2.5">
+          <div className="flex items-start gap-2.5 text-sm">
+            <Radio className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <span className="text-muted-foreground"><span className="text-foreground font-semibold">Форум с live-торговлей</span> - сделки и разборы вместе с автором</span>
+          </div>
+          <div className="flex items-start gap-2.5 text-sm">
+            <GraduationCap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <span className="text-muted-foreground"><span className="text-foreground font-semibold">48 уроков и стратегии</span> - полная программа обучения</span>
+          </div>
+          <div className="flex items-start gap-2.5 text-sm">
+            <Bot className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+            <span className="text-muted-foreground"><span className="text-foreground font-semibold">AI-наставник 24/7</span> - без лимитов</span>
           </div>
         </div>
 

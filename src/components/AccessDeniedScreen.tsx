@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Lock, ArrowLeft, ExternalLink, Radio, GraduationCap, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RegistrationGate } from './RegistrationGate';
 
 interface AccessDeniedScreenProps {
-    feature: 'обучение' | 'стратегии';
+    feature: 'обучение' | 'стратегии' | 'форум и live';
     onBack?: () => void;
 }
 
@@ -53,33 +53,43 @@ export function AccessDeniedScreen({ feature, onBack }: AccessDeniedScreenProps)
                     </h2>
 
                     {/* Description */}
-                    <p className="text-muted-foreground mb-6">
-                        Для доступа к разделу <span className="text-primary font-semibold">"{feature}"</span> необходимо:
+                    <p className="text-muted-foreground mb-5">
+                        Раздел <span className="text-primary font-semibold">"{feature}"</span> открывается
+                        вместе с полным доступом к Академии.
                     </p>
 
-                    {/* Steps */}
-                    <div className="bg-white/5 rounded-lg p-4 mb-6 text-left">
-                        <ol className="space-y-3 text-sm">
-                            <li className="flex items-start gap-3">
-                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
-                                    1
-                                </span>
-                                <span>Пройти регистрацию в основном боте</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
-                                    2
-                                </span>
-                                <span>Внести депозит на платформу</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
-                                    3
-                                </span>
-                                <span>Отправить ID боту и дождаться подтверждения администратора</span>
-                            </li>
-                        </ol>
+                    {/* Что открывает полный доступ */}
+                    <div className="bg-white/5 rounded-lg p-4 mb-4 text-left space-y-3">
+                        <p className="text-xs font-mono font-bold text-primary tracking-widest uppercase">
+                            Полный доступ открывает
+                        </p>
+                        <div className="flex items-start gap-3 text-sm">
+                            <Radio className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                            <span>
+                                <span className="text-foreground font-semibold">Форум с live-торговлей</span>
+                                <span className="text-muted-foreground"> - разборы рынка и сделки вместе с автором</span>
+                            </span>
+                        </div>
+                        <div className="flex items-start gap-3 text-sm">
+                            <GraduationCap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                            <span>
+                                <span className="text-foreground font-semibold">48 уроков и все стратегии</span>
+                                <span className="text-muted-foreground"> - от свечей до готовых торговых систем</span>
+                            </span>
+                        </div>
+                        <div className="flex items-start gap-3 text-sm">
+                            <Bot className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                            <span>
+                                <span className="text-foreground font-semibold">Безлимитный AI-наставник</span>
+                                <span className="text-muted-foreground"> - ответы на вопросы 24/7</span>
+                            </span>
+                        </div>
                     </div>
+
+                    {/* Как получить */}
+                    <p className="text-xs text-muted-foreground mb-6">
+                        Регистрация аккаунта + депозит от $20 - весь путь займёт около 5 минут.
+                    </p>
 
                     {/* Buttons */}
                     <div className="space-y-3">

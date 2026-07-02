@@ -4,7 +4,7 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
-import { GraduationCap, Newspaper, ArrowRight, TrendingUp, Code, Briefcase, BookOpen, Activity } from 'lucide-react';
+import { GraduationCap, Newspaper, ArrowRight, TrendingUp, Code, Briefcase, BookOpen, Activity, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Home = () => {
@@ -29,6 +29,16 @@ const Home = () => {
   };
 
   const sections = [
+    {
+      id: 'live',
+      icon: Radio,
+      title: 'Форум и Live-торговля',
+      description: 'Живые разборы рынка и сделки в реальном времени вместе с автором',
+      buttonText: 'Открыть форум',
+      onClick: () => navigate('/live'),
+      color: 'accent',
+      badge: 'LIVE'
+    },
     {
       id: 'trader-menu',
       icon: Briefcase,
@@ -152,8 +162,17 @@ const Home = () => {
                         </motion.div>
 
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-display text-base sm:text-lg font-bold tracking-wide mb-1">
+                          <h3 className="font-display text-base sm:text-lg font-bold tracking-wide mb-1 flex items-center gap-2">
                             {section.title}
+                            {'badge' in section && section.badge && (
+                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/30">
+                                <span className="relative flex h-1.5 w-1.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
+                                </span>
+                                <span className="text-[10px] font-mono font-bold text-red-400 tracking-widest">{section.badge}</span>
+                              </span>
+                            )}
                           </h3>
                           <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
                             {section.description}

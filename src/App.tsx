@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import GuessChart from "./pages/GuessChart";
 import Home from "./pages/Home";
+import Live from "./pages/Live";
 import Index from "./pages/Index";
 import Strategies from "./pages/Strategies";
 import News from "./pages/News";
@@ -41,6 +42,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/live" element={<Live />} />
         <Route path="/learning" element={<Index />} />
         <Route path="/strategies" element={<Strategies />} />
         <Route path="/news" element={<News />} />
