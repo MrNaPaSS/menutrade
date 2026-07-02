@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
+import { RegistrationGate } from '@/components/RegistrationGate';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { useTelegram } from '@/hooks/useTelegram';
 import { Check, X, Sparkles, Lock, RefreshCw, ExternalLink, ArrowLeft } from 'lucide-react';
@@ -13,22 +15,27 @@ const UserProfile = () => {
     const navigate = useNavigate();
     const { userId, verified, deposited, hasFullAccess, aiMessagesLeft, isLoading, fetchUserStatus } = useUserAccess();
     const { user } = useTelegram();
+    const [showGate, setShowGate] = useState(false);
 
     const handleRefresh = async () => {
         await fetchUserStatus();
     };
 
+    // Получение доступа - весь путь внутри аппа через RegistrationGate
     const handleGetAccess = () => {
-        window.open('https://t.me/moneyhoney7_bot', '_blank');
+        setShowGate(true);
     };
-
     const handleRegister = () => {
-        window.open('https://u3.shortink.io/register?utm_campaign=827841&utm_source=affiliate&utm_medium=sr&a=CQQJpdvm2ya9dU&ac=min&code=WELCOME50', '_blank');
+        setShowGate(true);
     };
 
     const handleHomeClick = () => {
         navigate('/');
     };
+
+    if (showGate) {
+        return <RegistrationGate onBack={() => setShowGate(false)} />;
+    }
 
     return (
         <div className="min-h-[100dvh] scanline pb-16">
