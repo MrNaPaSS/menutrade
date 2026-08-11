@@ -126,7 +126,7 @@ const Software = () => {
                     <Button
                       variant="outline"
                       className="min-h-[44px] min-w-[44px] px-2 sm:px-4"
-                      onClick={() => window.open('https://t.me/kaktotakxm', '_blank')}
+                      onClick={() => window.open('https://t.me/NMNH_MANAGER', '_blank')}
                     >
                       <Code className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2 flex-shrink-0" />
                       <span className="hidden sm:inline">Telegram</span>
@@ -216,7 +216,7 @@ const Software = () => {
                     <Button
                       variant="outline"
                       className="min-h-[44px] min-w-[44px] px-2 sm:px-4"
-                      onClick={() => window.open('https://t.me/kaktotakxm', '_blank')}
+                      onClick={() => window.open('https://t.me/NMNH_MANAGER', '_blank')}
                     >
                       <Code className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2 flex-shrink-0" />
                       <span className="hidden sm:inline">Telegram</span>

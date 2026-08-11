@@ -526,7 +526,7 @@ const Strategies = () => {
     }
   }, [current]);
 
-  // Подсказка-палец «листайте» — только если контент карточки прокручивается
+  // Подсказка-палец «листайте» - только если контент карточки прокручивается
   useEffect(() => {
     setShowScrollHint(false);
     const cardEl = cardRefs.current.get(current);

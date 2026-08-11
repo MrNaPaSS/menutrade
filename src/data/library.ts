@@ -35,7 +35,7 @@ export const libraryCategories: LibraryCategory[] = [
   },
   {
     id: 'general',
-    title: 'Трейдинг — общее / Классика',
+    title: 'Трейдинг - общее / Классика',
     books: [
       { id: '13', title: 'Market Wizards', author: 'Jack Schwager', category: 'general', isbn: '9780887306109', coverImage: '/book-covers/трейдингобщее/715RJl2ABlL._AC_UF1000,1000_QL80_.jpg' },
       { id: '14', title: 'The New Market Wizards', author: 'Jack Schwager', category: 'general', isbn: '9780887306673', coverImage: '/book-covers/трейдингобщее/61gKSBZSzfL._AC_UF894,1000_QL80_.jpg' },

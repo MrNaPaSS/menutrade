@@ -19,7 +19,7 @@ const DEBUG_USERS: DebugUser[] = [
         id: 511442168,
         first_name: 'Admin',
         last_name: 'User',
-        username: 'kaktotakxm',
+        username: 'NMNH_MANAGER',
         verified: true,
         deposited: true,
         description: 'Администратор (полный доступ + админ-панель)'

@@ -30,7 +30,7 @@ export function TelegramDebug() {
       id: 511442168,
       first_name: 'VIP',
       last_name: 'User',
-      username: 'kaktotakxm'
+      username: 'NMNH_MANAGER'
     };
     localStorage.clear(); // Очищаем все данные для чистого теста
     localStorage.setItem('telegram_test_user', JSON.stringify(adminUser));

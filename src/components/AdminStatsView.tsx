@@ -68,7 +68,7 @@ export function AdminStatsView() {
                     <div className="text-muted-foreground text-xs">
                       {user.lastActivity
                         ? new Date(user.lastActivity).toLocaleDateString('ru-RU')
-                        : '—'}
+                        : '-'}
                     </div>
                   </div>
                 </div>

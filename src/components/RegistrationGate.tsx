@@ -20,7 +20,7 @@ const REGISTRATION_LINKS: Record<Market, string> = {
   // Форекс: FxPro
   fxpro: 'https://direct.fxpro.partners/click?pid=8057&offer_id=149',
   // Крипто - WEEX
-  crypto: 'https://www.weex.com/ru/register?vipCode=kaktotakxme',
+  crypto: 'https://www.weex.com/ru/register?vipCode=NMNH_MANAGERe',
 };
 
 const MARKET_META: Record<Market, { label: string; tagline: string }> = {
@@ -473,7 +473,7 @@ function ForexInfo() {
         </p>
       </div>
 
-      <p className="text-[11px] text-muted-foreground">⏱ Верификация до 30 мин · 📞 @kaktotakxm</p>
+      <p className="text-[11px] text-muted-foreground">⏱ Верификация до 30 мин · 📞 @NMNH_MANAGER</p>
     </div>
   );
 }
@@ -482,7 +482,7 @@ function ForexInfo() {
 function FxProInfo() {
   const steps = [
     <>Зарегистрируйтесь в <b className="text-foreground">FxPro</b> по кнопке ниже</>,
-    <>Пополните счёт от <b className="text-foreground">$20</b></>,
+    <>Пополните счёт от <b className="text-foreground">$101</b></>,
     <>Введите ID аккаунта на следующем шаге</>,
   ];
   const perks = [
@@ -522,7 +522,7 @@ function FxProInfo() {
         </p>
       </div>
 
-      <p className="text-[11px] text-muted-foreground">⏱ Верификация до 30 мин · 📞 @kaktotakxm</p>
+      <p className="text-[11px] text-muted-foreground">⏱ Верификация до 30 мин · 📞 @NMNH_MANAGER</p>
     </div>
   );
 }

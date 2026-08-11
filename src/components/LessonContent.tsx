@@ -31,7 +31,7 @@ function normalizePath(path: string): string {
   return path
     .replace(/[""]/g, '"')
     .replace(/['']/g, "'")
-    .replace(/[–—]/g, '-')
+    .replace(/[–-]/g, '-')
     .trim();
 }
 
@@ -904,7 +904,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
     }
   }, [currentSlide]);
 
-  // Подсказка-палец «листайте» — только если контент карточки прокручивается
+  // Подсказка-палец «листайте» - только если контент карточки прокручивается
   useEffect(() => {
     setShowScrollHint(false);
     const cardEl = cardRefs.current.get(currentSlide);
