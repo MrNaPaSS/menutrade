@@ -14,10 +14,12 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
   // Пробуем найти изображение (GIF, PNG, JPG) по разным путям
   useEffect(() => {
     const basePath = import.meta.env.BASE_URL || '/';
+    // Основной логотип - NMNH. Пепе остаётся запасным вариантом.
     const pathsToTry = imagePath
       ? [imagePath]
       : [
-        `${basePath}pepe_animated.gif`
+        `${basePath}nmnh_logo.png`,
+        `${basePath}pepe_animated.gif`,
       ];
 
     const checkImage = (path: string): Promise<boolean> => {

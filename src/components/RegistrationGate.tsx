@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, Bitcoin, ArrowLeft, Clock, CheckCircle2, Loader2,
   GraduationCap, ChevronRight, ExternalLink, ShieldCheck, Sparkles, AlertTriangle, Gift,
-  Radio, Bot,
+  Radio, Bot, LineChart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,17 +11,21 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { useTelegram } from '@/hooks/useTelegram';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 
-type Market = 'forex' | 'crypto';
+// 'forex' - Pocket Option (значение сохранено прежним для совместимости с базой бота)
+type Market = 'forex' | 'fxpro' | 'crypto';
 
 const REGISTRATION_LINKS: Record<Market, string> = {
-  // Форекс - та же ссылка, что в боте
+  // Форекс: Pocket Option - та же ссылка, что в боте
   forex: 'https://u3.shortink.io/main?utm_campaign=827841&utm_source=affiliate&utm_medium=sr&a=CQQJpdvm2ya9dU&al=1743587&ac=web&cid=948657&code=WELCOME50',
+  // Форекс: FxPro
+  fxpro: 'https://direct.fxpro.partners/click?pid=8057&offer_id=149',
   // Крипто - WEEX
   crypto: 'https://www.weex.com/ru/register?vipCode=kaktotakxme',
 };
 
 const MARKET_META: Record<Market, { label: string; tagline: string }> = {
-  forex: { label: 'FOREX', tagline: 'Брокер · бонус к депозиту' },
+  forex: { label: 'POCKET OPTION', tagline: 'Бинарные опционы · бонус +50%' },
+  fxpro: { label: 'FXPRO', tagline: 'Классический форекс-брокер' },
   crypto: { label: 'CRYPTO', tagline: 'Биржа WEEX' },
 };
 
@@ -63,7 +67,7 @@ function formatTime(totalSeconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-type Step = 'welcome' | 'info' | 'register';
+type Step = 'welcome' | 'forex-brokers' | 'info' | 'register';
 
 export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
   const { userId, user } = useTelegram();
@@ -91,6 +95,9 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
     setError(null);
     setStep('info');
   };
+
+  // Шаг назад из описания брокера: форекс-брокеры возвращают к своему списку
+  const backFromInfo = () => setStep(market === 'crypto' ? 'welcome' : 'forex-brokers');
 
   const goRegister = () => {
     // FB InitiateCheckout - нажал "Зарегистрироваться" (аналог "получил ссылку регистрации" в боте)
@@ -184,7 +191,53 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
   }
 
   const meta = MARKET_META[market];
-  const Icon = market === 'forex' ? TrendingUp : Bitcoin;
+  const Icon = market === 'crypto' ? Bitcoin : TrendingUp;
+
+  // ── Шаг 1.5: выбор форекс-брокера ─────────────────────────────────────────
+  if (step === 'forex-brokers') {
+    return (
+      <Shell>
+        <motion.div
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-5"
+        >
+          <button
+            onClick={() => setStep('welcome')}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Назад
+          </button>
+
+          <div className="text-center space-y-2">
+            <h1 className="font-display font-bold text-xl text-foreground neon-text-subtle">
+              Выберите брокера
+            </h1>
+            <p className="text-muted-foreground text-sm px-1">
+              Оба варианта открывают полный доступ к Академии.
+              Выбирайте тот, что ближе по стилю торговли.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <MarketCard
+              icon={<TrendingUp className="w-6 h-6 text-primary" />}
+              label="Pocket Option"
+              tagline={MARKET_META.forex.tagline}
+              onClick={() => chooseMarket('forex')}
+            />
+            <MarketCard
+              icon={<LineChart className="w-6 h-6 text-primary" />}
+              label="FxPro"
+              tagline={MARKET_META.fxpro.tagline}
+              onClick={() => chooseMarket('fxpro')}
+            />
+          </div>
+        </motion.div>
+      </Shell>
+    );
+  }
 
   // ── Шаг 2: инфо-окно раздела (как в боте) + кнопка регистрации ────────────
   if (step === 'info') {
@@ -200,7 +253,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
             className="space-y-5"
           >
             <button
-              onClick={() => setStep('welcome')}
+              onClick={backFromInfo}
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" /> Назад
@@ -216,7 +269,9 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
               </div>
             </div>
 
-            {market === 'forex' ? <ForexInfo /> : <CryptoInfo />}
+            {market === 'forex' && <ForexInfo />}
+            {market === 'fxpro' && <FxProInfo />}
+            {market === 'crypto' && <CryptoInfo />}
 
             <Button className="w-full h-12 font-display font-bold neon-glow" onClick={goRegister}>
               Зарегистрироваться
@@ -368,8 +423,8 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           <MarketCard
             icon={<TrendingUp className="w-6 h-6 text-primary" />}
             label="Регистрация FOREX"
-            tagline={MARKET_META.forex.tagline}
-            onClick={() => chooseMarket('forex')}
+            tagline="Pocket Option или FxPro"
+            onClick={() => { setError(null); setStep('forex-brokers'); }}
           />
           <MarketCard
             icon={<Bitcoin className="w-6 h-6 text-accent" />}
@@ -415,6 +470,55 @@ function ForexInfo() {
         <p className="text-xs text-yellow-100/90 leading-relaxed">
           Уже есть аккаунт на платформе? Удалите его (Настройки → Удалить аккаунт)
           и зарегистрируйтесь заново по нашей ссылке, иначе верификация невозможна.
+        </p>
+      </div>
+
+      <p className="text-[11px] text-muted-foreground">⏱ Верификация до 30 мин · 📞 @kaktotakxm</p>
+    </div>
+  );
+}
+
+// ── Инфо-блок FXPRO ────────────────────────────────────────────────────────
+function FxProInfo() {
+  const steps = [
+    <>Зарегистрируйтесь в <b className="text-foreground">FxPro</b> по кнопке ниже</>,
+    <>Пополните счёт от <b className="text-foreground">$20</b></>,
+    <>Введите ID аккаунта на следующем шаге</>,
+  ];
+  const perks = [
+    'Классический форекс: валюты, металлы, индексы',
+    'Регулируемый брокер с историей с 2006 года',
+    'Терминалы MT4, MT5 и cTrader',
+  ];
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">Как получить доступ за 3 шага:</p>
+
+      <div className="space-y-2.5">
+        {steps.map((stepText, i) => (
+          <div key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+            <span className="mt-0.5 w-5 h-5 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0">
+              {i + 1}
+            </span>
+            <span>{stepText}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+        {perks.map((perk) => (
+          <div key={perk} className="flex items-center gap-2 text-xs text-foreground/90">
+            <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" /> {perk}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-start gap-2.5 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3">
+        <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-yellow-100/90 leading-relaxed">
+          Регистрируйтесь именно по нашей ссылке - иначе аккаунт не привяжется
+          к Академии и верификация будет невозможна.
         </p>
       </div>
 
