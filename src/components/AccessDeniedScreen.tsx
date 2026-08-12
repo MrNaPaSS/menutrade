@@ -1,16 +1,42 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, ArrowLeft, ExternalLink, Radio, GraduationCap, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RegistrationGate } from './RegistrationGate';
+import { useTelegram } from '@/hooks/useTelegram';
 
 interface AccessDeniedScreenProps {
     feature: 'обучение' | 'стратегии' | 'форум и live';
     onBack?: () => void;
 }
 
+function getBotApiBase(): string {
+    return import.meta.env.DEV
+        ? '/bot-api'
+        : (import.meta.env.VITE_BOT_API_URL || 'http://localhost:8081');
+}
+
+// Сообщаем боту, что человек упёрся в замок - на этом строится цепочка дожима.
+// Fire-and-forget: неудача запроса не должна ломать экран.
+function reportPaywallHit(userId: string | null, feature: string): void {
+    if (!userId) return;
+    fetch(`${getBotApiBase()}/hit-paywall`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true',
+        },
+        body: JSON.stringify({ userId, feature }),
+    }).catch(() => { /* аналитика не критична */ });
+}
+
 export function AccessDeniedScreen({ feature, onBack }: AccessDeniedScreenProps) {
     const [showGate, setShowGate] = useState(false);
+    const { userId } = useTelegram();
+
+    useEffect(() => {
+        reportPaywallHit(userId, feature);
+    }, [userId, feature]);
 
     // Регистрация внутри аппа: человек не уходит в бота, проходит все шаги здесь.
     // Когда админ подтвердит депозит - hasFullAccess обновится и страница откроется сама.
