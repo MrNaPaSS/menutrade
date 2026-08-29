@@ -20,7 +20,7 @@ const REGISTRATION_LINKS: Record<Market, string> = {
   // Форекс: FxPro
   fxpro: 'https://direct.fxpro.partners/click?pid=8057&offer_id=149',
   // Крипто - WEEX
-  crypto: 'https://www.weex.com/ru/register?vipCode=NMNH_MANAGERe',
+  crypto: 'https://www.weex.com/ru/register?vipCode=kaktotakxme',
 };
 
 const MARKET_META: Record<Market, { label: string; tagline: string }> = {
