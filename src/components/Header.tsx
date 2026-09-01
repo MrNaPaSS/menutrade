@@ -71,7 +71,7 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
         damping: 30
       }}
     >
-      <div className="max-w-lg mx-auto px-4 pb-4 pt-[var(--tg-content-top)]">
+      <div className="max-w-lg mx-auto px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:pt-6">
         <div className="flex items-center gap-4 mb-4">
           {/* Animated GIF logo */}
           <motion.div
@@ -108,9 +108,9 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <h1 className="font-display font-bold whitespace-nowrap text-[clamp(0.95rem,4.6vw,1.25rem)] tracking-normal sm:tracking-wider">
+            <h1 className="font-display font-bold text-xl tracking-wider">
               <span className="neon-text-subtle">NO MONEY</span>
-              <span className="text-foreground mx-1.5">-</span>
+              <span className="text-foreground mx-2">-</span>
               <span className="neon-text-subtle">NO HONEY</span>
             </h1>
             <p className="text-xs text-muted-foreground font-medium tracking-wide">

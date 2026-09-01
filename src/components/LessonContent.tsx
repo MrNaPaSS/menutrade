@@ -963,7 +963,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
     <div className="min-h-[100dvh] scanline pb-8 sm:pb-10">
       <div className="relative z-10 pt-4 sm:pt-5 md:pt-6">
         {/* Sticky header с кнопкой назад */}
-        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[var(--tg-content-top)]">
+        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]">
           <div className="relative flex items-center justify-center py-2 sm:py-3">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Button
