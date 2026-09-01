@@ -1021,7 +1021,7 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                         }
                       }}
                       data-index={index}
-                      className="glass-card rounded-xl p-4 neon-border h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_170px)] flex flex-col overflow-hidden relative mx-auto w-full"
+                      className="glass-card rounded-xl p-4 neon-border h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_245px)] flex flex-col overflow-hidden relative mx-auto w-full"
                       style={{ touchAction: 'pan-y pinch-zoom' }}
                     >
                       <div className="flex-1 min-h-0 prose prose-invert max-w-none w-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
@@ -1395,22 +1395,30 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="left-2" />
-              <CarouselNext className="right-2" />
-            </Carousel>
+              {/* Стрелки вынесены под карточку: внутри они лежали
+                  поверх текста и перекрывали строки на узком экране */}
+              <div className="mt-3 flex items-center justify-center gap-4">
+                <CarouselPrevious className="static translate-y-0 h-9 w-9" />
 
-            {/* Прогресс индикатор */}
-            <div className="flex justify-center gap-1.5 mt-4">
-              {cards.map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${index === currentSlide
-                    ? 'bg-primary w-8 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
-                    : 'bg-primary/20 w-1.5'
-                    }`}
-                />
-              ))}
-            </div>
+                <div className="flex items-center gap-1.5">
+                  {cards.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${index === currentSlide
+                        ? 'bg-primary w-8 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
+                        : 'bg-primary/20 w-1.5'
+                        }`}
+                    />
+                  ))}
+                </div>
+
+                <CarouselNext className="static translate-y-0 h-9 w-9" />
+              </div>
+
+              <p className="mt-2 text-center text-[11px] font-mono text-muted-foreground">
+                {currentSlide + 1} из {cards.length}
+              </p>
+            </Carousel>
 
             {isLastCard && lesson.quiz && lesson.quiz.length > 0 && (
               <button

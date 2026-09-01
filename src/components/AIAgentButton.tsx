@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Brain } from 'lucide-react';
-import { AIChatDialog } from './AIChatDialog';
+import { AgentApp } from '@/agent/AgentApp';
 import { useChatHistory } from '@/hooks/useChatHistory';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export function AIAgentButton() {
+  const reducedMotion = useReducedMotion();
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { history } = useChatHistory();
@@ -58,72 +59,40 @@ export function AIAgentButton() {
         )}
         initial={{ scale: 0, opacity: 0 }}
         animate={{
-          scale: isOpen ? 0 : 1,
+          scale: isOpen ? 0.9 : 1,
           opacity: isOpen ? 0 : 1,
           pointerEvents: isOpen ? 'none' : 'auto'
         }}
-        transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-        whileHover={{ scale: isOpen ? 0 : 1.1, y: isOpen ? 0 : -2 }}
-        whileTap={{ scale: isOpen ? 0 : 0.95 }}
+        transition={{ type: 'spring', duration: 0.5, bounce: 0.2 }}
+        whileTap={{ scale: 0.95 }}
       >
-        {/* Волны - концентрические круги */}
-        {[0, 1, 2].map((index) => (
-          <motion.div
-            key={index}
-            className="absolute inset-0 rounded-full border-2 border-primary/30"
-            initial={{ scale: 1, opacity: 0.4 }}
-            animate={{
-              scale: [1, 1.8, 1.8],
-              opacity: [0.4, 0.2, 0]
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              delay: index * 0.7,
-              ease: "easeOut"
-            }}
-            style={{
-              boxShadow: '0 0 15px rgba(34, 197, 94, 0.3)'
-            }}
-          />
-        ))}
-
-        {/* Пульсирующее свечение */}
+        {/* Один мягкий пульс вместо пяти циклов: кнопка на экране постоянно,
+            декоративное движение на таком элементе превращается в шум.
+            Оставляем ровно столько, чтобы взгляд её находил. */}
         <motion.div
           className="absolute inset-0 rounded-full bg-primary/20 blur-xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.4, 0.6, 0.4]
+          animate={reducedMotion ? undefined : {
+            scale: [1, 1.15, 1],
+            opacity: [0.35, 0.55, 0.35]
           }}
           transition={{
-            duration: 3,
+            duration: 3.2,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: 'easeInOut'
           }}
         />
 
         {/* Внутреннее свечение */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent via-white/10 to-white/20" />
 
-        {/* Пульсирующая иконка */}
-        <motion.div
-          animate={{
-            scale: [1, 1.05, 1]
-          }}
-          transition={{
-            duration: 2.5,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground relative z-10" strokeWidth={2.5} />
-        </motion.div>
+        <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground relative z-10" strokeWidth={2.5} />
 
         {/* Бейдж с количеством непрочитанных */}
         {unreadCount > 0 && (
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', duration: 0.4, bounce: 0.25 }}
             className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1"
           >
             <Badge
@@ -136,7 +105,7 @@ export function AIAgentButton() {
         )}
       </motion.button>
 
-      <AIChatDialog open={isOpen} onOpenChange={setIsOpen} />
+      {isOpen && <AgentApp onBack={() => setIsOpen(false)} />}
     </>
   );
 }

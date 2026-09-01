@@ -38,7 +38,7 @@ export function ModuleCard({
         type: "spring",
         stiffness: 100,
         damping: 15,
-        delay: index * 0.1
+        delay: index * 0.06
       }
     }
   };

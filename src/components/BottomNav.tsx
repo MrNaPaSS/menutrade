@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Home, MessageCircle, Target, ExternalLink, HeadphonesIcon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { TradeMarketDrawer } from '@/components/TradeMarketDrawer';
 
 interface BottomNavProps {
   onHomeClick?: () => void;
@@ -36,6 +38,7 @@ export function BottomNav({
 }: BottomNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [tradeOpen, setTradeOpen] = useState(false);
 
   const handleHomeClick = () => {
     if (onHomeClick) {
@@ -75,7 +78,7 @@ export function BottomNav({
       id: "nav-trade",
       icon: ExternalLink,
       label: "Торгуем здесь",
-      onClick: () => window.open(platformUrl, '_blank'),
+      onClick: () => setTradeOpen(true),
     },
     {
       id: "nav-support",
@@ -123,19 +126,9 @@ export function BottomNav({
                       className="relative -mt-10 mb-0"
                       layoutId="main-nav-button"
                     >
-                      {/* Outer glow ring */}
-                      <motion.div
-                        className="absolute inset-0 rounded-full bg-primary/30 blur-xl"
-                        animate={{
-                          scale: [1, 1.3, 1],
-                          opacity: [0.4, 0.7, 0.4]
-                        }}
-                        transition={{
-                          duration: 3,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      />
+                      {/* Свечение статичное: панель видна на каждом экране,
+                          пульсация здесь тянет взгляд от контента. */}
+                      <div className="absolute inset-0 rounded-full bg-primary/30 blur-xl" />
 
                       {/* Main button */}
                       <motion.div
@@ -199,6 +192,8 @@ export function BottomNav({
           </div>
         </div>
       </div>
+
+      <TradeMarketDrawer open={tradeOpen} onOpenChange={setTradeOpen} />
     </nav>
   );
 }

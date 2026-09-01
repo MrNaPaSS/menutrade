@@ -613,7 +613,7 @@ const Strategies = () => {
                           }
                         }}
                         data-index={index}
-                        className="glass-card rounded-xl p-4 neon-border h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_170px)] flex flex-col overflow-hidden relative mx-auto w-full"
+                        className="glass-card rounded-xl p-4 neon-border h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_245px)] flex flex-col overflow-hidden relative mx-auto w-full"
                         style={{ touchAction: 'pan-y pinch-zoom' }}
                       >
                         <h3 className="font-display font-bold text-sm mb-3 text-primary break-words overflow-wrap-anywhere flex-shrink-0">
@@ -643,8 +643,29 @@ const Strategies = () => {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="left-2 sm:left-3 md:left-4 h-11 w-11 min-h-[44px] min-w-[44px] bg-background/95 backdrop-blur-lg border-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 z-50" />
-                <CarouselNext className="right-2 sm:right-3 md:right-4 h-11 w-11 min-h-[44px] min-w-[44px] bg-background/95 backdrop-blur-lg border-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 z-50" />
+                {/* Стрелки под карточкой: внутри они перекрывали текст.
+                    Заодно появился индикатор - раньше номера слайда видно не было */}
+                <div className="mt-3 flex items-center justify-center gap-4">
+                  <CarouselPrevious className="static translate-y-0 h-9 w-9 border-primary/30 bg-background/95 hover:bg-primary/10 hover:border-primary/50" />
+
+                  <div className="flex items-center gap-1.5">
+                    {currentModule.lessons.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${index === current
+                          ? 'bg-primary w-8 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
+                          : 'bg-primary/20 w-1.5'
+                          }`}
+                      />
+                    ))}
+                  </div>
+
+                  <CarouselNext className="static translate-y-0 h-9 w-9 border-primary/30 bg-background/95 hover:bg-primary/10 hover:border-primary/50" />
+                </div>
+
+                <p className="mt-2 text-center text-[11px] font-mono text-muted-foreground">
+                  {current + 1} из {currentModule.lessons.length}
+                </p>
               </Carousel>
             </div>
           </main>

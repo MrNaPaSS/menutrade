@@ -6,9 +6,11 @@ import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { GraduationCap, Newspaper, ArrowRight, TrendingUp, Code, Briefcase, BookOpen, Activity, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useHasHover } from '@/hooks/useHasHover';
 
 const Home = () => {
   const navigate = useNavigate();
+  const hasHover = useHasHover();
   const { modules, getProgress } = useProgress();
 
   const progress = getProgress();
@@ -149,13 +151,13 @@ const Home = () => {
                     id={section.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, type: "spring", stiffness: 300, damping: 25 }}
+                    transition={{ delay: index * 0.06, type: "spring", stiffness: 300, damping: 25 }}
                   >
                     <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 neon-border transition-all duration-300 touch-manipulation min-h-[60px]">
                       <div className="flex items-start gap-2 sm:gap-3 md:gap-4">
                         <motion.div
                           className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center border ${colorClasses.bg} shadow-[0_0_20px_-5px_hsl(142,76%,52%,0.3)] flex-shrink-0`}
-                          whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
+                          whileHover={hasHover ? { rotate: [0, -5, 5, 0], scale: 1.1 } : undefined}
                           transition={{ duration: 0.3 }}
                         >
                           <Icon className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 ${colorClasses.icon}`} />

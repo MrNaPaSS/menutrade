@@ -75,11 +75,15 @@ export function DebugLogin() {
         });
 
         // Сохраняем нового дебаг-пользователя
+        // Флаги доступа сохраняем тоже: в dev бот недоступен,
+        // и брать статус больше неоткуда
         localStorage.setItem('debug_user', JSON.stringify({
             id: user.id,
             first_name: user.first_name,
             last_name: user.last_name,
-            username: user.username
+            username: user.username,
+            verified: user.verified,
+            deposited: user.deposited
         }));
 
         setCurrentUser(user);

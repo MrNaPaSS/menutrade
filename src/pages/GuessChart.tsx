@@ -9,8 +9,16 @@ import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { toast } from '@/components/ui/sonner';
 import { TradingChart } from '@/components/TradingChart';
 import { generatePattern, type GeneratedPattern, type ChartPoint } from '@/data/patternGenerator';
+import { useUserAccess } from '@/contexts/UserAccessContext';
+import { useTelegram } from '@/hooks/useTelegram';
+import { useDailyAttempts } from '@/hooks/useDailyAttempts';
+import { reportPaywallHit } from '@/lib/paywall';
+import { RegistrationGate } from '@/components/RegistrationGate';
+import { Lock } from 'lucide-react';
 
 const GAME_DURATION = 15;
+// Без депозита - три графика в сутки: попробовать хватает, привыкнуть нет
+const FREE_ROUNDS_PER_DAY = 3;
 const REVEAL_STEP_MS = 130;
 
 type GameState = 'NOT_STARTED' | 'PLAYING' | 'RESULT';
@@ -20,6 +28,11 @@ const GuessChart = () => {
   const navigate = useNavigate();
 
   useSwipeBack({ onSwipeBack: () => navigate('/home'), enabled: true });
+
+  const { hasFullAccess } = useUserAccess();
+  const { userId } = useTelegram();
+  const attempts = useDailyAttempts(userId, 'guess_chart', FREE_ROUNDS_PER_DAY);
+  const [showGate, setShowGate] = useState(false);
 
   const [pattern, setPattern] = useState<GeneratedPattern | null>(null);
   const [gameState, setGameState] = useState<GameState>('NOT_STARTED');
@@ -51,6 +64,13 @@ const GuessChart = () => {
     if (!pattern) startNewRound();
   }, [pattern, startNewRound]);
 
+  // Один сигнал боту на исчерпанный лимит - он ведёт цепочку дожима
+  useEffect(() => {
+    if (!hasFullAccess && attempts.exhausted) {
+      reportPaywallHit(userId, 'тренажёр графиков');
+    }
+  }, [hasFullAccess, attempts.exhausted, userId]);
+
   // Дорисовка скрытой части графика после ответа
   const startReveal = useCallback((p: GeneratedPattern) => {
     if (animRef.current) clearInterval(animRef.current);
@@ -74,7 +94,9 @@ const GuessChart = () => {
     setResult(res);
     setGameState('RESULT');
     startReveal(pattern);
-  }, [pattern, clearTimers, startReveal]);
+    // Считаем только доигранные раунды: брошенный на середине не тратит попытку
+    if (!hasFullAccess) attempts.spend();
+  }, [pattern, clearTimers, startReveal, hasFullAccess, attempts]);
 
   const handleGuess = (dir: 'UP' | 'DOWN') => {
     if (gameState !== 'PLAYING' || !pattern) return;
@@ -116,9 +138,14 @@ const GuessChart = () => {
     return [...real, ...hidden];
   }, [pattern, revealCount]);
 
+  if (showGate) {
+    return <RegistrationGate onBack={() => setShowGate(false)} />;
+  }
+
   if (!pattern) return null;
 
   const isPlaying = gameState === 'PLAYING';
+  const limitReached = !hasFullAccess && attempts.exhausted;
 
   return (
     <div className="min-h-[100dvh] bg-background relative">
@@ -142,6 +169,11 @@ const GuessChart = () => {
         <div className="text-center pb-2 sm:pb-3">
           <h1 className="font-display font-bold text-xl sm:text-2xl text-foreground neon-text-subtle">Куда пойдёт график</h1>
           <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Тренируй насмотренность: определи направление цены</p>
+          {!hasFullAccess && (
+            <p className="text-[11px] text-muted-foreground/80 mt-1 font-mono">
+              Осталось графиков сегодня: <span className="text-primary">{attempts.left}</span> из {FREE_ROUNDS_PER_DAY}
+            </p>
+          )}
         </div>
 
         {/* График - конкретная высота (vh), canvas синхронизируется ResizeObserver-ом */}
@@ -160,7 +192,11 @@ const GuessChart = () => {
         {/* Управление / результат */}
         <div className="pt-3">
           <AnimatePresence mode="wait">
-            {gameState === 'NOT_STARTED' ? (
+            {limitReached ? (
+              <motion.div key="limit" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+                <LimitCard onOpenGate={() => setShowGate(true)} />
+              </motion.div>
+            ) : gameState === 'NOT_STARTED' ? (
               <motion.div key="start" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
                 <Button
                   className="w-full h-16 sm:h-18 text-lg font-display font-bold neon-glow"
@@ -190,9 +226,14 @@ const GuessChart = () => {
             ) : (
               <motion.div key="result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                 <ResultCard result={result} pattern={pattern} />
-                <Button className="w-full h-14 font-display font-bold" onClick={startNewRound}>
-                  <RefreshCw className="mr-2 h-4 w-4" /> Следующий график
-                </Button>
+
+                {limitReached ? (
+                  <LimitCard onOpenGate={() => setShowGate(true)} />
+                ) : (
+                  <Button className="w-full h-14 font-display font-bold" onClick={startNewRound}>
+                    <RefreshCw className="mr-2 h-4 w-4" /> Следующий график
+                  </Button>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -201,6 +242,31 @@ const GuessChart = () => {
     </div>
   );
 };
+
+function LimitCard({ onOpenGate }: { onOpenGate: () => void }) {
+  return (
+    <div className="glass-card neon-border rounded-xl p-4 space-y-3">
+      <div className="flex items-start gap-3">
+        <Lock className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="font-display font-bold text-sm mb-1">
+            Бесплатные графики на сегодня закончились
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Полный доступ снимает лимит: тренажёр без ограничений,
+            48 уроков, стратегии и закрытый форум.
+          </p>
+        </div>
+      </div>
+      <Button className="w-full h-12 font-display font-bold" onClick={onOpenGate}>
+        Открыть полный доступ
+      </Button>
+      <p className="text-[11px] text-muted-foreground text-center">
+        Или возвращайся завтра - счётчик обнулится
+      </p>
+    </div>
+  );
+}
 
 interface ResultCardProps {
   result: Result | null;

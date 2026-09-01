@@ -158,6 +158,17 @@
 
     --radius: 1rem;
 
+    /* Motion tokens - единая система кривых и длительностей.
+       ease-out для появления, ease-in-out для движения на экране. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+    --duration-press: 100ms;
+    --duration-fast: 160ms;
+    --duration-base: 220ms;
+    --duration-slow: 300ms;
+
     /* Premium neon effects */
     --neon-glow: 142 76% 52%;
     --neon-soft: 142 70% 45%;
@@ -323,7 +334,9 @@
 
   .glass-card-hover {
     @apply glass-card;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform var(--duration-base) var(--ease-out),
+                border-color var(--duration-base) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out);
   }
 
   .glass-card-hover:hover {
@@ -470,7 +483,15 @@
   .btn-premium {
     position: relative;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out),
+                background-color var(--duration-base) var(--ease-out);
+  }
+
+  /* Отклик на нажатие: палец получает подтверждение мгновенно */
+  .btn-premium:active {
+    transform: scale(0.97);
+    transition-duration: var(--duration-press);
   }
 
   .btn-premium::before {
@@ -500,11 +521,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform var(--duration-base) var(--ease-out);
   }
 
-  .icon-wrapper:hover {
-    transform: scale(1.1);
+  /* Ховер только на устройствах с мышью: на тапе он даёт ложное срабатывание */
+  @media (hover: hover) and (pointer: fine) {
+    .icon-wrapper:hover {
+      transform: scale(1.1);
+    }
   }
 
   .icon-wrapper:active {
@@ -580,4 +604,55 @@
   .sticky.top-0 {
     padding-top: env(safe-area-inset-top) !important;
   }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Уважение к настройке "уменьшить движение".
+   Убираем перемещения и бесконечные циклы, оставляем прозрачность
+   и цвет - они помогают понять, что произошло. Полностью гасить
+   анимации нельзя: пропадёт обратная связь.
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--duration-press) !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Декоративные фоновые циклы выключаем совсем */
+  .animate-glow-pulse,
+  .animate-float-premium,
+  .animate-shimmer,
+  .scanline::after {
+    animation: none !important;
+  }
+}
+
+/* Ховер-эффекты только там, где есть настоящий курсор */
+@media (hover: none) {
+  .glass-card-hover:hover {
+    transform: none;
+  }
+}
+
+/* Поле ввода AI-агента - перенесено из проекта MrNaPaSS/agent.
+   Без него textarea падает на белый фон браузера по умолчанию. */
+.input-glass {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: hsl(140, 25%, 8%);
+  border: 1px solid hsl(142, 40%, 18%);
+  color: hsl(142, 70%, 75%);
+  outline: none;
+  transition: border-color var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
+}
+
+.input-glass:focus {
+  border-color: hsl(142, 76%, 52%);
+  box-shadow: 0 0 0 2px hsl(142, 76%, 52%, 0.2);
 }

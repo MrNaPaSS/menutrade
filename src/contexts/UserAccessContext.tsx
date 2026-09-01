@@ -25,6 +25,8 @@ const UserAccessContext = createContext<UserAccessContextType | undefined>(undef
 
 // Константы
 const AI_MESSAGE_LIMIT = 3;
+// Админу доступ открыт всегда: он проверяет продукт, а не покупает его
+const ADMIN_USER_ID = '511442168';
 const CACHE_DURATION = 0; // Отключаем кэш для моментального обновления статусов
 
 // Вспомогательные функции для localStorage
@@ -156,9 +158,28 @@ export function UserAccessProvider({ children }: { children: React.ReactNode }) 
                 }
             }
 
+            // В разработке бот обычно не запущен, и статус взять неоткуда.
+            // Тогда берём флаги из выбранного дебаг-пользователя, иначе
+            // локально невозможно проверить экраны с доступом.
+            if (!foundUser && import.meta.env.DEV) {
+                try {
+                    const debugUser = JSON.parse(localStorage.getItem('debug_user') || 'null');
+                    if (debugUser && String(debugUser.id) === userId) {
+                        foundUser = {
+                            verified: debugUser.verified === true,
+                            deposited: debugUser.deposited === true,
+                        };
+                    }
+                } catch {
+                    /* некорректный debug_user - игнорируем */
+                }
+            }
+
+            const isAdmin = userId === ADMIN_USER_ID;
+
             // Если пользователь не найден нигде, считаем что у него нет доступа (или дефолтный)
-            const verified = foundUser?.verified === true;
-            const deposited = foundUser?.deposited === true;
+            const verified = isAdmin || foundUser?.verified === true;
+            const deposited = isAdmin || foundUser?.deposited === true;
             // Доступ к Академии - по депозиту: пускаем всех, у кого есть депозит
             const hasFullAccess = deposited;
             // Заявка на доступ к Академии отправлена (определяем по записи в базе бота, не по localStorage)

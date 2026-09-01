@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useReducedMotion } from 'framer-motion';
 
 interface Particle {
   x: number;
@@ -11,8 +12,13 @@ interface Particle {
 
 export function MatrixRain() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
+    // При "уменьшить движение" фон остаётся статичным: падающие символы
+    // - чистая декорация, без них ничего не теряется.
+    if (reducedMotion) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -50,7 +56,17 @@ export function MatrixRain() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    const draw = () => {
+    // Фон декоративный: 30 кадров в секунду визуально неотличимы от 60,
+    // но вдвое дешевле для батареи и оставляют главный поток интерфейсу.
+    const FRAME_MS = 1000 / 30;
+    let lastFrame = 0;
+
+    const draw = (now = 0) => {
+      animationId = requestAnimationFrame(draw);
+
+      if (now - lastFrame < FRAME_MS) return;
+      lastFrame = now;
+
       // Fade effect
       ctx.fillStyle = 'rgba(8, 15, 10, 0.08)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -102,17 +118,27 @@ export function MatrixRain() {
           };
         }
       });
+    };
 
-      animationId = requestAnimationFrame(draw);
+    // Пока вкладка скрыта, браузер всё равно душит rAF, но мы
+    // останавливаемся явно - иначе при возврате копится очередь кадров.
+    const handleVisibility = () => {
+      cancelAnimationFrame(animationId);
+      if (!document.hidden) {
+        lastFrame = 0;
+        draw();
+      }
     };
 
     draw();
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', resizeCanvas);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <canvas

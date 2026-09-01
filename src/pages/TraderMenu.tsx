@@ -9,9 +9,11 @@ import { ArrowLeft, Gift, ExternalLink, HelpCircle, TrendingUp, Code, Users, Cro
 import { Button } from '@/components/ui/button';
 import { levels, platformLinks } from '@/data/traderMenu';
 import { cn } from '@/lib/utils';
+import { useHasHover } from '@/hooks/useHasHover';
 
 const TraderMenu = () => {
   const navigate = useNavigate();
+  const hasHover = useHasHover();
   const { getProgress } = useProgress();
   const progress = getProgress();
 
@@ -65,7 +67,7 @@ const TraderMenu = () => {
                   ? "bg-primary/15 border-primary/30 group-hover:border-primary/50"
                   : "bg-secondary/15 border-secondary/30 group-hover:border-secondary/50"
               )}
-              whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
+              whileHover={hasHover ? { rotate: [0, -5, 5, 0], scale: 1.1 } : undefined}
             >
               <Icon className={cn("w-7 h-7 sm:w-8 sm:h-8", colorClass === "primary" ? "text-primary" : "text-secondary")} />
             </motion.div>
@@ -167,7 +169,7 @@ const TraderMenu = () => {
                         <div className={cn("absolute inset-0 blur-lg opacity-20 rounded-full", bgClasses)} />
                         <motion.div
                           className={cn("relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center border transition-all duration-300", bgClasses, colorClasses)}
-                          whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
+                          whileHover={hasHover ? { rotate: [0, -5, 5, 0], scale: 1.1 } : undefined}
                         >
                           <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
                         </motion.div>

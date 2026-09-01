@@ -47,7 +47,7 @@ export function QuickTemplates({ onSelect, className }: QuickTemplatesProps) {
             key={template.id}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.06 }}
             className="w-full"
           >
             <Button
