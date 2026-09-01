@@ -33,6 +33,8 @@ export interface TelegramWebApp {
   viewportHeight: number;
   viewportStableHeight: number;
   contentSafeAreaInset?: { top: number; bottom: number; left: number; right: number };
+  safeAreaInset?: { top: number; bottom: number; left: number; right: number };
+  isFullscreen?: boolean;
   headerColor: string;
   backgroundColor: string;
   ready: () => void;
@@ -172,12 +174,27 @@ export function useTelegram() {
           // Верхний инсет контента: высота шапки Telegram в fullscreen (+ небольшой зазор).
           // Страницы используют его как pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]
           const setContentTop = () => {
-            const top = tg.contentSafeAreaInset?.top ?? 0;
+            // Два разных отступа: safeAreaInset - вырез и статус-бар устройства,
+            // contentSafeAreaInset - место, занятое кнопками Telegram
+            // ("Закрыть", "свернуть", "...") поверх веб-приложения.
+            // В вебвью Telegram env(safe-area-inset-top) часто равен нулю,
+            // поэтому считаем сами и не полагаемся на CSS.
+            const deviceTop = tg.safeAreaInset?.top ?? 0;
+            const telegramTop = tg.contentSafeAreaInset?.top ?? 0;
+
+            // Старые клиенты инсеты не отдают, но кнопки всё равно рисуют
+            // поверх контента - резервируем место под них вручную.
+            const MIN_FULLSCREEN_TOP = 56;
+            const measured = deviceTop + telegramTop;
+            const top = tg.isFullscreen && measured < MIN_FULLSCREEN_TOP ? MIN_FULLSCREEN_TOP : measured;
+
             document.documentElement.style.setProperty('--tg-content-top', `${top + 8}px`);
           };
           setContentTop();
           tg.onEvent('contentSafeAreaChanged', setContentTop);
           tg.onEvent('safeAreaChanged', setContentTop);
+          // Вход и выход из полноэкранного режима меняет положение кнопок Telegram
+          tg.onEvent('fullscreenChanged', setContentTop);
 
           console.log('Telegram WebApp найден:', {
             version: tg.version,

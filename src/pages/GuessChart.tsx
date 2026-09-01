@@ -150,7 +150,7 @@ const GuessChart = () => {
   return (
     <div className="min-h-[100dvh] bg-background relative">
       <MatrixRain />
-      <div className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-6 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+      <div className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-6 pt-[var(--tg-content-top)]">
         <SimpleMenu />
 
         {/* Шапка */}

@@ -158,6 +158,11 @@
 
     --radius: 1rem;
 
+    /* Верхний отступ под кнопки Telegram ("Закрыть", "свернуть", "...").
+       Значение по умолчанию для обычного браузера; внутри Telegram его
+       перезаписывает useTelegram, складывая вырез устройства и панель клиента. */
+    --tg-content-top: calc(env(safe-area-inset-top) + 12px);
+
     /* Motion tokens - единая система кривых и длительностей.
        ease-out для появления, ease-in-out для движения на экране. */
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -598,11 +603,13 @@
     backface-visibility: visible !important;
   }
 
-  /* Глобальная коррекция для режима оверлея Telegram: сдвигаем все липкие шапки вниз.
-     env(safe-area-inset-top) в этом клиенте уже покрывает статус-бар + шапку Telegram,
-     поэтому НИЧЕГО сверху не прибавляем (иначе шапка уезжает на пол-экрана). */
+  /* Липкие шапки сдвигаем вниз под кнопки Telegram ("Закрыть", "свернуть", "...").
+     Раньше здесь стоял env(safe-area-inset-top), но в вебвью Telegram он часто
+     равен нулю - шапка прилипала к самому верху и уходила под эти кнопки.
+     --tg-content-top заполняет useTelegram: вырез устройства + панель клиента.
+     !important оставлен ради приоритета над утилитами Tailwind. */
   .sticky.top-0 {
-    padding-top: env(safe-area-inset-top) !important;
+    padding-top: var(--tg-content-top) !important;
   }
 }
 
