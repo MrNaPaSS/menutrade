@@ -8,25 +8,28 @@ import { ArrowLeft, Newspaper, Calendar, TrendingUp, ExternalLink } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Бегущая строка TradingView - веб-компонент, React о нём не знает
-declare global {
-    namespace JSX {
-        interface IntrinsicElements {
-            'tv-ticker-tape': React.DetailedHTMLProps<
-                React.HTMLAttributes<HTMLElement> & {
-                    symbols?: string;
-                    'line-chart-type'?: string;
-                },
-                HTMLElement
-            >;
-        }
-    }
-}
-
 /**
  * Виджеты TradingView просим рисовать прозрачный фон - иначе внутри карточки
  * видно их собственный тёмно-синий прямоугольник, чужой нашей теме.
  */
+const TICKER_URL =
+    'https://s.tradingview.com/embed-widget/ticker-tape/?locale=ru#' +
+    encodeURIComponent(JSON.stringify({
+        symbols: [
+            { proName: 'FX:EURUSD', title: 'EUR/USD' },
+            { proName: 'FX:GBPUSD', title: 'GBP/USD' },
+            { proName: 'FX:USDJPY', title: 'USD/JPY' },
+            { proName: 'CMCMARKETS:GOLD', title: 'Золото' },
+            { proName: 'FOREXCOM:SPXUSD', title: 'S&P 500' },
+            { proName: 'BINANCE:BTCUSDT', title: 'BTC' },
+        ],
+        showSymbolLogo: false,
+        isTransparent: true,
+        displayMode: 'compact',
+        colorTheme: 'dark',
+        locale: 'ru',
+    }));
+
 const CALENDAR_URL =
     'https://s.tradingview.com/embed-widget/events/?locale=ru#' +
     encodeURIComponent(JSON.stringify({
@@ -66,19 +69,6 @@ const MARKET_URL =
                 { s: 'FX:USDCAD', d: 'USD / CAD' },
             ],
         }],
-    }));
-
-const SCREENER_URL =
-    'https://s.tradingview.com/embed-widget/screener/?locale=ru#' +
-    encodeURIComponent(JSON.stringify({
-        market: 'forex',
-        showToolbar: true,
-        defaultColumn: 'overview',
-        defaultScreen: 'general',
-        isTransparent: true,
-        colorTheme: 'dark',
-        width: '100%',
-        height: '100%',
     }));
 
 interface WidgetFrameProps {
@@ -127,9 +117,8 @@ function WidgetFrame({ src, title, source, tall }: WidgetFrameProps) {
 
 const News = () => {
     const navigate = useNavigate();
-    const tickersRef = useRef<HTMLDivElement>(null);
-    const newsRef = useRef<HTMLDivElement>(null);
     const [activeTab, setActiveTab] = useState('calendar');
+    const newsRef = useRef<HTMLDivElement>(null);
 
     const handleHomeClick = () => navigate('/home');
 
@@ -139,22 +128,10 @@ const News = () => {
         window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     }, []);
 
-    // Бегущая строка котировок
+    // Лента новостей живёт на скрипте: iframe-версия виджета отдаёт пустую
+    // страницу. Контейнер держим смонтированным всегда - внутри скрытой
+    // вкладки виджет не получает размер и не рисуется.
     useEffect(() => {
-        const container = tickersRef.current;
-        if (!container || container.querySelector('script[src*="tv-ticker-tape"]')) return;
-
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.src = 'https://widgets.tradingview-widget.com/w/ru/tv-ticker-tape.js';
-        container.appendChild(script);
-    }, []);
-
-    // Лента новостей. Скрипт вставляем один раз при открытии вкладки:
-    // раньше здесь крутился опрос раз в секунду, который никогда не выключался.
-    useEffect(() => {
-        if (activeTab !== 'news') return;
-
         const container = newsRef.current;
         if (!container || container.querySelector('script[src*="timeline"]')) return;
 
@@ -168,10 +145,10 @@ const News = () => {
             isTransparent: true,
             locale: 'ru',
             width: '100%',
-            height: 460,
+            height: 440,
         });
         container.appendChild(script);
-    }, [activeTab]);
+    }, []);
 
     return (
         <div className="min-h-[100dvh] scanline pb-24">
@@ -200,13 +177,14 @@ const News = () => {
 
                 <main className="px-3 sm:px-4 pb-8 flex justify-center">
                     <div className="max-w-lg w-full mx-auto">
-                        {/* Котировки лентой - без рамки, она сама по себе полоса */}
-                        <div ref={tickersRef} className="mb-3 rounded-xl overflow-hidden">
-                            <tv-ticker-tape
-                                symbols="FOREXCOM:SPXUSD,FOREXCOM:NSXUSD,FX:EURUSD,CMCMARKETS:GOLD,FPMARKETS:GBPUSD,FX:USDJPY,OANDA:AUDUSD,OANDA:AUDJPY,OANDA:GBPCAD,OANDA:GBPJPY"
-                                line-chart-type="Baseline"
-                            ></tv-ticker-tape>
-                        </div>
+                        {/* Котировки узкой полосой - это фон, а не отдельный блок */}
+                        <iframe
+                            src={TICKER_URL}
+                            title="Котировки"
+                            loading="lazy"
+                            className="w-full h-[46px] border-0 block mb-3 rounded-lg overflow-hidden"
+                            sandbox="allow-scripts allow-same-origin allow-popups"
+                        />
 
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                             <TabsList className="grid w-full grid-cols-3 glass-card mb-3 h-auto p-1">
@@ -242,7 +220,11 @@ const News = () => {
                                 />
                             </TabsContent>
 
-                            <TabsContent value="news" className="mt-0">
+                            <TabsContent
+                                value="news"
+                                forceMount
+                                className="mt-0 data-[state=inactive]:hidden"
+                            >
                                 <div className="glass-card neon-border rounded-xl overflow-hidden">
                                     <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/20">
                                         <span className="text-xs font-medium text-muted-foreground">
@@ -250,9 +232,7 @@ const News = () => {
                                         </span>
                                         <button
                                             type="button"
-                                            onClick={() => window.open(
-                                                'https://ru.tradingview.com/news/', '_blank', 'noopener'
-                                            )}
+                                            onClick={() => window.open('https://ru.tradingview.com/news/', '_blank', 'noopener')}
                                             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
                                         >
                                             Открыть
@@ -260,25 +240,18 @@ const News = () => {
                                         </button>
                                     </div>
 
-                                    <div
-                                        ref={newsRef}
-                                        className="tradingview-widget-container w-full min-h-[460px]"
-                                    >
+                                    <div ref={newsRef} className="tradingview-widget-container w-full min-h-[440px]">
                                         <div className="tradingview-widget-container__widget w-full" />
                                     </div>
                                 </div>
                             </TabsContent>
 
-                            <TabsContent value="analytics" className="mt-0 space-y-3">
+                            <TabsContent value="analytics" className="mt-0">
                                 <WidgetFrame
                                     src={MARKET_URL}
                                     title="Обзор рынка"
                                     source="https://www.tradingview.com/markets/"
-                                />
-                                <WidgetFrame
-                                    src={SCREENER_URL}
-                                    title="Скринер форекс"
-                                    source="https://ru.tradingview.com/markets/currencies/"
+                                    tall
                                 />
                             </TabsContent>
                         </Tabs>
