@@ -34,9 +34,22 @@ function getBotApiBase(): string {
         : (import.meta.env.VITE_BOT_API_URL || 'http://localhost:8081');
 }
 
+/** Приглашение, которое уйдёт другу вместе со ссылкой. */
+const SHARE_TEXT = [
+    'Академия здравого трейдера',
+    '',
+    '48 уроков, тренажёр графиков и AI-наставник - бесплатно.',
+    'После верификации открываются живые сессии, разборы рынка',
+    'и закрытый форум трейдеров.',
+    '',
+    'Заходи по ссылке:',
+].join('\n');
+
 /** Открывает окно «поделиться» Telegram, иначе обычную ссылку. */
 function shareLink(link: string): void {
-    const text = 'Академия здравого трейдера - обучение, разборы и живые сессии';
+    // Ссылку кладём и в url, и в конец текста: клиенты Telegram по-разному
+    // собирают сообщение, и без этого друг иногда получает текст без ссылки
+    const text = `${SHARE_TEXT}\n${link}`;
     const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
     const tg = (window as { Telegram?: { WebApp?: { openTelegramLink?: (u: string) => void } } })
         .Telegram?.WebApp;
@@ -53,6 +66,12 @@ const Referral = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+
+    // Какая награда сейчас забирается, ник в TradingView и состояние отправки
+    const [claimingId, setClaimingId] = useState<string | null>(null);
+    const [tradingview, setTradingview] = useState('');
+    const [sending, setSending] = useState(false);
+    const [claimError, setClaimError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!userId) {
@@ -93,6 +112,35 @@ const Referral = () => {
             // Буфер обмена может быть недоступен - ссылка видна на экране
         }
     }, [data?.link]);
+
+    /** Отправляет заявку на награду. Дальше её подтверждает админ в боте. */
+    const claimBonus = useCallback(async (bonusId: string) => {
+        if (!userId) return;
+        setSending(true);
+        setClaimError(null);
+        try {
+            const res = await fetch(`${getBotApiBase()}/claim-bonus`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true',
+                },
+                body: JSON.stringify({ userId, bonusId, tradingview: tradingview.trim() }),
+            });
+            const json = await res.json();
+            if (json.success) {
+                setClaimingId(null);
+                setTradingview('');
+                setData(prev => (prev ? { ...prev, pending_request: true } : prev));
+            } else {
+                setClaimError(json.error || 'Не удалось отправить заявку');
+            }
+        } catch {
+            setClaimError('Нет связи с ботом');
+        } finally {
+            setSending(false);
+        }
+    }, [userId, tradingview]);
 
     // Прогресс до следующей награды, а если все взяты - до последней
     const target = data?.next_level_friends
@@ -264,6 +312,54 @@ const Referral = () => {
                                                     <Users className="w-3 h-3" />
                                                     {level.friends} друзей
                                                 </p>
+
+                                                {level.reached && !level.claimed && !data.pending_request && (
+                                                    claimingId === level.id ? (
+                                                        <div className="mt-3 space-y-2">
+                                                            <input
+                                                                type="text"
+                                                                value={tradingview}
+                                                                onChange={(e) => setTradingview(e.target.value)}
+                                                                placeholder="Ник в TradingView"
+                                                                autoFocus
+                                                                className="input-glass w-full rounded-lg px-3 py-2 text-sm"
+                                                            />
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="flex-1 justify-center"
+                                                                    disabled={sending || !tradingview.trim()}
+                                                                    onClick={() => claimBonus(level.id)}
+                                                                >
+                                                                    {sending ? 'Отправляем...' : 'Отправить'}
+                                                                </Button>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    className="justify-center"
+                                                                    onClick={() => setClaimingId(null)}
+                                                                >
+                                                                    Отмена
+                                                                </Button>
+                                                            </div>
+                                                            <p className="text-[11px] text-muted-foreground">
+                                                                Ник нужен, чтобы выдать доступ к индикатору
+                                                            </p>
+                                                        </div>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            className="mt-3 w-full justify-center gap-2"
+                                                            onClick={() => { setClaimingId(level.id); setClaimError(null); }}
+                                                        >
+                                                            <Gift className="w-4 h-4" /> Забрать награду
+                                                        </Button>
+                                                    )
+                                                )}
+
+                                                {claimError && claimingId === level.id && (
+                                                    <p className="text-xs text-destructive mt-2">{claimError}</p>
+                                                )}
                                             </div>
                                         </motion.div>
                                     ))}
@@ -276,8 +372,7 @@ const Referral = () => {
                                 )}
 
                                 <p className="text-xs text-muted-foreground text-center pt-2">
-                                    Друг засчитывается после регистрации и депозита. Забрать награду
-                                    можно в боте - командой /referral
+                                    Друг засчитывается после регистрации и депозита
                                 </p>
                             </div>
                         )}

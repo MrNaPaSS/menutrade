@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Trash2, MessageSquare, Send, Briefcase, GraduationCap } from 'lucide-react';
+import { X, Plus, Trash2, MessageSquare } from 'lucide-react';
 import { ChatSession } from '@/agent/hooks/useChatHistory';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +15,12 @@ interface SidebarProps {
     onDeleteSession: (id: string) => void;
     user: TelegramUser | null;
 }
+
+// Чаты разложены по роли собеседника: у каждой свой стиль ответа
+const GROUPS: Array<[string, string]> = [
+    ['teacher', 'Ментор'],
+    ['analyst', 'Аналитик'],
+];
 
 export function Sidebar({
     isOpen,
@@ -100,41 +106,6 @@ export function Sidebar({
                             </button>
                         </div>
 
-                        {/* External Links */}
-                        <div className="px-3 pt-3 grid grid-cols-2 gap-2">
-                            <a
-                                href="https://t.me/+avD8ncMHBp4zMzhi"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#2AABEE]/10 text-[#2AABEE] hover:bg-[#2AABEE]/20 transition-colors text-xs font-medium border border-[#2AABEE]/20"
-                            >
-                                <Send className="w-3.5 h-3.5" />
-                                Канал
-                            </a>
-                            <a
-                                href="https://u3.shortink.io/main?utm_campaign=827841&utm_source=affiliate&utm_medium=sr&a=CQQJpdvm2ya9dU&ac=sait&code=VDN436"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-accent/10 text-accent hover:bg-accent/20 transition-colors text-xs font-medium border border-accent/20"
-                            >
-                                <Briefcase className="w-3.5 h-3.5" />
-                                Брокер
-                            </a>
-                        </div>
-
-                        {/* Academy Button */}
-                        <div className="px-3 pt-2">
-                            <a
-                                href="https://t.me/moneyhoney7_bot"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-medium border border-primary/20 w-full"
-                            >
-                                <GraduationCap className="w-3.5 h-3.5" />
-                                Академия Здравого Трейдера
-                            </a>
-                        </div>
-
                         {/* New Chat Button */}
                         <div className="p-3 pt-2">
                             <button
@@ -148,8 +119,18 @@ export function Sidebar({
 
                         {/* Chat List */}
                         <div className="flex-1 overflow-y-auto px-3 pb-3">
-                            <div className="space-y-1">
-                                {sessions.map((session) => (
+                            {GROUPS.map(([mode, groupTitle]) => {
+                                const groupSessions = sessions.filter(
+                                    (s) => (s.mode || 'teacher') === mode
+                                );
+                                if (groupSessions.length === 0) return null;
+
+                                return (
+                            <div key={mode} className="space-y-1 mb-4">
+                                <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    {groupTitle} · {groupSessions.length}
+                                </p>
+                                {groupSessions.map((session) => (
                                     <motion.div
                                         key={session.id}
                                         initial={{ opacity: 0, y: 10 }}
@@ -194,6 +175,8 @@ export function Sidebar({
                                     </motion.div>
                                 ))}
                             </div>
+                                );
+                            })}
 
                             {sessions.length === 0 && (
                                 <div className="text-center py-8 text-muted-foreground text-sm">
