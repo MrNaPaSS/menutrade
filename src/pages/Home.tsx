@@ -4,7 +4,7 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
-import { GraduationCap, Newspaper, ArrowRight, TrendingUp, Code, Briefcase, BookOpen, Activity, Radio } from 'lucide-react';
+import { GraduationCap, Newspaper, ArrowRight, TrendingUp, Code, Briefcase, BookOpen, Activity, Radio, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useHasHover } from '@/hooks/useHasHover';
 
@@ -60,6 +60,15 @@ const Home = () => {
       buttonText: progress > 0 ? 'Продолжить обучение' : 'Начать обучение',
       onClick: () => navigate('/learning'),
       color: 'primary'
+    },
+    {
+      id: 'strategies',
+      icon: Target,
+      title: 'Торговые стратегии',
+      description: 'Готовые схемы входа и выхода с примерами на графике',
+      buttonText: 'Открыть стратегии',
+      onClick: () => navigate('/strategies'),
+      color: 'accent'
     },
     {
       id: 'news',

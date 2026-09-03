@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Live from "./pages/Live";
 import Index from "./pages/Index";
 import Strategies from "./pages/Strategies";
+import Referral from "./pages/Referral";
 import News from "./pages/News";
 import Software from "./pages/Software";
 import Settings from "./pages/Settings";
@@ -45,6 +46,7 @@ const AppContent = () => {
         <Route path="/live" element={<Live />} />
         <Route path="/learning" element={<Index />} />
         <Route path="/strategies" element={<Strategies />} />
+        <Route path="/referral" element={<Referral />} />
         <Route path="/news" element={<News />} />
         <Route path="/software" element={<Software />} />
         <Route path="/library" element={<Library />} />

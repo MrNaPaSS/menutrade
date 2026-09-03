@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Home, MessageCircle, Target, ExternalLink, HeadphonesIcon } from 'lucide-react';
+import { Home, MessageCircle, Gift, ExternalLink, HeadphonesIcon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { TradeMarketDrawer } from '@/components/TradeMarketDrawer';
@@ -48,8 +48,8 @@ export function BottomNav({
     }
   };
 
-  const handleStrategiesClick = () => {
-    navigate('/strategies');
+  const handleReferralClick = () => {
+    navigate('/referral');
   };
 
   const navItems = [
@@ -60,11 +60,11 @@ export function BottomNav({
       onClick: () => window.open(channelUrl, '_blank'),
     },
     {
-      id: "nav-strategies",
-      icon: Target,
-      label: "Стратегии",
-      onClick: handleStrategiesClick,
-      isActive: location.pathname === '/strategies',
+      id: "nav-referral",
+      icon: Gift,
+      label: "Подарок",
+      onClick: handleReferralClick,
+      isActive: location.pathname === '/referral',
     },
     {
       id: "nav-home",
