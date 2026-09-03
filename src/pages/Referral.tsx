@@ -21,6 +21,8 @@ interface ReferralData {
     link: string;
     clicks: number;
     activated: number;
+    balance: number;
+    spent: number;
     remaining: number;
     next_level: string | null;
     next_level_friends: number | null;
@@ -142,11 +144,11 @@ const Referral = () => {
         }
     }, [userId, tradingview]);
 
-    // Прогресс до следующей награды, а если все взяты - до последней
-    const target = data?.next_level_friends
-        ?? data?.levels[data.levels.length - 1]?.friends
-        ?? 1;
-    const progress = data ? Math.min(100, Math.round((data.activated / target) * 100)) : 0;
+    // Шкала идёт до высшей награды - так виден весь путь целиком.
+    // Считаем по остатку: полученные награды тратят приглашённых.
+    const target = data?.levels[data.levels.length - 1]?.friends ?? 10;
+    const balance = data?.balance ?? data?.activated ?? 0;
+    const progress = data ? Math.min(100, Math.round((balance / target) * 100)) : 0;
 
     return (
         <div className="min-h-[100dvh] scanline pb-24">
@@ -195,7 +197,7 @@ const Referral = () => {
                                             {data.next_level ? 'До награды' : 'Все награды открыты'}
                                         </span>
                                         <span className="font-display font-bold text-lg text-primary tabular-nums">
-                                            {data.activated}/{target}
+                                            {balance}/{target}
                                         </span>
                                     </div>
 
@@ -210,7 +212,12 @@ const Referral = () => {
 
                                     {data.remaining > 0 && (
                                         <p className="text-xs text-muted-foreground mt-2">
-                                            Осталось пригласить: {data.remaining}
+                                            До ближайшей награды: {data.remaining}
+                                        </p>
+                                    )}
+                                    {data.spent > 0 && (
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Потрачено на полученные награды: {data.spent}
                                         </p>
                                     )}
                                 </motion.div>
