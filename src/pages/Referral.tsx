@@ -2,11 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Copy, Gift, Lock, Share2, Users } from 'lucide-react';
 import { MatrixRain } from '@/components/MatrixRain';
-import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { useUserAccess } from '@/contexts/UserAccessContext';
-import { useProgress } from '@/hooks/useProgress';
 import { cn } from '@/lib/utils';
 
 interface RewardLevel {
@@ -51,7 +49,6 @@ function shareLink(link: string): void {
 
 const Referral = () => {
     const { userId } = useUserAccess();
-    const { getProgress } = useProgress();
     const [data, setData] = useState<ReferralData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -107,9 +104,8 @@ const Referral = () => {
         <div className="min-h-[100dvh] scanline pb-24">
             <MatrixRain />
             <div className="relative z-10">
-                <Header progress={getProgress()} />
-
-                <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
+                <main className="px-4 sm:px-5 md:px-6 pb-24 flex justify-center
+                               pt-[calc(env(safe-area-inset-top)+3.5rem)] sm:pt-16">
                     <div className="max-w-lg w-full mx-auto">
                         <div className="mb-4 sm:mb-6">
                             <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">
