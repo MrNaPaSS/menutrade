@@ -9,6 +9,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { platformLinks } from '@/data/traderMenu';
+import { useUserAccess } from '@/contexts/UserAccessContext';
 
 type Market = 'forex' | 'crypto';
 
@@ -17,6 +18,8 @@ interface Broker {
   tagline: string;
   minDeposit: string;
   url: string;
+  /** Развёрнутое описание для тех, кто ещё не прошёл верификацию */
+  pitch?: string[];
 }
 
 const BROKERS: Record<Market, Broker[]> = {
@@ -26,6 +29,11 @@ const BROKERS: Record<Market, Broker[]> = {
       tagline: 'Бинарные опционы, быстрый старт',
       minDeposit: 'от $20',
       url: platformLinks.pocketOptions,
+      pitch: [
+        'Бинарные опционы - самый простой вход в рынок',
+        'Промокод WELCOME50 даёт +50% к первому депозиту',
+        'Хватит $20, чтобы открыть полный доступ к Академии',
+      ],
     },
     {
       name: 'FxPro',
@@ -65,6 +73,11 @@ interface TradeMarketDrawerProps {
 
 export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps) {
   const [market, setMarket] = useState<Market | null>(null);
+  const { verified } = useUserAccess();
+
+  // Новичку выбор из двух брокеров только мешает: показываем сразу тот,
+  // с которого проще начать, с описанием и кнопкой регистрации.
+  const showcase = !verified && market === 'forex' ? BROKERS.forex[0] : null;
 
   // Сбрасываем выбор при закрытии, чтобы шторка всегда открывалась с первого шага
   const handleOpenChange = (next: boolean) => {
@@ -130,23 +143,52 @@ export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps
                   transition={{ type: 'spring', duration: 0.35, bounce: 0 }}
                   className="space-y-3"
                 >
-                  {BROKERS[market].map((broker) => (
-                    <button
-                      key={broker.name}
-                      onClick={() => openLink(broker.url)}
-                      className="w-full glass-card neon-border rounded-xl p-4 text-left
-                                 transition-transform duration-100 active:scale-[0.98]"
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <p className="font-display font-bold text-sm">{broker.name}</p>
+                  {showcase ? (
+                    <div className="glass-card neon-border rounded-xl p-4">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <p className="font-display font-bold text-base">{showcase.name}</p>
                         <span className="text-[10px] font-mono text-primary border border-primary/30
                                          rounded-full px-2 py-0.5 flex-shrink-0">
-                          {broker.minDeposit}
+                          {showcase.minDeposit}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{broker.tagline}</p>
-                    </button>
-                  ))}
+
+                      <ul className="space-y-1.5 mb-4">
+                        {showcase.pitch?.map((line) => (
+                          <li key={line} className="text-xs text-muted-foreground flex gap-2">
+                            <span className="text-primary flex-shrink-0">•</span>
+                            {line}
+                          </li>
+                        ))}
+                      </ul>
+
+                      <button
+                        onClick={() => openLink(showcase.url)}
+                        className="w-full rounded-xl bg-primary text-primary-foreground font-medium
+                                   py-3 transition-transform duration-100 active:scale-[0.98]"
+                      >
+                        Зарегистрироваться
+                      </button>
+                    </div>
+                  ) : (
+                    BROKERS[market].map((broker) => (
+                      <button
+                        key={broker.name}
+                        onClick={() => openLink(broker.url)}
+                        className="w-full glass-card neon-border rounded-xl p-4 text-left
+                                   transition-transform duration-100 active:scale-[0.98]"
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <p className="font-display font-bold text-sm">{broker.name}</p>
+                          <span className="text-[10px] font-mono text-primary border border-primary/30
+                                           rounded-full px-2 py-0.5 flex-shrink-0">
+                            {broker.minDeposit}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{broker.tagline}</p>
+                      </button>
+                    ))
+                  )}
 
                   <button
                     onClick={() => setMarket(null)}

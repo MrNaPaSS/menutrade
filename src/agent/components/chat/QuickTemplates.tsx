@@ -33,7 +33,7 @@ export function QuickTemplates({ onSelect, mode }: QuickTemplatesProps) {
     return (
         <div className="space-y-2">
             <p className="text-[10px] sm:text-xs text-muted-foreground px-1 mb-2">
-                {mode === 'teacher' ? '📚 Режим Ментора' : '📊 Режим Аналитика'} — выберите действие:
+                {mode === 'teacher' ? '📚 Режим Ментора' : '📊 Режим Аналитика'} - выберите действие:
             </p>
             <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                 {templates.map((template, index) => {
