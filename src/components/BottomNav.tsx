@@ -4,6 +4,7 @@ import { Home, MessageCircle, Gift, ExternalLink, HeadphonesIcon } from 'lucide-
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { TradeMarketDrawer } from '@/components/TradeMarketDrawer';
+import { SupportDrawer } from '@/components/SupportDrawer';
 
 interface BottomNavProps {
   onHomeClick?: () => void;
@@ -39,6 +40,7 @@ export function BottomNav({
   const navigate = useNavigate();
   const location = useLocation();
   const [tradeOpen, setTradeOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const handleHomeClick = () => {
     if (onHomeClick) {
@@ -84,7 +86,7 @@ export function BottomNav({
       id: "nav-support",
       icon: HeadphonesIcon,
       label: "Поддержка",
-      onClick: () => window.open(supportUrl, '_blank'),
+      onClick: () => setSupportOpen(true),
     },
   ];
 
@@ -194,6 +196,7 @@ export function BottomNav({
       </div>
 
       <TradeMarketDrawer open={tradeOpen} onOpenChange={setTradeOpen} />
+      <SupportDrawer open={supportOpen} onOpenChange={setSupportOpen} />
     </nav>
   );
 }
