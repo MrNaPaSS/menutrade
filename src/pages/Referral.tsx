@@ -109,10 +109,10 @@ const Referral = () => {
                     <div className="max-w-lg w-full mx-auto">
                         <div className="mb-4 sm:mb-6">
                             <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">
-                                Приводи друзей
+                                Приводи друзей - получай бонусы
                             </h2>
                             <p className="text-xs sm:text-sm text-muted-foreground">
-                                За каждого, кто пройдёт верификацию, открывается награда
+                                За каждого квалифицированного реферала открывается награда
                             </p>
                         </div>
 
@@ -144,9 +144,7 @@ const Referral = () => {
                                 >
                                     <div className="flex items-baseline justify-between mb-2">
                                         <span className="text-sm text-muted-foreground">
-                                            {data.next_level
-                                                ? `До награды «${data.next_level}»`
-                                                : 'Все награды открыты'}
+                                            {data.next_level ? 'До награды' : 'Все награды открыты'}
                                         </span>
                                         <span className="font-display font-bold text-lg text-primary tabular-nums">
                                             {data.activated}/{target}
