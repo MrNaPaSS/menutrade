@@ -80,6 +80,9 @@ const steps: TutorialStep[] = [
     }
 ];
 
+// Показывать ли обзор возможностей новым пользователям
+const ENABLED = false;
+
 export function OnboardingTutorial() {
     const [isVisible, setIsVisible] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
@@ -88,13 +91,14 @@ export function OnboardingTutorial() {
     // Check if tutorial should run
     useEffect(() => {
         const checkTutorialStatus = () => {
-            // Опрос убран из онбординга - туториал показываем сразу новым пользователям
+            // Предпоказ отключён: главное меню перестроено, и подсказки
+            // указывали на разделы, которых там больше нет. Код оставлен -
+            // поставь ENABLED = true, когда шаги перепишем под новую главную.
+            if (!ENABLED) return;
 
-            // Check if tutorial is already completed
             const tutorialCompleted = localStorage.getItem('tutorial_completed');
             if (tutorialCompleted) return;
 
-            // Start tutorial
             setIsVisible(true);
         };
 

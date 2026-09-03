@@ -9,7 +9,6 @@ import { SupportDrawer } from '@/components/SupportDrawer';
 interface BottomNavProps {
   onHomeClick?: () => void;
   platformUrl?: string;
-  supportUrl?: string;
   channelUrl?: string;
 }
 
@@ -34,7 +33,6 @@ const mainButtonVariants = {
 export function BottomNav({
   onHomeClick,
   platformUrl = "https://u3.shortink.io/register?utm_campaign=827841&utm_source=affiliate&utm_medium=sr&a=CQQJpdvm2ya9dU&ac=min&code=WELCOME50",
-  supportUrl = "https://t.me/NMNH_MANAGER",
   channelUrl = "https://t.me/+avD8ncMHBp4zMzhi"
 }: BottomNavProps) {
   const navigate = useNavigate();

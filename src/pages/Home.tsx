@@ -52,25 +52,6 @@ const Home = () => {
       color: 'primary'
     },
     {
-      id: 'learning',
-      icon: GraduationCap,
-      title: 'Быстрый доступ к обучению',
-      description: `Пройдено ${completedLessons} из ${totalLessons} уроков`,
-      progress: progress,
-      buttonText: progress > 0 ? 'Продолжить обучение' : 'Начать обучение',
-      onClick: () => navigate('/learning'),
-      color: 'primary'
-    },
-    {
-      id: 'strategies',
-      icon: Target,
-      title: 'Торговые стратегии',
-      description: 'Готовые схемы входа и выхода с примерами на графике',
-      buttonText: 'Открыть стратегии',
-      onClick: () => navigate('/strategies'),
-      color: 'accent'
-    },
-    {
       id: 'news',
       icon: Newspaper,
       title: 'Последние новости',
@@ -78,33 +59,6 @@ const Home = () => {
       buttonText: 'Все новости',
       onClick: () => navigate('/news'),
       color: 'secondary'
-    },
-    {
-      id: 'software',
-      icon: Code,
-      title: 'Наш софт',
-      description: 'Доступные инструменты и программы для торговли',
-      buttonText: 'Открыть софт',
-      onClick: () => navigate('/software'),
-      color: 'primary'
-    },
-    {
-      id: 'library',
-      icon: BookOpen,
-      title: 'Библиотека здравого трейдера',
-      description: 'Книги по трейдингу, психологии и управлению капиталом',
-      buttonText: 'Открыть библиотеку',
-      onClick: () => navigate('/library'),
-      color: 'secondary'
-    },
-    {
-      id: 'guess-chart',
-      icon: Activity,
-      title: 'Куда пойдёт график',
-      description: 'Тренируй насмотренность и анализируй куда пойдёт цена.',
-      buttonText: 'Играть',
-      onClick: () => navigate('/guess-chart'),
-      color: 'accent'
     }
   ];
 
