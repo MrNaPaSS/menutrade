@@ -11,7 +11,8 @@ export type CoinReason =
     | 'module_completed'
     | 'test_passed'
     | 'course_completed'
-    | 'academy_joined';
+    | 'academy_joined'
+    | 'daily_checkin';
 
 interface BalanceInfo {
     balance: number;
@@ -33,6 +34,7 @@ export const COIN_REWARDS: Record<CoinReason, number> = {
     module_completed: 15,
     test_passed: 25,
     course_completed: 100,
+    daily_checkin: 2,
 };
 
 /** Событие для всплывающей подсказки о начислении. */

@@ -6,6 +6,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { fetchCoinBalance } from '@/lib/coins';
+import { DailyCalendar } from '@/components/DailyCalendar';
 import { cn } from '@/lib/utils';
 
 interface RewardLevel {
@@ -186,6 +187,13 @@ const Referral = () => {
                             <p className="text-xs sm:text-sm text-muted-foreground">
                                 За каждого квалифицированного реферала открывается награда
                             </p>
+                        </div>
+
+                        {/* Календарь не зависит от данных рефералки: если бот
+                            недоступен, монеты за день всё равно можно забрать -
+                            событие уйдёт из очереди позже */}
+                        <div className="mb-3 sm:mb-4">
+                            <DailyCalendar />
                         </div>
 
                         {loading && (
