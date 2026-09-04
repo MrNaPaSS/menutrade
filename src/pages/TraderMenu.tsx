@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
@@ -5,17 +6,34 @@ import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
-import { ArrowLeft, Target, Activity, BookOpen, Code } from 'lucide-react';
+import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { CourseTracks } from '@/components/trader-menu/CourseTracks';
+import { LearningDrawer } from '@/components/trader-menu/LearningDrawer';
+import { courses } from '@/data/courses';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { ToolRow } from '@/components/trader-menu/ToolRow';
 
 const TraderMenu = () => {
   const navigate = useNavigate();
   const { completedByCourse } = useProgress();
-  const { courses: courseAccess } = useCourseAccess();
+  const { courses: courseAccess, partners } = useCourseAccess();
+  const [learningOpen, setLearningOpen] = useState(false);
+
+  // Сводка для кнопки: сколько направлений открыто и общий прогресс
+  const STRATEGY_MODULES = new Set(['module-3', 'module-4', 'module-5']);
+  const openList = courses.filter(c => courseAccess[c.id] === 'open');
+  const openCount = openList.length;
+  const totals = openList.reduce(
+    (acc, course) => {
+      const total = course.modules
+        .filter(m => !STRATEGY_MODULES.has(m.id))
+        .reduce((sum, m) => sum + m.lessons.length, 0);
+      return { total: acc.total + total, done: acc.done + (completedByCourse[course.id] ?? 0) };
+    },
+    { total: 0, done: 0 }
+  );
+  const overallPercent = totals.total > 0 ? Math.round((totals.done / totals.total) * 100) : 0;
 
   useSwipeBack({
     onSwipeBack: () => navigate('/home'),
@@ -63,18 +81,48 @@ const TraderMenu = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, ease: 'easeOut' }}
             >
+              {/* Обучение отдельной кнопкой: три направления с прогрессом
+                  открываются шторкой, а не занимают треть меню */}
+              <button
+                onClick={() => setLearningOpen(true)}
+                className="group w-full text-left rounded-2xl p-4 mb-6
+                           bg-primary/[0.07] border border-primary/25
+                           transition-colors duration-200 hover:bg-primary/[0.11]
+                           active:scale-[0.99] touch-manipulation
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
+                                   bg-primary/15 border border-primary/25 text-primary">
+                    <GraduationCap className="w-5 h-5" />
+                  </span>
+
+                  <span className="flex-1 min-w-0">
+                    <span className="block font-display font-bold text-base tracking-wide">
+                      Обучение
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {openCount > 0
+                        ? `${openCount} ${openCount === 1 ? 'направление открыто' : 'направления открыто'} из ${courses.length}`
+                        : `${courses.length} направления: бинарные опционы, форекс, крипта`}
+                    </span>
+                  </span>
+
+                  <ChevronRight className="w-5 h-5 text-primary/60 flex-shrink-0
+                                           transition-transform duration-200 group-hover:translate-x-0.5" />
+                </div>
+
+                {openCount > 0 && (
+                  <div className="h-1 rounded-full bg-primary/15 overflow-hidden mt-3">
+                    <div
+                      className="h-full rounded-full bg-primary transition-[width] duration-500"
+                      style={{ width: `${Math.max(overallPercent, 2)}%` }}
+                    />
+                  </div>
+                )}
+              </button>
+
               <h3 className="text-xs text-muted-foreground mb-2 px-1">
-                Обучение
-              </h3>
-
-              <CourseTracks
-                access={courseAccess}
-                completedByCourse={completedByCourse}
-                onOpen={(course) => navigate('/learning', { state: { courseId: course.id } })}
-                onLocked={() => navigate('/learning')}
-              />
-
-              <h3 className="text-xs text-muted-foreground mt-6 mb-2 px-1">
                 Инструменты
               </h3>
 
@@ -118,6 +166,14 @@ const TraderMenu = () => {
           </div>
         </main>
       </div>
+      <LearningDrawer
+        open={learningOpen}
+        onOpenChange={setLearningOpen}
+        access={courseAccess}
+        partners={partners}
+        completedByCourse={completedByCourse}
+        onSelect={(course) => navigate('/learning', { state: { courseId: course.id } })}
+      />
       <BottomNav onHomeClick={handleHomeClick} />
     </div>
   );
