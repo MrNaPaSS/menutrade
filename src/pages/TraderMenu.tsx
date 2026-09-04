@@ -208,10 +208,6 @@ const TraderMenu = () => {
       <StrategiesModal
         open={strategiesOpen}
         onClose={() => setStrategiesOpen(false)}
-        onSelect={(moduleId) => {
-          setStrategiesOpen(false);
-          navigate('/strategies', { state: { moduleId } });
-        }}
       />
       <LearningModal
         open={coursesOpen}

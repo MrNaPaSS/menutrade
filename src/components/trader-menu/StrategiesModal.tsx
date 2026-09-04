@@ -1,12 +1,14 @@
+import { useCallback, useState } from 'react';
 import { strategyModules } from '@/data/strategies';
+import type { Lesson, Module } from '@/types/lesson';
 import { ModalWindow } from '@/components/ui/modal-window';
 import { ModalCard } from '@/components/trader-menu/ModalCard';
+import { TerminalRow } from '@/components/trader-menu/TerminalRow';
+import { LessonContent } from '@/components/LessonContent';
 
 interface StrategiesModalProps {
     open: boolean;
     onClose: () => void;
-    /** Открыть конкретный блок разборов */
-    onSelect: (moduleId: string) => void;
 }
 
 const TOTAL = strategyModules.reduce((sum, m) => sum + m.lessons.length, 0);
@@ -20,33 +22,101 @@ function plural(n: number, one: string, few: string, many: string): string {
 }
 
 /**
- * Блоки торговых стратегий.
+ * Торговые стратегии целиком в окне.
  *
- * Открывается тем же окном, что и направления обучения: одинаковая
- * постановка важнее разнообразия - человек узнаёт движение, а не
- * разгадывает его заново.
+ * Блоки, разборы и сам материал - всё внутри одного окна, как в
+ * обучении. Материал показывает тот же компонент, что и уроки: у
+ * стратегий такая же структура, и незачем держать для них вторую
+ * реализацию карусели с разметкой.
  *
- * Прогресса здесь нет: стратегии это справочник, а не последовательный
- * курс, и читать их можно в любом порядке.
+ * Прогресса здесь нет намеренно: это справочник, а не последовательный
+ * курс, читать можно в любом порядке.
  */
-export function StrategiesModal({ open, onClose, onSelect }: StrategiesModalProps) {
+export function StrategiesModal({ open, onClose }: StrategiesModalProps) {
+    const [module, setModule] = useState<Module | null>(null);
+    const [lesson, setLesson] = useState<Lesson | null>(null);
+
+    const close = useCallback(() => {
+        onClose();
+        // Сбрасываем шаги после закрытия: следующий заход начинается
+        // со списка блоков
+        setTimeout(() => {
+            setModule(null);
+            setLesson(null);
+        }, 300);
+    }, [onClose]);
+
+    // Материал разбора
+    if (lesson && module) {
+        const index = module.lessons.findIndex(l => l.id === lesson.id);
+
+        return (
+            <ModalWindow
+                open={open}
+                onClose={close}
+                onBack={() => setLesson(null)}
+                title={lesson.title}
+                subtitle={`${module.title} · разбор ${index + 1} из ${module.lessons.length}`}
+                fullscreen
+                bare
+            >
+                <LessonContent
+                    embedded
+                    lesson={lesson}
+                    onBack={() => setLesson(null)}
+                />
+            </ModalWindow>
+        );
+    }
+
+    // Разборы блока
+    if (module) {
+        return (
+            <ModalWindow
+                open={open}
+                onClose={close}
+                onBack={() => setModule(null)}
+                title={module.title}
+                subtitle={`${module.lessons.length} ${plural(module.lessons.length, 'разбор', 'разбора', 'разборов')}`}
+            >
+                <div className="rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden
+                                divide-y divide-[hsl(142_22%_13%)]"
+                    style={{ background: 'hsl(140 26% 8%)' }}
+                >
+                    {module.lessons.map((item, index) => (
+                        <TerminalRow
+                            key={item.id}
+                            index={index}
+                            icon={<span className="font-mono text-[13px] tabular-nums">{index + 1}</span>}
+                            tone="cyan"
+                            title={item.title}
+                            caption={item.duration ?? 'Разбор'}
+                            onClick={() => setLesson(item)}
+                        />
+                    ))}
+                </div>
+            </ModalWindow>
+        );
+    }
+
+    // Блоки стратегий
     return (
         <ModalWindow
             open={open}
-            onClose={onClose}
+            onClose={close}
             title="Стратегии"
             subtitle={`${TOTAL} ${plural(TOTAL, 'разбор', 'разбора', 'разборов')} в ${strategyModules.length} блоках. Читать можно в любом порядке`}
         >
-            {strategyModules.map((module, index) => (
+            {strategyModules.map((item, index) => (
                 <ModalCard
-                    key={module.id}
+                    key={item.id}
                     index={index}
-                    icon={module.icon}
-                    title={module.title}
-                    description={module.description}
-                    footnote={`${module.lessons.length} ${plural(module.lessons.length, 'разбор', 'разбора', 'разборов')}`}
+                    icon={item.icon}
+                    title={item.title}
+                    description={item.description}
+                    footnote={`${item.lessons.length} ${plural(item.lessons.length, 'разбор', 'разбора', 'разборов')}`}
                     action="Открыть"
-                    onClick={() => onSelect(module.id)}
+                    onClick={() => setModule(item)}
                 />
             ))}
         </ModalWindow>

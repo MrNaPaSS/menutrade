@@ -26,7 +26,6 @@ import { SwipeBackGesture } from "./components/SwipeBackGesture";
 const GuessChart = lazy(() => import("./pages/GuessChart"));
 const Live = lazy(() => import("./pages/Live"));
 const Index = lazy(() => import("./pages/Index"));
-const Strategies = lazy(() => import("./pages/Strategies"));
 const Referral = lazy(() => import("./pages/Referral"));
 const News = lazy(() => import("./pages/News"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -63,7 +62,6 @@ const RoutedContent = () => {
         <Route path="/home" element={<Home />} />
         <Route path="/live" element={<Live />} />
         <Route path="/learning" element={<Index />} />
-        <Route path="/strategies" element={<Strategies />} />
         <Route path="/referral" element={<Referral />} />
         <Route path="/news" element={<News />} />
         <Route path="/library" element={<Library />} />
