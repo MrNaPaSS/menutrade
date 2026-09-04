@@ -46,14 +46,18 @@ export const COIN_EVENT = 'nmnh-coins-granted';
  * Сообщает о событии и не бросает: начисление монет не должно мешать
  * учёбе. Повторы безопасны - платформа отсекает их по ref.
  *
- * Возвращает true, только если бот событие принял. Там, где от этого
- * зависит видимое действие человека - забрать ежедневный подарок, -
- * ответ обязательно нужно дождаться: иначе кнопка погаснет, а монет не
- * будет, и повторить он уже не сможет.
+ * Возвращает день, который засчитал сервер, либо null - если событие
+ * не принято. Там, где от этого зависит видимое действие человека -
+ * забрать ежедневный подарок, - ответ обязательно нужно дождаться:
+ * иначе кнопка погаснет, а монет не будет, и повторить он не сможет.
+ *
+ * День приходит от бота, потому что дату определяет он. У телефона и
+ * сервера часовые пояса разные, и каждую ночь есть окно, когда
+ * календари расходятся на сутки.
  */
-export async function sendCoinEvent(ref: string, reason: CoinReason): Promise<boolean> {
+export async function sendCoinEvent(ref: string, reason: CoinReason): Promise<string | null> {
     const data = initData();
-    if (!data) return false; // вне Telegram начислять некому
+    if (!data) return null; // вне Telegram начислять некому
 
     try {
         const res = await fetch(`${botApiBase()}/coin-event`, {
@@ -62,16 +66,18 @@ export async function sendCoinEvent(ref: string, reason: CoinReason): Promise<bo
             body: JSON.stringify({ initData: data, ref, reason }),
         });
         const json = await res.json();
-        if (!json?.success) return false;
+        if (!json?.success) return null;
 
         // Подсказку показываем только когда бот принял событие: иначе
         // человек увидит монеты, которых нет
         window.dispatchEvent(new CustomEvent(COIN_EVENT, {
             detail: { amount: COIN_REWARDS[reason], reason },
         }));
-        return true;
+        // Для дневного подарка бот называет засчитанный день, для
+        // остальных событий дата ни при чём - отдаём пустую строку
+        return typeof json.date === 'string' ? json.date : '';
     } catch {
-        return false; // связи нет
+        return null; // связи нет
     }
 }
 

@@ -34,11 +34,16 @@ export function DailyCalendar() {
         // Отмечаем забранным только после ответа бота. Раньше отметка
         // ставилась сразу: если начисление не проходило, кнопка гасла,
         // монет не было, и повторить человек уже не мог
+        //
+        // Отмечаем местный день, а не серверный: календарь и кнопка
+        // живут во времени телефона, и подставлять туда чужую дату -
+        // плодить путаницу на границе суток. За то, чтобы монеты не
+        // ушли дважды, отвечает ключ события на сервере
         const accepted = await sendCoinEvent(`daily_${today}`, 'daily_checkin');
-        if (accepted) {
-            markClaimed();
-        } else {
+        if (accepted === null) {
             setFailed(true);
+        } else {
+            markClaimed();
         }
         setSending(false);
     }, [takenToday, sending, today, markClaimed]);
