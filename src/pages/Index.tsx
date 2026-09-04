@@ -23,7 +23,11 @@ type View = 'modules' | 'lessons' | 'content' | 'master-test' | 'module-test';
 const Index = () => {
   const navigate = useNavigate();
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  // Прошлое положение прокрутки держим в ref, а не в состоянии: оно
+  // нужно только для сравнения и не участвует в разметке. В состоянии
+  // оно перерисовывало весь раздел на каждом кадре прокрутки - вместе
+  // со всеми карточками уроков и их пружинами.
+  const lastScrollY = useRef(0);
   const { scrollY } = useScroll();
   const { hasFullAccess, isLoading: accessLoading } = useUserAccess();
 
@@ -144,18 +148,13 @@ const Index = () => {
 
   // Логика скрытия заголовка при прокрутке
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const currentScrollY = latest;
+    const previous = lastScrollY.current;
+    lastScrollY.current = latest;
 
-    // Показываем при прокрутке вверх или если прокрутка меньше 50px
-    if (currentScrollY < lastScrollY || currentScrollY < 50) {
-      setIsHeaderVisible(true);
-    }
-    // Скрываем при прокрутке вниз больше 50px
-    else if (currentScrollY > lastScrollY && currentScrollY > 50) {
-      setIsHeaderVisible(false);
-    }
-
-    setLastScrollY(currentScrollY);
+    // Перерисовываем только когда заголовок правда меняет состояние,
+    // а не на каждом движении пальца
+    const shouldShow = latest < previous || latest < 50;
+    setIsHeaderVisible(visible => (visible === shouldShow ? visible : shouldShow));
   });
   const allCompleted = isAllModulesCompleted();
   const masterTestCompleted = isMasterTestCompleted();

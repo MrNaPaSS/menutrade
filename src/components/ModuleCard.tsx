@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { Module } from '@/types/lesson';
 import { ChevronRight, Lock, ArrowRight } from 'lucide-react';
@@ -14,7 +15,9 @@ interface ModuleCardProps {
   className?: string;
 }
 
-export function ModuleCard({
+// memo по той же причине, что и у карточки урока: список модулей
+// не должен переигрывать появление при каждой перерисовке раздела
+export const ModuleCard = memo(function ModuleCard({
   module,
   onClick,
   index,
@@ -35,10 +38,10 @@ export function ModuleCard({
       opacity: 1,
       y: 0,
       transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
-        delay: index * 0.06
+        duration: 0.25,
+        ease: "easeOut",
+        // Хвост списка ждал бы дольше, чем человек смотрит на экран
+        delay: Math.min(index, 5) * 0.04
       }
     }
   };
@@ -54,7 +57,7 @@ export function ModuleCard({
       whileInView="visible"
       viewport={{ once: true, amount: 0.1 }}
       className={cn(
-        "group relative w-full glass-card rounded-2xl p-4 text-left transition-all duration-300",
+        "group relative w-full glass-card rounded-2xl p-4 text-left transition-colors duration-200",
         "neon-border hover:bg-primary/5 active:scale-[0.98] touch-manipulation",
         "flex flex-row items-center gap-3 sm:gap-4",
         isLocked && "opacity-50 cursor-not-allowed grayscale",
@@ -144,4 +147,4 @@ export function ModuleCard({
       )}
     </motion.button>
   );
-}
+});

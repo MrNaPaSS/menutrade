@@ -870,6 +870,14 @@ export function LessonContent({ lesson, onBack, onComplete,
 
   const hasQuiz = !!lesson.quiz && lesson.quiz.length > 0;
 
+  // Разбор markdown стоит дорого, а страниц в уроке бывает десяток.
+  // Раньше при открытии урока разбирались все разом - отсюда заминка
+  // на переходе. Держим готовыми текущую и две соседние, чтобы свайп
+  // никогда не упирался в пустую карточку, остальные догружает
+  // наблюдатель по мере приближения.
+  const shouldRenderCard = (index: number) =>
+    Math.abs(index - currentSlide) <= 1 || loadedCardIndex.has(index);
+
   // Отслеживаем текущий слайд и сбрасываем прокрутку
   useEffect(() => {
     if (!api) return;
@@ -1032,7 +1040,7 @@ export function LessonContent({ lesson, onBack, onComplete,
                         style={{ willChange: 'scroll-position', transform: 'translateZ(0)' }}>
                         <div className="markdown-content text-sm leading-relaxed w-full min-h-full flex flex-col justify-center py-1 px-6">
                           {/* Рендерим части карточки - чередуем markdown и компоненты */}
-                          {cards[index].map((part, partIdx) => {
+                          {shouldRenderCard(index) && cards[index].map((part, partIdx) => {
                             if (typeof part === 'string') {
                               // Это markdown текст - рендерим через ReactMarkdown
                               return (

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { COIN_REWARDS } from '@/lib/coins';
 import { Lesson } from '@/types/lesson';
@@ -10,7 +11,10 @@ interface LessonCardProps {
   index: number;
 }
 
-export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
+// memo: раздел перерисовывается при любом изменении прогресса, а
+// карточка зависит только от своего урока. Без этого каждая заново
+// проигрывала появление.
+export const LessonCard = memo(function LessonCard({ lesson, onClick, index }: LessonCardProps) {
   const getIcon = () => {
     if (lesson.isLocked) return Lock;
     if (lesson.isCompleted) return CheckCircle;
@@ -24,7 +28,10 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
       onClick={onClick}
       disabled={lesson.isLocked}
       className={cn(
-        "group w-full p-3 rounded-xl text-left touch-manipulation transition-all duration-300",
+        // transition-all заставляет браузер следить за каждым свойством,
+        // включая тени и фильтры. Здесь меняются только цвета и рамка
+        "group w-full p-3 rounded-xl text-left touch-manipulation",
+        "transition-colors duration-200",
         "border border-border/40 neon-border",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
         lesson.isLocked
@@ -35,7 +42,9 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
       initial={{ opacity: 0, x: -20 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, amount: 0.1 }}
-      transition={{ delay: index * 0.08, type: "spring", stiffness: 300, damping: 25 }}
+      // Задержка растёт только до шестой карточки: дальше список
+      // всё равно за экраном, а хвост ждал бы почти секунду
+      transition={{ delay: Math.min(index, 5) * 0.04, duration: 0.25, ease: "easeOut" }}
     >
       <div className="flex items-center gap-3 sm:gap-4">
         {/* Icon with Glow */}
@@ -102,4 +111,4 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
       </div>
     </motion.button>
   );
-}
+});
