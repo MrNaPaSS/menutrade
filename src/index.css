@@ -132,7 +132,9 @@
   :root {
     /* Matrix neon colors - refined */
     --background: 140 35% 4%;
-    --foreground: 142 70% 75%;
+    /* Почти белый с зеленоватым подтоном. Прежние 142 70% 75%
+       делали текст зелёным, и заголовок не отличался от акцента */
+    --foreground: 150 25% 94%;
 
     --card: 140 30% 7%;
     --card-foreground: 142 70% 75%;
@@ -147,7 +149,7 @@
     --secondary-foreground: 140 35% 4%;
 
     --muted: 140 20% 14%;
-    --muted-foreground: 142 30% 55%;
+    --muted-foreground: 142 16% 52%;
 
     --accent: 75 80% 55%;
     --accent-foreground: 140 35% 4%;
@@ -206,7 +208,9 @@
 
   .dark {
     --background: 140 35% 4%;
-    --foreground: 142 70% 75%;
+    /* Почти белый с зеленоватым подтоном. Прежние 142 70% 75%
+       делали текст зелёным, и заголовок не отличался от акцента */
+    --foreground: 150 25% 94%;
     --card: 140 30% 7%;
     --card-foreground: 142 70% 75%;
     --popover: 140 30% 7%;
@@ -216,7 +220,7 @@
     --secondary: 165 70% 38%;
     --secondary-foreground: 140 35% 4%;
     --muted: 140 20% 14%;
-    --muted-foreground: 142 30% 55%;
+    --muted-foreground: 142 16% 52%;
     --accent: 75 80% 55%;
     --accent-foreground: 140 35% 4%;
     --destructive: 0 72% 51%;

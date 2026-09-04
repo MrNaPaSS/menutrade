@@ -34,8 +34,9 @@ interface TerminalRowProps {
     index: number;
 }
 
-const TITLE_COLOR = 'hsl(150 25% 94%)';
-const CAPTION_COLOR = 'hsl(142 16% 50%)';
+// Из токенов темы: тот же цвет, что и на остальных экранах
+const TITLE_COLOR = 'hsl(var(--foreground))';
+const CAPTION_COLOR = 'hsl(var(--muted-foreground))';
 
 /**
  * Строка приборной панели.

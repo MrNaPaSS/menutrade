@@ -15,8 +15,8 @@ interface StatusStripProps {
     metrics: Metric[];
 }
 
-const VALUE_COLOR = 'hsl(150 25% 95%)';
-const LABEL_COLOR = 'hsl(142 16% 48%)';
+const VALUE_COLOR = 'hsl(var(--foreground))';
+const LABEL_COLOR = 'hsl(var(--muted-foreground))';
 
 function Figure({ metric }: { metric: Metric }) {
     const shown = useCountUp(metric.value);

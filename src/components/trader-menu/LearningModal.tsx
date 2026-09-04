@@ -1,0 +1,227 @@
+import { useCallback, useState } from 'react';
+import { Check } from 'lucide-react';
+import { courses, type Course } from '@/data/courses';
+import type { AccessState, CourseId } from '@/lib/courseAccess';
+import type { Lesson, Module } from '@/types/lesson';
+import { ModalWindow } from '@/components/ui/modal-window';
+import { ModalCard } from '@/components/trader-menu/ModalCard';
+import { TerminalRow } from '@/components/trader-menu/TerminalRow';
+import { LessonContent } from '@/components/LessonContent';
+
+interface LearningModalProps {
+    open: boolean;
+    onClose: () => void;
+    access: Record<CourseId, AccessState>;
+    partners: Record<CourseId, string>;
+    completedByCourse: Record<string, number>;
+    /** Модули с проставленным прогрессом - из useProgress */
+    modules: Module[];
+    onLessonComplete: (moduleId: string, lessonId: string) => void;
+}
+
+const STRATEGY_MODULES = new Set(['module-3', 'module-4', 'module-5']);
+
+function courseLessons(course: Course): number {
+    return course.modules
+        .filter(m => !STRATEGY_MODULES.has(m.id))
+        .reduce((sum, m) => sum + m.lessons.length, 0);
+}
+
+/**
+ * Обучение целиком в окне.
+ *
+ * Направление, модули, уроки и сам материал с квизом - всё внутри
+ * одного окна, без ухода на отдельные экраны. Стрелка в шапке ведёт на
+ * шаг назад, а не закрывает всё разом.
+ *
+ * На уровне материала окно разворачивается во весь экран: карточкам
+ * урока нужна вся высота, посреди экрана они не помещаются.
+ */
+export function LearningModal({
+    open,
+    onClose,
+    access,
+    partners,
+    completedByCourse,
+    modules,
+    onLessonComplete,
+}: LearningModalProps) {
+    const [course, setCourse] = useState<Course | null>(null);
+    const [module, setModule] = useState<Module | null>(null);
+    const [lesson, setLesson] = useState<Lesson | null>(null);
+
+    // Модули выбранного курса берём из прогресса, а не из реестра:
+    // там уже проставлены пройденные уроки и блокировки
+    const courseModules = course
+        ? modules.filter(m => course.modules.some(cm => cm.id === m.id))
+        : [];
+
+    // Живая версия открытого модуля: после прохождения урока список
+    // должен показывать галочку сразу, а не после переоткрытия
+    const currentModule = module ? courseModules.find(m => m.id === module.id) ?? module : null;
+
+    const close = useCallback(() => {
+        onClose();
+        // Сбрасываем шаги после закрытия: следующий заход начинается
+        // с выбора направления
+        setTimeout(() => {
+            setCourse(null);
+            setModule(null);
+            setLesson(null);
+        }, 300);
+    }, [onClose]);
+
+    const back = lesson
+        ? () => setLesson(null)
+        : module
+            ? () => setModule(null)
+            : course
+                ? () => setCourse(null)
+                : undefined;
+
+    // Материал урока
+    if (lesson && currentModule && course) {
+        const index = currentModule.lessons.findIndex(l => l.id === lesson.id);
+        const isLast = index === currentModule.lessons.length - 1;
+
+        return (
+            <ModalWindow
+                open={open}
+                onClose={close}
+                onBack={() => setLesson(null)}
+                title={lesson.title}
+                subtitle={`${currentModule.title} · урок ${index + 1} из ${currentModule.lessons.length}`}
+                fullscreen
+                bare
+            >
+                <LessonContent
+                    lesson={lesson}
+                    onBack={() => setLesson(null)}
+                    onComplete={() => {
+                        onLessonComplete(currentModule.id, lesson.id);
+                        setLesson(null);
+                    }}
+                    offerModuleTest={isLast}
+                />
+            </ModalWindow>
+        );
+    }
+
+    // Уроки модуля
+    if (currentModule && course) {
+        const done = currentModule.lessons.filter(l => l.isCompleted).length;
+
+        return (
+            <ModalWindow
+                open={open}
+                onClose={close}
+                onBack={back}
+                title={currentModule.title}
+                subtitle={`${done} из ${currentModule.lessons.length} уроков пройдено`}
+            >
+                <div className="rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden
+                                divide-y divide-[hsl(142_22%_13%)]"
+                    style={{ background: 'hsl(140 26% 8%)' }}
+                >
+                    {currentModule.lessons.map((item, index) => (
+                        <TerminalRow
+                            key={item.id}
+                            index={index}
+                            icon={
+                                item.isCompleted
+                                    ? <Check className="w-[18px] h-[18px]" />
+                                    : <span className="font-mono text-[13px] tabular-nums">{index + 1}</span>
+                            }
+                            tone="green"
+                            title={item.title}
+                            caption={item.duration ?? 'Урок'}
+                            value={item.isCompleted ? 'пройден' : undefined}
+                            valueLive={item.isCompleted}
+                            locked={item.isLocked}
+                            onClick={item.isLocked ? undefined : () => setLesson(item)}
+                        />
+                    ))}
+                </div>
+            </ModalWindow>
+        );
+    }
+
+    // Модули курса
+    if (course) {
+        const done = completedByCourse[course.id] ?? 0;
+
+        return (
+            <ModalWindow
+                open={open}
+                onClose={close}
+                onBack={back}
+                title={course.title}
+                subtitle={`${done} из ${courseLessons(course)} уроков пройдено`}
+            >
+                {courseModules.map((item, index) => {
+                    const total = item.lessons.length;
+                    const closed = item.lessons.filter(l => l.isCompleted).length;
+                    const percent = total > 0 ? Math.round((closed / total) * 100) : 0;
+                    const locked = item.lessons[0]?.isLocked ?? false;
+
+                    return (
+                        <ModalCard
+                            key={item.id}
+                            index={index}
+                            icon={item.icon}
+                            title={item.title}
+                            description={item.description}
+                            state={locked ? 'closed' : 'open'}
+                            value={`${percent}%`}
+                            progress={percent}
+                            footnote={`${closed} из ${total} уроков`}
+                            action={closed > 0 ? 'Продолжить' : 'Начать'}
+                            lockedNote="Откроется после предыдущего модуля"
+                            onClick={() => setModule(item)}
+                        />
+                    );
+                })}
+            </ModalWindow>
+        );
+    }
+
+    // Направления
+    return (
+        <ModalWindow
+            open={open}
+            onClose={close}
+            title="Направления"
+            subtitle="Курс открывает счёт на площадке, подтверждённый в боте"
+        >
+            {courses.map((item, index) => {
+                const state = access[item.id] ?? 'closed';
+                const total = courseLessons(item);
+                const done = completedByCourse[item.id] ?? 0;
+                const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+
+                return (
+                    <ModalCard
+                        key={item.id}
+                        index={index}
+                        icon={item.icon}
+                        title={item.title}
+                        description={item.description}
+                        state={state}
+                        value={`${percent}%`}
+                        progress={percent}
+                        footnote={`${done} из ${total} уроков`}
+                        action={done > 0 ? 'Продолжить' : 'Начать'}
+                        lockedNote={
+                            state === 'pending'
+                                ? 'ID отправлен, ждём подтверждения'
+                                : partners[item.id]
+                                    ? `Откроет счёт на ${partners[item.id]}`
+                                    : `${total} уроков, курс закрыт`
+                        }
+                        onClick={state === 'open' ? () => setCourse(item) : undefined}
+                    />
+                );
+            })}
+        </ModalWindow>
+    );
+}

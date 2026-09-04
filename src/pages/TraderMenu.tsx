@@ -11,7 +11,7 @@ import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap } from 'luci
 import { Button } from '@/components/ui/button';
 import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
-import { CoursesModal } from '@/components/trader-menu/CoursesModal';
+import { LearningModal } from '@/components/trader-menu/LearningModal';
 import { StrategiesModal } from '@/components/trader-menu/StrategiesModal';
 import { SoftwareListModal } from '@/components/trader-menu/SoftwareListModal';
 import { SoftwareModal } from '@/components/SoftwareModal';
@@ -33,7 +33,7 @@ const LIBRARY_BOOKS = libraryCategories.reduce(
   0
 );
 
-const SECTION_LABEL = 'hsl(142 16% 48%)';
+const SECTION_LABEL = 'hsl(var(--muted-foreground))';
 
 /** Общая рамка для группы строк - так они читаются одним блоком. */
 const PANEL_STYLE = {
@@ -46,7 +46,7 @@ const PANEL_CLASS =
 
 const TraderMenu = () => {
   const navigate = useNavigate();
-  const { completedByCourse } = useProgress();
+  const { completedByCourse, modules, completeLesson } = useProgress();
   const { courses: courseAccess, partners } = useCourseAccess();
   const { coins } = useCoinBalance();
   const { streak } = useDailyClaim();
@@ -213,16 +213,14 @@ const TraderMenu = () => {
           navigate('/strategies', { state: { moduleId } });
         }}
       />
-      <CoursesModal
+      <LearningModal
         open={coursesOpen}
         onClose={() => setCoursesOpen(false)}
         access={courseAccess}
         partners={partners}
         completedByCourse={completedByCourse}
-        onSelect={(course) => {
-          setCoursesOpen(false);
-          navigate('/learning', { state: { courseId: course.id } });
-        }}
+        modules={modules}
+        onLessonComplete={completeLesson}
       />
       <BottomNav onHomeClick={handleHomeClick} />
     </div>

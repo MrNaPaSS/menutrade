@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ModalWindowProps {
     open: boolean;
@@ -8,12 +9,23 @@ interface ModalWindowProps {
     title: string;
     /** Одна строка о том, что внутри */
     subtitle?: string;
+    /**
+     * Развернуть на весь экран.
+     *
+     * Нужно там, где внутри окна разворачивается материал урока: ему
+     * нужна вся высота, посреди экрана он не помещается.
+     */
+    fullscreen?: boolean;
+    /** Шаг назад внутри окна. Задан - вместо крестика стрелка */
+    onBack?: () => void;
+    /** Содержимое само отвечает за отступы и прокрутку */
+    bare?: boolean;
     children: ReactNode;
 }
 
 export const MODAL_EASE = [0.23, 1, 0.32, 1] as const;
-export const MODAL_TITLE = 'hsl(150 25% 94%)';
-export const MODAL_CAPTION = 'hsl(142 16% 50%)';
+export const MODAL_TITLE = 'hsl(var(--foreground))';
+export const MODAL_CAPTION = 'hsl(var(--muted-foreground))';
 
 /**
  * Окно по центру экрана.
@@ -26,7 +38,16 @@ export const MODAL_CAPTION = 'hsl(142 16% 50%)';
  * Не шторка снизу: та поднимается из-за края, и на телефоне в неё не
  * помещается список из трёх-четырёх карточек.
  */
-export function ModalWindow({ open, onClose, title, subtitle, children }: ModalWindowProps) {
+export function ModalWindow({
+    open,
+    onClose,
+    title,
+    subtitle,
+    fullscreen = false,
+    onBack,
+    bare = false,
+    children,
+}: ModalWindowProps) {
     const reduced = useReducedMotion();
 
     useEffect(() => {
@@ -50,7 +71,10 @@ export function ModalWindow({ open, onClose, title, subtitle, children }: ModalW
     return (
         <AnimatePresence>
             {open && (
-                <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+                <div className={cn(
+                    "fixed inset-0 z-[90] flex items-center justify-center",
+                    fullscreen ? "p-0" : "p-4"
+                )}>
                     <motion.div
                         className="absolute inset-0 bg-black/72 backdrop-blur-[6px]"
                         initial={{ opacity: 0 }}
@@ -64,8 +88,12 @@ export function ModalWindow({ open, onClose, title, subtitle, children }: ModalW
                         role="dialog"
                         aria-modal="true"
                         aria-label={title}
-                        className="relative w-full max-w-md max-h-[82dvh] overflow-hidden
-                                   rounded-[26px] border border-[hsl(142_30%_20%)] flex flex-col"
+                        className={cn(
+                            "relative overflow-hidden border border-[hsl(142_30%_20%)] flex flex-col",
+                            fullscreen
+                                ? "w-full h-full rounded-none border-0"
+                                : "w-full max-w-md max-h-[82dvh] rounded-[26px]"
+                        )}
                         style={{
                             background: 'linear-gradient(180deg, hsl(142 22% 12%) 0%, hsl(140 28% 6.5%) 100%)',
                             boxShadow: '0 30px 70px -30px hsl(0 0% 0%), inset 0 1px 0 hsl(142 50% 45% / 0.16)',
@@ -97,18 +125,23 @@ export function ModalWindow({ open, onClose, title, subtitle, children }: ModalW
                             </div>
 
                             <button
-                                onClick={onClose}
-                                aria-label="Закрыть"
+                                onClick={onBack ?? onClose}
+                                aria-label={onBack ? 'Назад' : 'Закрыть'}
                                 className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
                                            border border-white/[0.08] bg-white/[0.04]
                                            transition-colors duration-200 hover:bg-white/[0.09]
                                            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                             >
-                                <X className="w-4 h-4" style={{ color: MODAL_CAPTION }} />
+                                {onBack
+                                    ? <ArrowLeft className="w-4 h-4" style={{ color: MODAL_CAPTION }} />
+                                    : <X className="w-4 h-4" style={{ color: MODAL_CAPTION }} />}
                             </button>
                         </header>
 
-                        <div className="relative px-3.5 pb-4 space-y-2.5 overflow-y-auto">
+                        <div className={cn(
+                            "relative overflow-y-auto flex-1 min-h-0",
+                            bare ? "" : "px-3.5 pb-4 space-y-2.5"
+                        )}>
                             {children}
                         </div>
                     </motion.div>
