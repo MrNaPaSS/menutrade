@@ -5,7 +5,7 @@ import { SimpleMenu } from '@/components/SimpleMenu';
 import { GestureHint } from '@/components/GestureHint';
 import { BottomNav } from '@/components/BottomNav';
 import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { useBackAction } from '@/contexts/BackNavigationContext';
 import { ToolRow } from '@/components/trader-menu/ToolRow';
@@ -359,6 +359,20 @@ const Strategies = () => {
   const { hasFullAccess, isLoading: accessLoading } = useUserAccess();
   const [view, setView] = useState<View>('modules');
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+  const location = useLocation();
+
+  // Из меню трейдера приходят с конкретным блоком - открываем сразу,
+  // а не заставляем выбирать его второй раз
+  useEffect(() => {
+    const wanted = (location.state as { moduleId?: string } | null)?.moduleId;
+    if (!wanted || selectedModule) return;
+
+    const target = strategyModules.find(m => m.id === wanted);
+    if (target) {
+      setSelectedModule(target);
+      setView('content');
+    }
+  }, [location.state, selectedModule]);
   const [api, setApi] = useState<CarouselApi>(null);
   const [current, setCurrent] = useState(0);
   const [showScrollHint, setShowScrollHint] = useState(false);

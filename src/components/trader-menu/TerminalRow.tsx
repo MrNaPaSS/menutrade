@@ -20,8 +20,11 @@ interface TerminalRowProps {
     title: string;
     /** Подпись под названием: что внутри или что нужно сделать */
     caption: string;
-    /** Значение справа: «46%», «23», «3 попытки» */
+    /** Значение справа: «46%», «23». Длинному тексту здесь не место -
+        он съедает ширину заголовка */
     value?: string;
+    /** Метка рядом с названием: «Бесплатно», «По приглашению» */
+    badge?: { text: string; tone: 'green' | 'amber' | 'sky' };
     /** Значение зелёное, когда оно про прогресс или про доступное сейчас */
     valueLive?: boolean;
     /** Полоса прогресса под строкой, 0-100. Не передан - полосы нет */
@@ -52,6 +55,7 @@ export const TerminalRow = memo(function TerminalRow({
     caption,
     value,
     valueLive = false,
+    badge,
     progress,
     locked = false,
     onClick,
@@ -91,11 +95,23 @@ export const TerminalRow = memo(function TerminalRow({
                 </span>
 
                 <span className="flex-1 min-w-0">
-                    <span
-                        className="block font-semibold text-[14.5px] tracking-[-0.01em] truncate"
-                        style={{ color: locked ? CAPTION_COLOR : TITLE_COLOR }}
-                    >
-                        {title}
+                    <span className="flex items-center gap-2 min-w-0 flex-wrap">
+                        <span
+                            className="font-semibold text-[14.5px] tracking-[-0.01em] truncate"
+                            style={{ color: locked ? CAPTION_COLOR : TITLE_COLOR }}
+                        >
+                            {title}
+                        </span>
+                        {badge && (
+                            <span className={cn(
+                                'text-[10px] px-1.5 py-0.5 rounded-full border flex-shrink-0 whitespace-nowrap',
+                                badge.tone === 'green' && 'bg-primary/10 text-primary border-primary/25',
+                                badge.tone === 'amber' && 'bg-amber-500/10 text-amber-400 border-amber-500/25',
+                                badge.tone === 'sky' && 'bg-sky-500/10 text-sky-400 border-sky-500/25'
+                            )}>
+                                {badge.text}
+                            </span>
+                        )}
                     </span>
                     <span
                         className="block text-[11.5px] mt-0.5 truncate tabular-nums"

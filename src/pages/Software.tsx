@@ -1,106 +1,101 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, type JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
-import { ArrowLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Bot, Code, LineChart, Signal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SoftwareDrawer } from '@/components/SoftwareDrawer';
+import { SoftwareModal } from '@/components/SoftwareModal';
+import { TerminalRow, type RowTone } from '@/components/trader-menu/TerminalRow';
 import { BADGE_LABEL, softwareItems, type SoftwareItem } from '@/data/software';
-import { cn } from '@/lib/utils';
+
+/** Значок и тон под каждый продукт: четыре одинаковых значка сливаются. */
+const ICONS: Record<string, JSX.Element> = {
+  'market-assistant': <Bot className="w-[18px] h-[18px]" />,
+  'nmnh-trade': <LineChart className="w-[18px] h-[18px]" />,
+  'black-mirror': <Signal className="w-[18px] h-[18px]" />,
+  'forex-signals': <Code className="w-[18px] h-[18px]" />,
+};
+
+const TONES: Record<string, RowTone> = {
+  'market-assistant': 'green',
+  'nmnh-trade': 'cyan',
+  'black-mirror': 'amber',
+  'forex-signals': 'violet',
+};
+
+const PANEL_STYLE = {
+  background: 'linear-gradient(180deg, hsl(142 20% 10%) 0%, hsl(140 27% 6.5%) 100%)',
+  boxShadow: '0 12px 32px -22px hsl(0 0% 0%), inset 0 1px 0 hsl(142 42% 38% / 0.12)',
+} as const;
+
+const PANEL_CLASS =
+  'rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden divide-y divide-[hsl(142_22%_13%)]';
 
 const Software = () => {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<SoftwareItem | null>(null);
 
-  const handleHomeClick = () => {
-    navigate('/home');
-  };
-
-  // Хук для свайпа назад
-
+  const handleHomeClick = () => navigate('/home');
 
   return (
     <div className="min-h-[100dvh] scanline pb-16">
       <MatrixRain />
       <div className="relative z-10">
-        {/* Header с кнопкой назад */}
-        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4">
+        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm pb-2 px-4">
           <div className="relative flex items-center justify-center py-2 sm:py-3">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleHomeClick}
-                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm
+                           focus:outline-none focus-visible:outline-none focus-visible:ring-0"
               >
                 <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">На главную</span>
               </Button>
             </div>
-            <div className="flex flex-col items-center">
-              <h2 className="font-display font-bold text-lg sm:text-xl">Наш софт</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Расширение, индикатор, платформа и веб-приложение
-              </p>
-            </div>
+            <h1 className="font-display font-bold text-lg tracking-tight">Наш софт</h1>
             <div className="absolute right-4 -top-3">
               <SimpleMenu />
             </div>
           </div>
         </div>
 
-        <main className="p-4 pb-8 flex justify-center">
+        <main className="px-4 pb-8 flex justify-center">
           <div className="max-w-lg w-full mx-auto">
-
-            {/* Список, а не четыре простыни подряд: подробности по
-                каждому продукту приходят в карточке по нажатию */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden
-                         divide-y divide-white/[0.06]"
+            <p
+              className="text-[11px] uppercase tracking-[0.1em] mb-2 px-1"
+              style={{ color: 'hsl(142 16% 48%)' }}
             >
-              {softwareItems.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => setSelected(item)}
-                  className="group w-full text-left flex items-center gap-3 px-4 py-3.5 min-h-[64px]
-                             transition-colors duration-200 hover:bg-white/[0.04] active:bg-white/[0.07]
-                             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset"
-                >
-                  <span className="flex-1 min-w-0">
-                    <span className="flex items-center gap-2">
-                      <span className="font-display font-semibold text-sm tracking-wide truncate
-                                       transition-colors duration-200 group-hover:text-primary">
-                        {item.name}
-                      </span>
-                      <span className={cn(
-                        'text-[10px] px-1.5 py-0.5 rounded-full border flex-shrink-0',
-                        item.badge === 'free' && 'bg-primary/10 text-primary border-primary/25',
-                        item.badge === 'pro' && 'bg-amber-500/10 text-amber-400 border-amber-500/25',
-                        item.badge === 'crypto' && 'bg-sky-500/10 text-sky-400 border-sky-500/25'
-                      )}>
-                        {BADGE_LABEL[item.badge]}
-                      </span>
-                    </span>
-                    <span className="block text-xs text-muted-foreground truncate mt-0.5">
-                      {item.kind} · {item.summary}
-                    </span>
-                  </span>
+              {softwareItems.length} инструмента
+            </p>
 
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0
-                                           transition-transform duration-200 group-hover:translate-x-0.5" />
-                </button>
+            {/* Список, а не четыре простыни подряд: подробности по каждому
+                продукту приходят в окне по нажатию */}
+            <div className={PANEL_CLASS} style={PANEL_STYLE}>
+              {softwareItems.map((item, index) => (
+                <TerminalRow
+                  key={item.id}
+                  index={index}
+                  icon={ICONS[item.id] ?? <Code className="w-[18px] h-[18px]" />}
+                  tone={TONES[item.id] ?? 'violet'}
+                  title={item.name}
+                  caption={item.kind}
+                  badge={{
+                    text: BADGE_LABEL[item.badge],
+                    tone: item.badge === 'free' ? 'green' : item.badge === 'pro' ? 'amber' : 'sky',
+                  }}
+                  onClick={() => setSelected(item)}
+                />
               ))}
-            </motion.div>
+            </div>
           </div>
         </main>
       </div>
 
-      <SoftwareDrawer item={selected} onOpenChange={(open) => !open && setSelected(null)} />
+      <SoftwareModal item={selected} onClose={() => setSelected(null)} />
       <BottomNav onHomeClick={handleHomeClick} />
     </div>
   );

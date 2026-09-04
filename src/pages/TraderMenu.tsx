@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { CoursesModal } from '@/components/trader-menu/CoursesModal';
+import { StrategiesModal } from '@/components/trader-menu/StrategiesModal';
 import { courses } from '@/data/courses';
 import { strategyModules } from '@/data/strategies';
 import { libraryCategories } from '@/data/library';
@@ -48,6 +49,7 @@ const TraderMenu = () => {
   const { streak } = useDailyClaim();
 
   const [coursesOpen, setCoursesOpen] = useState(false);
+  const [strategiesOpen, setStrategiesOpen] = useState(false);
 
   const handleHomeClick = () => navigate('/home');
 
@@ -156,7 +158,7 @@ const TraderMenu = () => {
                 title="Торговые стратегии"
                 caption="Готовые схемы входа и выхода"
                 value={String(STRATEGY_LESSONS)}
-                onClick={() => navigate('/strategies')}
+                onClick={() => setStrategiesOpen(true)}
               />
               <TerminalRow
                 index={1}
@@ -189,6 +191,14 @@ const TraderMenu = () => {
         </main>
       </div>
 
+      <StrategiesModal
+        open={strategiesOpen}
+        onClose={() => setStrategiesOpen(false)}
+        onSelect={(moduleId) => {
+          setStrategiesOpen(false);
+          navigate('/strategies', { state: { moduleId } });
+        }}
+      />
       <CoursesModal
         open={coursesOpen}
         onClose={() => setCoursesOpen(false)}
