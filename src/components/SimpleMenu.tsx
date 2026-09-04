@@ -30,7 +30,7 @@ export function SimpleMenu() {
   console.log('🔄 SimpleMenu загружен в:', new Date().toLocaleTimeString(), '- Профиль ЕСТЬ');
 
   return (
-    <div className="fixed top-[calc(env(safe-area-inset-top)+0.5rem)] right-4 z-[60]">
+    <div className="fixed top-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.5rem))] right-4 z-[60]">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button

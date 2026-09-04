@@ -7,7 +7,7 @@ import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
-import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap, Brain } from 'lucide-react';
+import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap, Brain, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
@@ -181,6 +181,14 @@ const TraderMenu = () => {
               />
               <TerminalRow
                 index={2}
+                icon={<Newspaper className="w-[18px] h-[18px]" />}
+                tone="amber"
+                title="Последние новости"
+                caption="Календарь событий и новости рынка"
+                onClick={() => navigate('/news')}
+              />
+              <TerminalRow
+                index={3}
                 icon={<BookOpen className="w-[18px] h-[18px]" />}
                 tone="amber"
                 title="Библиотека"
@@ -189,15 +197,15 @@ const TraderMenu = () => {
                 onClick={() => navigate('/library')}
               />
               <TerminalRow
-                index={3}
+                index={4}
                 icon={<Brain className="w-[18px] h-[18px]" />}
-                tone="cyan"
+                tone="green"
                 title="AI-агент"
                 caption="Разбор графика и обучение по трём рынкам"
                 onClick={() => setAgentOpen(true)}
               />
               <TerminalRow
-                index={4}
+                index={5}
                 icon={<Code className="w-[18px] h-[18px]" />}
                 tone="violet"
                 title="Наш софт"

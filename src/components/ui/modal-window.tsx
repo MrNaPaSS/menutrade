@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useBackAction } from '@/contexts/BackNavigationContext';
 
 interface ModalWindowProps {
     open: boolean;
@@ -69,6 +70,11 @@ export function ModalWindow({
     children,
 }: ModalWindowProps) {
     const reduced = useReducedMotion();
+
+    // Пока окно открыто, «назад» - и жестом от края, и кнопкой -
+    // делает шаг внутри окна или закрывает его, а не уводит со
+    // страницы. Здесь одно место на все окна сразу
+    useBackAction(() => (onBack ?? onClose)(), open);
 
     useEffect(() => {
         if (!open) return;

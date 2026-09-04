@@ -228,7 +228,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
 
             <div className="flex flex-col h-full max-h-screen overflow-hidden bg-background">
                 {/* Header */}
-                <header className="px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-2 border-b border-border/30 flex-shrink-0 glass-card z-20">
+                <header className="px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.5rem))] pb-2 border-b border-border/30 flex-shrink-0 glass-card z-20">
                     <div className="flex items-center justify-between">
                         {/* Левая сторона - Меню бургер + Ник */}
                         <div className="flex items-center gap-1.5 min-w-[80px]">

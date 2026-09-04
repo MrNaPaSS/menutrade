@@ -174,7 +174,7 @@ const Referral = () => {
             <MatrixRain />
             <div className="relative z-10">
                 <main className="px-4 sm:px-5 md:px-6 pb-24 flex justify-center
-                               pt-[calc(env(safe-area-inset-top)+3.5rem)] sm:pt-16">
+                               pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+3.5rem)] sm:pt-16">
                     <div className="max-w-lg w-full mx-auto">
                         <div className="mb-4 sm:mb-6">
                             <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">
