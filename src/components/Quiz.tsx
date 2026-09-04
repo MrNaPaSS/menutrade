@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useHasHover } from '@/hooks/useHasHover';
 import { QuizQuestion } from '@/types/lesson';
 import { cn } from '@/lib/utils';
 import { CheckCircle, XCircle, Trophy, Sparkles } from 'lucide-react';
@@ -12,6 +13,7 @@ interface QuizProps {
 }
 
 export function Quiz({ questions, onComplete, passingThreshold = 70 }: QuizProps) {
+  const hasHover = useHasHover();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -109,8 +111,13 @@ export function Quiz({ questions, onComplete, passingThreshold = 70 }: QuizProps
                 )}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={!isAnswered ? { scale: 1.02, x: 8 } : undefined}
+                // Шаг был 0.1 с: четвёртый вариант ждал почти полсекунды,
+                // и так на каждом вопросе
+                transition={{ delay: index * 0.04, duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                // Сдвиг вбок только там, где есть настоящее наведение:
+                // на телефоне касание вызывает ложный hover, и вариант
+                // ответа уезжает под пальцем
+                whileHover={hasHover && !isAnswered ? { scale: 1.02, x: 8 } : undefined}
                 whileTap={!isAnswered ? { scale: 0.98 } : undefined}
               >
                 <div className="flex items-center gap-4">

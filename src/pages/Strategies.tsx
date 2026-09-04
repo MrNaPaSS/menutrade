@@ -493,6 +493,13 @@ const Strategies = () => {
     };
   }, [api]);
 
+  // Разбор markdown стоит дорого. Наблюдатель начинал грузить соседнюю
+  // карточку только когда она уже показалась, да ещё с задержкой в
+  // 100 мс - разбор приходился ровно на время свайпа, отсюда рывок.
+  // Держим готовыми текущую и две соседние.
+  const shouldRenderCard = (index: number) =>
+    Math.abs(index - current) <= 1 || loadedCardIndex.has(index);
+
   // Дополнительно сбрасываем прокрутку при изменении current
   useEffect(() => {
     const currentCard = cardRefs.current.get(current);
@@ -599,7 +606,7 @@ const Strategies = () => {
                           style={{ willChange: 'scroll-position', transform: 'translateZ(0)' }}
                         >
                           <div className="markdown-content text-sm leading-relaxed w-full min-h-full flex flex-col justify-center py-1 px-6">
-                            {loadedCardIndex.has(index) ? (
+                            {shouldRenderCard(index) ? (
                               <ReactMarkdown components={MarkdownComponents}>
                                 {convertEmojiLinesToLists(lesson.content)}
                               </ReactMarkdown>
