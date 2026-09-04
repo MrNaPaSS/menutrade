@@ -9,6 +9,7 @@ import { SimpleMenu } from "@/components/SimpleMenu";
 import { GestureHint } from "@/components/GestureHint";
 import { Button } from "@/components/ui/button";
 import { useBackAction } from '@/contexts/BackNavigationContext';
+import { cn } from '@/lib/utils';
 import type { Lesson } from "@/types/lesson";
 import {
   CandlestickChart,
@@ -232,6 +233,13 @@ interface LessonContentProps {
   /** Показать предложение пройти тест по модулю в конце последнего урока */
   offerModuleTest?: boolean;
   onModuleTest?: () => void;
+  /**
+   * Урок открыт внутри окна, а не отдельной страницей.
+   *
+   * Тогда своя шапка не рисуется - название, шаг назад и меню уже есть
+   * у окна, - и высота карточки считается с оглядкой на его шапку.
+   */
+  embedded?: boolean;
 }
 
 // Функция для преобразования строк с эмодзи в список
@@ -735,7 +743,8 @@ function parseContentToCards(content: string): string[] {
 }
 
 export function LessonContent({ lesson, onBack, onComplete,
-                               offerModuleTest, onModuleTest }: LessonContentProps) {
+                               offerModuleTest, onModuleTest,
+                               embedded = false }: LessonContentProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [api, setApi] = useState<CarouselApi>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -931,7 +940,7 @@ export function LessonContent({ lesson, onBack, onComplete,
 
   if (showQuiz) {
     return (
-      <div className="min-h-[100dvh] p-4 pb-20">
+      <div className={embedded ? "p-4" : "min-h-[100dvh] p-4 pb-20"}>
         <div className="max-w-lg mx-auto">
           <button
             onClick={() => setShowQuiz(false)}
@@ -969,9 +978,11 @@ export function LessonContent({ lesson, onBack, onComplete,
   }
 
   return (
-    <div className="min-h-[100dvh] scanline pb-8 sm:pb-10">
-      <div className="relative z-10 pt-4 sm:pt-5 md:pt-6">
-        {/* Sticky header с кнопкой назад */}
+    <div className={embedded ? "pb-4" : "min-h-[100dvh] scanline pb-8 sm:pb-10"}>
+      <div className={embedded ? "relative z-10" : "relative z-10 pt-4 sm:pt-5 md:pt-6"}>
+        {/* Своя шапка только на отдельной странице: в окне название,
+            шаг назад и меню уже есть у самого окна */}
+        {!embedded && (
         <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]">
           <div className="relative flex items-center justify-center py-2 sm:py-3">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
@@ -1004,8 +1015,9 @@ export function LessonContent({ lesson, onBack, onComplete,
             </div>
           </div>
         </div>
+        )}
 
-        <div className="p-4 pb-20 flex justify-center">
+        <div className={embedded ? "px-3 pb-4 flex justify-center" : "p-4 pb-20 flex justify-center"}>
           <div className="w-full max-w-full mx-auto">
             <Carousel
               setApi={setApi}
@@ -1030,7 +1042,12 @@ export function LessonContent({ lesson, onBack, onComplete,
                         }
                       }}
                       data-index={index}
-                      className="glass-card rounded-xl p-4 neon-border h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_245px)] flex flex-col overflow-hidden relative mx-auto w-full"
+                      className={cn(
+                        "glass-card rounded-xl p-4 neon-border flex flex-col overflow-hidden relative mx-auto w-full",
+                        embedded
+                          ? "h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_310px)]"
+                          : "h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_245px)]"
+                      )}
                       style={{ touchAction: 'pan-y pinch-zoom' }}
                     >
                       <div className="flex-1 min-h-0 prose prose-invert max-w-none w-full overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"

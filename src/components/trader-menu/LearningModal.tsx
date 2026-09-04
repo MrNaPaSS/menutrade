@@ -95,6 +95,7 @@ export function LearningModal({
                 bare
             >
                 <LessonContent
+                    embedded
                     lesson={lesson}
                     onBack={() => setLesson(null)}
                     onComplete={() => {
