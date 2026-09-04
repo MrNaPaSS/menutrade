@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { ArrowLeft, BookOpen, ExternalLink } from 'lucide-react';
@@ -174,9 +173,6 @@ const Library = () => {
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Книги по трейдингу, психологии и управлению капиталом
               </p>
-            </div>
-            <div className="absolute right-4 -top-3">
-              <SimpleMenu />
             </div>
           </div>
         </div>

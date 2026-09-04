@@ -70,8 +70,11 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
     // Авторесайз textarea
     useEffect(() => {
         if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 140)}px`;
+            const el = textareaRef.current;
+            el.style.height = 'auto';
+            // 36px - высота пустой строки: столько же, сколько у кнопок
+            // по краям, чтобы пилюля не разъезжалась
+            el.style.height = `${Math.min(Math.max(el.scrollHeight, 36), 140)}px`;
         }
     }, [input]);
 
@@ -473,12 +476,16 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         <div className="flex-1 min-w-0">
                             <textarea
                                 ref={textareaRef}
+                                /* rows={1} обязателен: без него у textarea по
+                                   умолчанию две строки, и пустое поле ввода
+                                   встаёт вдвое выше, чем нужно */
+                                rows={1}
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder={currentMode === 'teacher' ? "Задайте вопрос ментору..." : "Опишите ситуацию на рынке..."}
                                 className={cn(
-                                    'w-full min-h-[36px] max-h-[140px] resize-none bg-transparent',
+                                    'w-full h-9 max-h-[140px] resize-none bg-transparent overflow-y-auto',
                                     'py-2 px-1 text-[15px] leading-[1.45] outline-none',
                                     'placeholder:text-muted-foreground/60'
                                 )}

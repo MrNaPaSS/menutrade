@@ -4,8 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowUpCircle, ArrowDownCircle, Clock, ArrowLeft, RefreshCw, Trophy, Play, XCircle, TimerOff } from 'lucide-react';
 import { MatrixRain } from '@/components/MatrixRain';
-import { SimpleMenu } from '@/components/SimpleMenu';
-import { toast } from '@/components/ui/sonner';
 import { TradingChart } from '@/components/TradingChart';
 import { generatePattern, type GeneratedPattern, type ChartPoint } from '@/data/patternGenerator';
 import { useUserAccess } from '@/contexts/UserAccessContext';
@@ -100,13 +98,10 @@ const GuessChart = () => {
     if (gameState !== 'PLAYING' || !pattern) return;
     const ok = dir === pattern.direction;
     finishRound(ok ? 'CORRECT' : 'WRONG');
-    if (ok) toast.success('Верно! Отличная насмотренность.');
-    else toast.error('Мимо. Разбери паттерн ниже.');
   };
 
   const handleTimeout = useCallback(() => {
     finishRound('TIMEOUT');
-    toast.error('Время вышло.');
   }, [finishRound]);
 
   // Таймер обратного отсчёта
@@ -149,8 +144,6 @@ const GuessChart = () => {
     <div className="min-h-[100dvh] bg-background relative">
       <MatrixRain />
       <div className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-6 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.75rem))]">
-        <SimpleMenu />
-
         {/* Шапка */}
         <div className="flex items-center justify-between pb-1">
           <Button variant="ghost" size="sm" className="text-xs sm:text-sm -ml-2" onClick={() => navigate('/home')}>

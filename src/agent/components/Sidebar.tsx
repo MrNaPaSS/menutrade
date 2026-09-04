@@ -73,7 +73,14 @@ export function Sidebar({
                         exit={{ x: '-100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                         className="absolute left-0 top-0 bottom-0 w-[280px] max-w-[80%] bg-background border-r border-border/30 z-50 flex flex-col"
-                        style={{ paddingTop: 'env(safe-area-inset-top, 0)' }}
+                        /* Отступ сверху считает и системную строку, и полосу
+                           кнопок Telegram: без --tg-content-top шапка шторки
+                           уезжает под «Закрыть» */
+                        style={{
+                            paddingTop:
+                                'calc(env(safe-area-inset-top, 0px) + var(--tg-content-top, 0px))',
+                            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+                        }}
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border/30">

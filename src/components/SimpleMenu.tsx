@@ -27,8 +27,6 @@ export function SimpleMenu() {
     localStorage.setItem('app_language', lang);
   };
 
-  console.log('🔄 SimpleMenu загружен в:', new Date().toLocaleTimeString(), '- Профиль ЕСТЬ');
-
   return (
     <div className="fixed top-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.5rem))] right-4 z-[60]">
       <DropdownMenu>
@@ -46,10 +44,6 @@ export function SimpleMenu() {
           <DropdownMenuItem onClick={() => navigate('/home')} className="cursor-pointer">
             <Home className="mr-2 h-4 w-4" />
             На главную
-          </DropdownMenuItem>
-
-          <DropdownMenuItem onClick={() => alert('ТЕСТ - МЕ НЮ ОБНОВЛЕНО!')} className="cursor-pointer bg-red-500/20">
-            🔥 ТЕСТОВЫЙ ПУНКТ 🔥
           </DropdownMenuItem>
 
           <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
