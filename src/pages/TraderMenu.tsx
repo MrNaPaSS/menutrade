@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
@@ -6,19 +7,15 @@ import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
-import { useTelegram } from '@/hooks/useTelegram';
-import { useDailyAttempts } from '@/hooks/useDailyAttempts';
-import { ArrowLeft, Target, Activity, BookOpen, Code } from 'lucide-react';
+import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
+import { CoursesModal } from '@/components/trader-menu/CoursesModal';
 import { courses } from '@/data/courses';
 import { strategyModules } from '@/data/strategies';
 import { libraryCategories } from '@/data/library';
 import { softwareItems } from '@/data/software';
-
-/** Столько попыток тренажёра в день - как в самом тренажёре. */
-const FREE_ROUNDS_PER_DAY = 3;
 
 // Модули стратегий лежат в файле курса по бинаркам, но частью обучения
 // не являются - у них свой раздел
@@ -31,14 +28,6 @@ const LIBRARY_BOOKS = libraryCategories.reduce(
   (sum, c: { books?: unknown[] }) => sum + (c.books?.length ?? 0),
   0
 );
-
-function plural(n: number, one: string, few: string, many: string): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
-  return many;
-}
 
 const SECTION_LABEL = 'hsl(142 16% 48%)';
 
@@ -57,9 +46,8 @@ const TraderMenu = () => {
   const { courses: courseAccess, partners } = useCourseAccess();
   const { coins } = useCoinBalance();
   const { streak } = useDailyClaim();
-  const { userId } = useTelegram();
-  // Тот же ключ, что и в самом тренажёре - счётчик у них общий
-  const attempts = useDailyAttempts(userId, 'guess_chart', FREE_ROUNDS_PER_DAY);
+
+  const [coursesOpen, setCoursesOpen] = useState(false);
 
   const handleHomeClick = () => navigate('/home');
 
@@ -130,37 +118,27 @@ const TraderMenu = () => {
               className="text-[11px] uppercase tracking-[0.1em] mt-6 mb-2 px-1"
               style={{ color: SECTION_LABEL }}
             >
-              Обучение · {totalDone} из {totalAll || allLessons}
+              Обучение
             </h2>
 
+            {/* Одна кнопка: направления показывает окно, а не список на
+                самом экране - так меню остаётся коротким */}
             <div className={PANEL_CLASS} style={PANEL_STYLE}>
-              {rows.map(({ course, state, total, done, percent, isOpen }, index) => (
-                <TerminalRow
-                  key={course.id}
-                  index={index}
-                  icon={course.icon}
-                  tone="green"
-                  title={course.title}
-                  caption={
-                    isOpen
-                      ? `${done} из ${total} уроков`
-                      : state === 'pending'
-                        ? 'ID отправлен, ждём подтверждения'
-                        : partners[course.id]
-                          ? `Открывает счёт на ${partners[course.id]}`
-                          : `${total} уроков`
-                  }
-                  value={isOpen ? `${percent}%` : undefined}
-                  valueLive={isOpen}
-                  progress={isOpen ? percent : undefined}
-                  locked={!isOpen}
-                  onClick={
-                    isOpen
-                      ? () => navigate('/learning', { state: { courseId: course.id } })
-                      : undefined
-                  }
-                />
-              ))}
+              <TerminalRow
+                index={0}
+                icon={<GraduationCap className="w-[18px] h-[18px]" />}
+                tone="green"
+                title="Уроки"
+                caption={
+                  openRows.length > 0
+                    ? `${totalDone} из ${totalAll} уроков · ${openRows.length} из ${courses.length} направлений`
+                    : `${courses.length} направления · ${allLessons} уроков`
+                }
+                value={totalAll > 0 ? `${overall}%` : undefined}
+                valueLive={totalAll > 0}
+                progress={totalAll > 0 ? overall : undefined}
+                onClick={() => setCoursesOpen(true)}
+              />
             </div>
 
             <h2
@@ -186,12 +164,6 @@ const TraderMenu = () => {
                 tone="green"
                 title="Куда пойдёт график"
                 caption="Тренажёр на реальных графиках"
-                value={
-                  attempts.exhausted
-                    ? 'завтра'
-                    : `${attempts.left} ${plural(attempts.left, 'попытка', 'попытки', 'попыток')}`
-                }
-                valueLive={!attempts.exhausted}
                 onClick={() => navigate('/guess-chart')}
               />
               <TerminalRow
@@ -217,6 +189,17 @@ const TraderMenu = () => {
         </main>
       </div>
 
+      <CoursesModal
+        open={coursesOpen}
+        onClose={() => setCoursesOpen(false)}
+        access={courseAccess}
+        partners={partners}
+        completedByCourse={completedByCourse}
+        onSelect={(course) => {
+          setCoursesOpen(false);
+          navigate('/learning', { state: { courseId: course.id } });
+        }}
+      />
       <BottomNav onHomeClick={handleHomeClick} />
     </div>
   );
