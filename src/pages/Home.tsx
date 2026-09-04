@@ -4,14 +4,17 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
-import { GraduationCap, Newspaper, ArrowRight, TrendingUp, Code, Briefcase, BookOpen, Activity, Radio, Target } from 'lucide-react';
+import { GraduationCap, Newspaper, ArrowRight, TrendingUp, Code, Briefcase, BookOpen, Activity, Radio, Target, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useHasHover } from '@/hooks/useHasHover';
+import { useCoinBalance } from '@/hooks/useCoinBalance';
+import { cn } from '@/lib/utils';
 
 const Home = () => {
   const navigate = useNavigate();
   const hasHover = useHasHover();
   const { modules, getProgress } = useProgress();
+  const { coins } = useCoinBalance();
 
   const progress = getProgress();
 
@@ -201,7 +204,10 @@ const Home = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 sm:gap-4">
+              <div className={cn(
+                'grid gap-2 sm:gap-4',
+                coins ? 'grid-cols-3' : 'grid-cols-2'
+              )}>
                 <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/20">
                   <div className="text-xl sm:text-2xl font-bold text-primary mb-1">
                     {completedModules}
@@ -218,6 +224,25 @@ const Home = () => {
                     Уроков пройдено
                   </div>
                 </div>
+
+                {/* Монеты стоят рядом с учёбой: их и зарабатывают учёбой.
+                    Нажатие ведёт в подарки, где календарь и магазин */}
+                {coins && (
+                  <button
+                    onClick={() => navigate('/referral')}
+                    className="text-center p-2 sm:p-3 rounded-lg bg-muted/20 border border-primary/20
+                               transition-colors hover:bg-primary/10"
+                  >
+                    <div className="text-xl sm:text-2xl font-bold text-primary mb-1
+                                    flex items-center justify-center gap-1 tabular-nums">
+                      <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
+                      {coins.balance}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Монет NMNH
+                    </div>
+                  </button>
+                )}
               </div>
             </motion.div>
 

@@ -1,46 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Coins } from 'lucide-react';
 import { sendCoinEvent } from '@/lib/coins';
+import { dateKey, todayKey, weekStart } from '@/lib/daily';
+import { useDailyClaim } from '@/hooks/useDailyClaim';
 import { cn } from '@/lib/utils';
 
 /** Монет за день. Значение назначает бот, здесь оно только для показа. */
 const DAILY_COINS = 2;
 
 const WEEK_DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
-function todayKey(): string {
-    const d = new Date();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${d.getFullYear()}-${month}-${day}`;
-}
-
-/** Понедельник текущей недели - от него строим полоску дней. */
-function weekStart(): Date {
-    const d = new Date();
-    const shift = (d.getDay() + 6) % 7; // воскресенье в JS это 0
-    d.setDate(d.getDate() - shift);
-    d.setHours(0, 0, 0, 0);
-    return d;
-}
-
-function dateKey(d: Date): string {
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${d.getFullYear()}-${month}-${day}`;
-}
-
-const STORAGE_KEY = 'nmnh-daily-claimed';
-
-function loadClaimed(): string[] {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch {
-        return [];
-    }
-}
 
 /**
  * Календарь ежедневных монет.
@@ -51,27 +20,18 @@ function loadClaimed(): string[] {
  * защита стоит на сервере.
  */
 export function DailyCalendar() {
-    const [claimed, setClaimed] = useState<string[]>(loadClaimed);
+    const { claimedDays, takenToday, markClaimed } = useDailyClaim();
     const [sending, setSending] = useState(false);
 
     const today = todayKey();
-    const takenToday = claimed.includes(today);
-
-    useEffect(() => {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(claimed.slice(-60)));
-        } catch {
-            /* приватный режим - обойдёмся без памяти между заходами */
-        }
-    }, [claimed]);
 
     const claim = useCallback(() => {
         if (takenToday || sending) return;
         setSending(true);
         sendCoinEvent(`daily_${today}`, 'daily_checkin');
-        setClaimed(prev => [...prev, today]);
+        markClaimed();
         setTimeout(() => setSending(false), 600);
-    }, [takenToday, sending, today]);
+    }, [takenToday, sending, today, markClaimed]);
 
     const start = weekStart();
     const days = WEEK_DAYS.map((label, i) => {
@@ -84,7 +44,7 @@ export function DailyCalendar() {
             number: date.getDate(),
             isToday: key === today,
             isPast: key < today,
-            isTaken: claimed.includes(key),
+            isTaken: claimedDays.includes(key),
         };
     });
 

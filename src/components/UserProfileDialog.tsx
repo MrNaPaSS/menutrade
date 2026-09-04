@@ -8,8 +8,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { useTelegram } from '@/hooks/useTelegram';
-import { Check, X, Sparkles, Lock, RefreshCw, ExternalLink } from 'lucide-react';
+import { Check, X, Sparkles, Lock, RefreshCw, ExternalLink, Coins } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useCoinBalance } from '@/hooks/useCoinBalance';
 
 interface UserProfileDialogProps {
     open: boolean;
@@ -19,9 +20,11 @@ interface UserProfileDialogProps {
 export function UserProfileDialog({ open, onOpenChange }: UserProfileDialogProps) {
     const { userId, verified, deposited, hasFullAccess, aiMessagesLeft, isLoading, fetchUserStatus } = useUserAccess();
     const { user } = useTelegram();
+    const { coins, reload: reloadCoins } = useCoinBalance();
 
     const handleRefresh = async () => {
         await fetchUserStatus();
+        reloadCoins();
     };
 
     const handleGetAccess = () => {
@@ -58,6 +61,35 @@ export function UserProfileDialog({ open, onOpenChange }: UserProfileDialogProps
                             )}
                         </div>
                     </div>
+
+                    {/* Монеты NMNH: заработок за учёбу, тратится в магазине
+                        платформы. Показываем здесь же, где остальные итоги */}
+                    {coins && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="glass-card rounded-lg p-4 border border-primary/25
+                                       flex items-center gap-3"
+                        >
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center
+                                            bg-primary/15 border border-primary/25 text-primary flex-shrink-0">
+                                <Coins className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs text-muted-foreground">Монеты NMNH</p>
+                                <p className="font-display font-bold text-2xl text-primary tabular-nums">
+                                    {coins.balance}
+                                </p>
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.open(coins.shopUrl, '_blank')}
+                            >
+                                Магазин
+                            </Button>
+                        </motion.div>
+                    )}
 
                     {/* Status Cards */}
                     <div className="space-y-2">

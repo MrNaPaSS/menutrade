@@ -868,7 +868,7 @@ export function LessonContent({ lesson, onBack, onComplete,
     };
   }, [isContentLoaded, cards.length]);
 
-  const isLastCard = currentSlide === cards.length - 1;
+  const hasQuiz = !!lesson.quiz && lesson.quiz.length > 0;
 
   // Отслеживаем текущий слайд и сбрасываем прокрутку
   useEffect(() => {
@@ -1391,6 +1391,39 @@ export function LessonContent({ lesson, onBack, onComplete,
                             }
                           })}
                         </div>
+
+                        {/* Предложение проверить себя живёт внутри последней
+                            карточки и липнет к её низу: под каруселью оно
+                            уходило за край экрана телефона */}
+                        {index === cards.length - 1 && (hasQuiz || offerModuleTest) && (
+                          <div className="not-prose sticky bottom-0 z-10 px-4 pb-1 pt-5
+                                          flex flex-col gap-2 bg-gradient-to-t
+                                          from-[hsl(140,30%,7%)] via-[hsl(140,30%,7%,0.95)] to-transparent">
+                            {hasQuiz && (
+                              <button
+                                onClick={() => setShowQuiz(true)}
+                                className="w-full rounded-xl px-4 py-3 neon-border bg-[hsl(140,30%,10%)]
+                                           hover:bg-primary/10 transition-colors flex items-center
+                                           justify-center gap-2 font-display font-semibold text-sm min-h-[44px]"
+                              >
+                                <Brain className="w-5 h-5 text-primary" />
+                                <span>Пройти квиз</span>
+                              </button>
+                            )}
+                            {offerModuleTest && (
+                              <button
+                                onClick={onModuleTest}
+                                className="w-full rounded-xl px-4 py-3 neon-border neon-border-intense
+                                           bg-primary text-primary-foreground
+                                           transition-transform active:scale-[0.98] flex items-center
+                                           justify-center gap-2 font-display font-semibold text-sm min-h-[44px]"
+                              >
+                                <Brain className="w-5 h-5" />
+                                <span>Пройти тест по модулю</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                       {showScrollHint && index === currentSlide && (
                         <GestureHint onDismiss={() => setShowScrollHint(false)} />
@@ -1424,29 +1457,6 @@ export function LessonContent({ lesson, onBack, onComplete,
               </p>
             </Carousel>
 
-            {isLastCard && lesson.quiz && lesson.quiz.length > 0 && (
-              <button
-                onClick={() => setShowQuiz(true)}
-                className="mt-4 w-full glass-card rounded-xl p-4 neon-border hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-display font-semibold text-base min-h-[44px]"
-              >
-                <Brain className="w-6 h-6 text-primary" />
-                <span>Пройти квиз</span>
-              </button>
-            )}
-
-            {/* Последний урок модуля пройден - предлагаем тест здесь, а не
-                кнопкой внизу списка: человек уже дочитал и готов проверить себя */}
-            {isLastCard && offerModuleTest && (
-              <button
-                onClick={onModuleTest}
-                className="mt-4 w-full glass-card rounded-xl p-4 neon-border neon-border-intense
-                           hover:bg-primary/10 transition-all duration-300 flex items-center
-                           justify-center gap-2 font-display font-semibold text-base min-h-[44px]"
-              >
-                <Brain className="w-6 h-6 text-primary" />
-                <span>Пройти тест по модулю</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
