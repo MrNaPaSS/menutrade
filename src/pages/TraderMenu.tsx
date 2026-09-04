@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
@@ -6,109 +5,26 @@ import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
-import { ArrowLeft, GraduationCap, Target, Activity, BookOpen, Code, ArrowRight } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { ArrowLeft, Target, Activity, BookOpen, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useHasHover } from '@/hooks/useHasHover';
-
-interface ActionCardProps {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  onClick: () => void;
-  colorClass?: 'primary' | 'secondary';
-  buttonText: string;
-  index?: number;
-  /** На тач-экранах наведения нет, и крутить иконку незачем */
-  hasHover: boolean;
-}
-
-/**
- * Карточка раздела.
- *
- * Живёт на уровне модуля, а не внутри страницы. Раньше она объявлялась
- * в теле компонента - при каждой перерисовке React видел новый тип и
- * пересоздавал все карточки заново, вместе с анимацией появления.
- * Отсюда и подёргивания при входе в меню.
- */
-const ActionCard = memo(function ActionCard({
-  title,
-  description,
-  icon: Icon,
-  onClick,
-  colorClass = 'primary',
-  buttonText,
-  index = 0,
-  hasHover,
-}: ActionCardProps) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      // Задержка не растёт дальше пятой карточки, и это короткий переход,
-      // а не пружина: список должен собраться, а не приезжать
-      transition={{ delay: Math.min(index, 4) * 0.04, duration: 0.25, ease: 'easeOut' }}
-      className="mb-4 sm:mb-6"
-    >
-      <div
-        className="group relative glass-card rounded-2xl p-5 sm:p-6 neon-border cursor-pointer
-                   transition-colors duration-200 hover:bg-white/5 active:scale-[0.98]"
-        onClick={onClick}
-      >
-        <div className="flex items-start gap-4 sm:gap-6">
-          <div className="relative">
-            <div className={cn(
-              "absolute inset-0 blur-xl opacity-20 group-hover:opacity-40 transition-opacity rounded-full",
-              colorClass === "primary" ? "bg-primary" : "bg-secondary"
-            )} />
-            <motion.div
-              className={cn(
-                "relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center",
-                "border backdrop-blur-md transition-colors duration-200",
-                colorClass === "primary"
-                  ? "bg-primary/15 border-primary/30 group-hover:border-primary/50"
-                  : "bg-secondary/15 border-secondary/30 group-hover:border-secondary/50"
-              )}
-              whileHover={hasHover ? { rotate: [0, -5, 5, 0], scale: 1.1 } : undefined}
-            >
-              <Icon className={cn("w-7 h-7 sm:w-8 sm:h-8", colorClass === "primary" ? "text-primary" : "text-secondary")} />
-            </motion.div>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <h3 className="font-display text-lg sm:text-xl font-bold tracking-wide mb-1 group-hover:text-primary transition-colors">
-              {title}
-            </h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-4 line-clamp-1">
-              {description}
-            </p>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-between group/btn border-white/10 hover:border-primary/50
-                         hover:bg-primary/10 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClick();
-              }}
-            >
-              <span className="font-semibold">{buttonText}</span>
-              <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-});
+import { ContinueLearning } from '@/components/trader-menu/ContinueLearning';
+import { ToolRow } from '@/components/trader-menu/ToolRow';
 
 const TraderMenu = () => {
   const navigate = useNavigate();
-  const hasHover = useHasHover();
-  const { getProgress } = useProgress();
-  const progress = getProgress();
+  const { modules } = useProgress();
+
+  // Цифры берём из самого курса, а не вписываем руками: раньше здесь
+  // стояло «48 уроков», а их двадцать шесть
+  const lessons = modules.flatMap(m => m.lessons);
+  const completed = lessons.filter(l => l.isCompleted).length;
+
+  // Куда человек вернётся - первый незакрытый урок
+  const nextIndex = modules.findIndex(m => m.lessons.some(l => !l.isCompleted));
+  const nextLesson = nextIndex >= 0
+    ? modules[nextIndex].lessons.find(l => !l.isCompleted)?.title ?? null
+    : null;
 
   useSwipeBack({
     onSwipeBack: () => navigate('/home'),
@@ -149,61 +65,57 @@ const TraderMenu = () => {
         <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
           <div className="max-w-lg w-full mx-auto">
 
-            <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
-              Всё для практики: уроки, стратегии, книги, софт и тренажёр
-            </p>
+            {/* Одно появление на весь экран, а не пять по очереди:
+                раздел должен собраться, а не приезжать по частям */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, ease: 'easeOut' }}
+            >
+              <ContinueLearning
+                completed={completed}
+                total={lessons.length}
+                nextLesson={nextLesson}
+                nextModule={nextIndex >= 0 ? nextIndex + 1 : null}
+                moduleCount={modules.length}
+                onClick={() => navigate('/learning')}
+              />
 
-            <ActionCard
-              hasHover={hasHover}
-              title="Обучение"
-              description="48 уроков по модулям, с тестами"
-              icon={GraduationCap}
-              buttonText="Продолжить обучение"
-              onClick={() => navigate('/learning')}
-              index={0}
-            />
+              <h3 className="text-xs text-muted-foreground mt-6 mb-2 px-1">
+                Инструменты
+              </h3>
 
-            <ActionCard
-              hasHover={hasHover}
-              title="Торговые стратегии"
-              description="Готовые схемы входа и выхода с примерами"
-              icon={Target}
-              buttonText="Открыть стратегии"
-              onClick={() => navigate('/strategies')}
-              colorClass="secondary"
-              index={1}
-            />
-
-            <ActionCard
-              hasHover={hasHover}
-              title="Куда пойдёт график"
-              description="Тренажёр насмотренности на реальных графиках"
-              icon={Activity}
-              buttonText="Играть"
-              onClick={() => navigate('/guess-chart')}
-              index={2}
-            />
-
-            <ActionCard
-              hasHover={hasHover}
-              title="Библиотека"
-              description="Книги по трейдингу, психологии и капиталу"
-              icon={BookOpen}
-              buttonText="Открыть библиотеку"
-              onClick={() => navigate('/library')}
-              colorClass="secondary"
-              index={3}
-            />
-
-            <ActionCard
-              hasHover={hasHover}
-              title="Наш софт"
-              description="Индикаторы и инструменты для торговли"
-              icon={Code}
-              buttonText="Открыть софт"
-              onClick={() => navigate('/software')}
-              index={4}
-            />
+              {/* Один список с волосяными разделителями вместо четырёх
+                  отдельных стеклянных карточек: тише, компактнее и
+                  дешевле - четырьмя размытиями фона меньше */}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden
+                              divide-y divide-white/[0.06]">
+                <ToolRow
+                  title="Торговые стратегии"
+                  meta="23 урока в четырёх модулях"
+                  icon={Target}
+                  onClick={() => navigate('/strategies')}
+                />
+                <ToolRow
+                  title="Куда пойдёт график"
+                  meta="Тренажёр на реальных графиках, без подсказок"
+                  icon={Activity}
+                  onClick={() => navigate('/guess-chart')}
+                />
+                <ToolRow
+                  title="Библиотека"
+                  meta="51 книга в восьми разделах"
+                  icon={BookOpen}
+                  onClick={() => navigate('/library')}
+                />
+                <ToolRow
+                  title="Наш софт"
+                  meta="Четыре инструмента: индикаторы, сигналы, платформа"
+                  icon={Code}
+                  onClick={() => navigate('/software')}
+                />
+              </div>
+            </motion.div>
 
             <div className="mt-12 text-center">
               <p className="text-[10px] text-muted-foreground font-mono bg-white/5 py-2 rounded-full border border-white/5 inline-block px-4">
