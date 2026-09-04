@@ -1,96 +1,70 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sendCoinEvent } from '@/lib/coins';
 import { fetchProgress, resetProgressOnServer, saveProgress } from '@/lib/progressApi';
-import { applyCompleted, collectCompleted, sameCompleted, unionCompleted } from '@/lib/progressSync';
+import { applyCompleted, lessonKey, sameCompleted, unionCompleted } from '@/lib/progressSync';
 import { loadLocalCompleted, saveLocalCompleted } from '@/lib/localProgress';
-import { modules as allModules } from '@/data/lessons';
+import { courses } from '@/data/courses';
 import { Module } from '@/types/lesson';
 import { useTelegramContext } from '@/contexts/TelegramContext';
+import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { registerUser } from '@/utils/userStats';
 
-// Исключаем модули стратегий (3, 4, 5) из основного обучения
-const initialModules = allModules.filter(m => 
-  m.id !== 'module-3' && m.id !== 'module-4' && m.id !== 'module-5'
-);
+// Модули стратегий лежат в файле курса по бинаркам, но частью обучения
+// не являются - у них свой раздел
+const STRATEGY_MODULES = new Set(['module-3', 'module-4', 'module-5']);
 
-// Функция для получения ключа хранилища с привязкой к пользователю
-const getStorageKey = (userId: string | null, suffix: string = 'progress') => {
-  if (userId) {
-    return `pepe-trader-${suffix}-${userId}`;
-  }
-  // Fallback для случаев без авторизации (только для разработки)
-  return `pepe-trader-${suffix}-anonymous`;
-};
+const getStorageKey = (userId: string | null, suffix = 'progress') =>
+  `pepe-trader-${suffix}-${userId || 'anonymous'}`;
 
-const getMasterTestKey = (userId: string | null) => {
-  return getStorageKey(userId, 'master-test');
-};
+const getMasterTestKey = (userId: string | null) => getStorageKey(userId, 'master-test');
 
+/**
+ * Прогресс обучения.
+ *
+ * Единственное, что действительно хранится, - список закрытых уроков.
+ * Модули с блокировками из него выводятся: так одно и то же состояние
+ * не лежит в двух местах и не расходится.
+ *
+ * Источник правды - сервер бота, локальная копия работает кэшем.
+ * Курсы отдаются только те, что открыты этому человеку: доступ решает
+ * бот по подтверждённым счетам на площадках.
+ */
 export function useProgress() {
   const { userId } = useTelegramContext();
+  const { courses: access, loading: accessLoading } = useCourseAccess();
+
   const storageKey = getStorageKey(userId);
   const masterTestKey = getMasterTestKey(userId);
 
-  // Из локальной копии берём только ключи закрытых уроков: тексты и
-  // блокировки восстанавливаются из данных курса. Раньше здесь
-  // разбиралось всё дерево модулей - сотни килобайт JSON в главном
-  // потоке, ровно перед первым кадром.
-  const [modules, setModules] = useState<Module[]>(
-    () => applyCompleted(initialModules, loadLocalCompleted(storageKey))
-  );
-
-  // Сохраняем прогресс при изменении
-  useEffect(() => {
-    if (!userId) return;
-
-    const completed = collectCompleted(modules);
-    saveLocalCompleted(getStorageKey(userId), completed);
-
-    // Метаданные для статистики: считаем из уже собранного списка,
-    // второй раз обходить модули незачем
-    const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0);
-    const progressValue = totalLessons > 0
-      ? Math.round((completed.length / totalLessons) * 100)
-      : 0;
-    const userStats = {
-      userId,
-      lastActivity: new Date().toISOString(),
-      progress: progressValue,
-      completedLessons: completed.length,
-      totalLessons,
-    };
-    try {
-      localStorage.setItem(`pepe-trader-stats-${userId}`, JSON.stringify(userStats));
-    } catch {
-      /* памяти нет - статистика не то, ради чего стоит падать */
-    }
-  }, [modules, userId]);
-
-  // Прогресс с сервера. Он источник правды: браузер чистят и телефоны
-  // меняют, а учёба должна оставаться. Локальная копия остаётся кэшем -
-  // вне Telegram и без связи приложение работает по ней.
-  const syncedRef = useRef<string[] | null>(null);
+  const [completed, setCompleted] = useState<string[]>(() => loadLocalCompleted(storageKey));
   const [masterTestPassed, setMasterTestPassed] = useState(
     () => localStorage.getItem(masterTestKey) === 'true'
   );
+  const syncedRef = useRef<string[] | null>(null);
 
+  // Уроки открытых курсов. Пока доступ не пришёл, список пуст - выдавать
+  // курс по молчанию сети нельзя, за него человек платит регистрацией
+  const openModules = useMemo(
+    () => courses
+      .filter(course => access[course.id] === 'open')
+      .flatMap(course => course.modules.filter(m => !STRATEGY_MODULES.has(m.id))),
+    [access]
+  );
+
+  const modules: Module[] = useMemo(
+    () => applyCompleted(openModules, completed),
+    [openModules, completed]
+  );
+
+  // Прогресс с сервера: браузер чистят и телефоны меняют, учёба остаётся
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
 
     fetchProgress().then(remote => {
       if (cancelled || !remote) return;
-
-      // Что сервер уже знает. Если локально закрыто больше, следующий
-      // эффект это заметит и дошлёт - так уцелеют уроки, пройденные
-      // до появления синхронизации
       syncedRef.current = remote.completed;
-
-      setModules(prev => applyCompleted(
-        prev,
-        unionCompleted(collectCompleted(prev), remote.completed)
-      ));
-
+      setCompleted(prev => unionCompleted(prev, remote.completed));
       if (remote.master_test) {
         setMasterTestPassed(true);
         localStorage.setItem(masterTestKey, 'true');
@@ -100,72 +74,76 @@ export function useProgress() {
     return () => { cancelled = true; };
   }, [userId, masterTestKey]);
 
+  // Сохранение: локально всегда, на сервер - только новое
   useEffect(() => {
     if (!userId) return;
 
-    const completed = collectCompleted(modules);
-    // Не тревожим сервер тем, что он уже знает
-    if (syncedRef.current && sameCompleted(syncedRef.current, completed)) return;
+    saveLocalCompleted(getStorageKey(userId), completed);
 
-    syncedRef.current = completed;
-    saveProgress({ completed, master_test: masterTestPassed });
-  }, [modules, masterTestPassed, userId]);
+    if (!syncedRef.current || !sameCompleted(syncedRef.current, completed)) {
+      syncedRef.current = completed;
+      saveProgress({ completed, master_test: masterTestPassed });
+    }
+  }, [completed, masterTestPassed, userId]);
 
-  const completeLesson = (moduleId: string, lessonId: string) => {
-    setModules(prevModules => {
-      const newModules = prevModules.map(module => {
-        if (module.id !== moduleId) return module;
+  useEffect(() => {
+    if (userId) registerUser(userId);
+  }, [userId]);
 
-        const lessonIndex = module.lessons.findIndex(l => l.id === lessonId);
-        const updatedLessons = module.lessons.map((lesson, index) => {
-          if (lesson.id === lessonId) {
-            return { ...lesson, isCompleted: true, isLocked: false };
-          }
-          // Нормальная логика: следующий урок открывается после завершения текущего
-          if (index === lessonIndex + 1 && lesson.isLocked) {
-            return { ...lesson, isLocked: false };
-          }
-          return lesson;
-        });
+  const completeLesson = useCallback((moduleId: string, lessonId: string) => {
+    setCompleted(prev => {
+      const key = lessonKey(moduleId, lessonId);
+      if (prev.includes(key)) return prev;
 
-        return { ...module, lessons: updatedLessons };
-      });
-
-      // Монеты за учёбу. Отправляем здесь, а не в компоненте урока:
-      // так событие уходит один раз, из единственного места, где
-      // прохождение действительно засчитывается.
+      // Монеты отправляем здесь: это единственное место, где урок
+      // действительно засчитывается
       sendCoinEvent(`lesson_${moduleId}_${lessonId}`, 'lesson_watched');
 
-      const finished = newModules.find(m => m.id === moduleId);
-      if (finished && finished.lessons.every(l => l.isCompleted)) {
+      const next = unionCompleted(prev, [key]);
+
+      const module = openModules.find(m => m.id === moduleId);
+      if (module && module.lessons.every(l => next.includes(lessonKey(moduleId, l.id)))) {
         sendCoinEvent(`module_${moduleId}`, 'module_completed');
       }
 
-      return newModules;
+      return next;
     });
-  };
+  }, [openModules]);
 
-  const getProgress = () => {
-    const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0);
-    const completedLessons = modules.reduce(
-      (acc, m) => acc + m.lessons.filter(l => l.isCompleted).length,
-      0
+  const completeModule = useCallback((moduleId: string) => {
+    const module = openModules.find(m => m.id === moduleId);
+    if (!module) return;
+    setCompleted(prev => unionCompleted(prev, module.lessons.map(l => lessonKey(moduleId, l.id))));
+  }, [openModules]);
+
+  const getProgress = useCallback(() => {
+    const total = modules.reduce((acc, m) => acc + m.lessons.length, 0);
+    if (total === 0) return 0;
+    const done = modules.reduce((acc, m) => acc + m.lessons.filter(l => l.isCompleted).length, 0);
+    return Math.round((done / total) * 100);
+  }, [modules]);
+
+  /** Курсы, открытые этому человеку - в порядке реестра. */
+  const openCourses = useMemo(
+    () => courses.filter(course => access[course.id] === 'open'),
+    [access]
+  );
+
+  /** Сколько уроков закрыто в каждом курсе - для выбора курса. */
+  const completedByCourse = useMemo(() => {
+    const done = new Set(completed);
+    return Object.fromEntries(
+      courses.map(course => [
+        course.id,
+        course.modules
+          .filter(m => !STRATEGY_MODULES.has(m.id))
+          .reduce((sum, m) => sum + m.lessons.filter(l => done.has(lessonKey(m.id, l.id))).length, 0),
+      ])
     );
-    const progress = Math.round((completedLessons / totalLessons) * 100);
-    return progress;
-  };
+  }, [completed]);
 
-  const resetProgress = () => {
-    // Нормальная логика: при сбросе только первый урок каждого модуля открыт
-    const resetModules = initialModules.map((module) => ({
-      ...module,
-      lessons: module.lessons.map((lesson, index) => ({ 
-        ...lesson, 
-        isLocked: index > 0,
-        isCompleted: false
-      }))
-    }));
-    setModules(resetModules);
+  const resetProgress = useCallback(() => {
+    setCompleted([]);
     setMasterTestPassed(false);
     // Сброс - единственный способ обнулить прогресс на сервере:
     // обычная запись его только дополняет
@@ -173,85 +151,26 @@ export function useProgress() {
     resetProgressOnServer();
     localStorage.removeItem(storageKey);
     localStorage.removeItem(masterTestKey);
-    if (userId) {
-      localStorage.removeItem(`pepe-trader-stats-${userId}`);
-    }
-  };
+    if (userId) localStorage.removeItem(`pepe-trader-stats-${userId}`);
+  }, [storageKey, masterTestKey, userId]);
 
-  const isMasterTestCompleted = () => masterTestPassed;
-
-  const completeMasterTest = () => {
+  const completeMasterTest = useCallback(() => {
     setMasterTestPassed(true);
     localStorage.setItem(masterTestKey, 'true');
-    // Итоговый тест - самое дорогое событие академии
     sendCoinEvent('master_test', 'test_passed');
-  };
-
-  const isAllModulesCompleted = () => {
-    return getProgress() === 100;
-  };
-
-  const completeModule = (moduleId: string) => {
-    setModules(prevModules => {
-      const newModules = prevModules.map(module => {
-        if (module.id !== moduleId) return module;
-        
-        // Помечаем все уроки модуля как завершенные
-        const updatedLessons = module.lessons.map(lesson => ({
-          ...lesson,
-          isCompleted: true,
-          isLocked: false
-        }));
-        
-        return { ...module, lessons: updatedLessons, isCompleted: true };
-      });
-
-      // Нормальная логика: разблокируем первый урок следующего модуля, если текущий завершен
-      return newModules.map((module, moduleIndex) => {
-        // Если это не первый модуль, проверяем, завершен ли предыдущий
-        if (moduleIndex > 0) {
-          const previousModule = newModules[moduleIndex - 1];
-          if (previousModule.isCompleted && module.lessons.length > 0) {
-            // Разблокируем первый урок следующего модуля
-            const updatedLessons = module.lessons.map((lesson, lessonIndex) => {
-              if (lessonIndex === 0) {
-                return { ...lesson, isLocked: false };
-              }
-              // Остальные уроки открываются после завершения предыдущего
-              const previousLesson = module.lessons[lessonIndex - 1];
-              return { ...lesson, isLocked: !previousLesson.isCompleted };
-            });
-            return { ...module, lessons: updatedLessons };
-          }
-        }
-        // Для остальных модулей применяем нормальную логику блокировки
-        const updatedLessons = module.lessons.map((lesson, lessonIndex) => {
-          if (lessonIndex === 0) {
-            return { ...lesson, isLocked: false };
-          }
-          const previousLesson = module.lessons[lessonIndex - 1];
-          return { ...lesson, isLocked: !previousLesson.isCompleted };
-        });
-        return { ...module, lessons: updatedLessons };
-      });
-    });
-  };
-
-  // Регистрируем пользователя при первом использовании
-  useEffect(() => {
-    if (userId) {
-      registerUser(userId);
-    }
-  }, [userId]);
+  }, [masterTestKey]);
 
   return {
     modules,
+    accessLoading,
+    openCourses,
+    completedByCourse,
     completeLesson,
     completeModule,
     getProgress,
     resetProgress,
-    isMasterTestCompleted,
+    isMasterTestCompleted: () => masterTestPassed,
     completeMasterTest,
-    isAllModulesCompleted
+    isAllModulesCompleted: () => getProgress() === 100,
   };
 }

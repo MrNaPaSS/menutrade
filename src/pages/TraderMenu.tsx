@@ -8,23 +8,14 @@ import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Target, Activity, BookOpen, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ContinueLearning } from '@/components/trader-menu/ContinueLearning';
+import { CourseTracks } from '@/components/trader-menu/CourseTracks';
+import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { ToolRow } from '@/components/trader-menu/ToolRow';
 
 const TraderMenu = () => {
   const navigate = useNavigate();
-  const { modules } = useProgress();
-
-  // Цифры берём из самого курса, а не вписываем руками: раньше здесь
-  // стояло «48 уроков», а их двадцать шесть
-  const lessons = modules.flatMap(m => m.lessons);
-  const completed = lessons.filter(l => l.isCompleted).length;
-
-  // Куда человек вернётся - первый незакрытый урок
-  const nextIndex = modules.findIndex(m => m.lessons.some(l => !l.isCompleted));
-  const nextLesson = nextIndex >= 0
-    ? modules[nextIndex].lessons.find(l => !l.isCompleted)?.title ?? null
-    : null;
+  const { completedByCourse } = useProgress();
+  const { courses: courseAccess } = useCourseAccess();
 
   useSwipeBack({
     onSwipeBack: () => navigate('/home'),
@@ -72,13 +63,15 @@ const TraderMenu = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, ease: 'easeOut' }}
             >
-              <ContinueLearning
-                completed={completed}
-                total={lessons.length}
-                nextLesson={nextLesson}
-                nextModule={nextIndex >= 0 ? nextIndex + 1 : null}
-                moduleCount={modules.length}
-                onClick={() => navigate('/learning')}
+              <h3 className="text-xs text-muted-foreground mb-2 px-1">
+                Обучение
+              </h3>
+
+              <CourseTracks
+                access={courseAccess}
+                completedByCourse={completedByCourse}
+                onOpen={(course) => navigate('/learning', { state: { courseId: course.id } })}
+                onLocked={() => navigate('/learning')}
               />
 
               <h3 className="text-xs text-muted-foreground mt-6 mb-2 px-1">

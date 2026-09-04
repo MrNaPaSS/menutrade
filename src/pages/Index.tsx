@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { ModuleCard } from '@/components/ModuleCard';
@@ -11,6 +11,10 @@ import { MasterTest } from '@/components/MasterTest';
 import { Quiz } from '@/components/Quiz';
 import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
 import { useProgress } from '@/hooks/useProgress';
+import { useCourseAccess } from '@/hooks/useCourseAccess';
+import { CoursePicker } from '@/components/CoursePicker';
+import { courses, type Course } from '@/data/courses';
+import type { CourseId } from '@/lib/courseAccess';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { Module, Lesson, QuizQuestion } from '@/types/lesson';
@@ -18,7 +22,7 @@ import { ArrowLeft, RotateCcw, Trophy, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { masterTest, masterTestPassingThreshold } from '@/data/masterTest';
 
-type View = 'modules' | 'lessons' | 'content' | 'master-test' | 'module-test';
+type View = 'courses' | 'modules' | 'lessons' | 'content' | 'master-test' | 'module-test';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,10 +33,14 @@ const Index = () => {
   // со всеми карточками уроков и их пружинами.
   const lastScrollY = useRef(0);
   const { scrollY } = useScroll();
-  const { hasFullAccess, isLoading: accessLoading } = useUserAccess();
+  const { hasFullAccess, isLoading: userLoading } = useUserAccess();
+  const { courses: courseAccess, partners } = useCourseAccess();
+  const location = useLocation();
 
   const {
     modules,
+    accessLoading,
+    completedByCourse,
     completeLesson,
     completeModule,
     getProgress,
@@ -41,12 +49,28 @@ const Index = () => {
     completeMasterTest,
     isAllModulesCompleted
   } = useProgress();
-  const [view, setView] = useState<View>('modules');
+  // Начинаем с выбора курса: рынков теперь три, и открыт человеку
+  // тот, чей счёт подтверждён
+  const [view, setView] = useState<View>('courses');
+  const [course, setCourse] = useState<Course | null>(null);
+
+  // Из меню трейдера приходят с конкретным курсом - открываем его
+  // сразу, чтобы «продолжить» действительно продолжало
+  useEffect(() => {
+    const wanted = (location.state as { courseId?: CourseId } | null)?.courseId;
+    if (!wanted || course) return;
+
+    const target = courses.find(c => c.id === wanted);
+    if (target && courseAccess[wanted] === 'open') {
+      setCourse(target);
+      setView('modules');
+    }
+  }, [location.state, course, courseAccess]);
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
   // Проверка доступа
-  if (!accessLoading && !hasFullAccess) {
+  if (!userLoading && !hasFullAccess) {
     return <AccessDeniedScreen feature="обучение" onBack={() => navigate('/home')} />;
   }
 
@@ -101,6 +125,15 @@ const Index = () => {
       handleBackToModules();
     }
   };
+
+  const handleBackToCourses = () => {
+    setCourse(null);
+    setView('courses');
+  };
+
+  const courseModules = course
+    ? modules.filter(m => course.modules.some(cm => cm.id === m.id))
+    : modules;
 
   const handleHomeClick = () => {
     navigate('/home');
@@ -353,6 +386,62 @@ const Index = () => {
     );
   }
 
+  // Выбор курса
+  if (view === 'courses') {
+    return (
+      <div className="min-h-screen scanline pb-16">
+        <MatrixRain />
+        <div className="relative z-10">
+          <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
+            <div className="max-w-lg w-full mx-auto">
+              <div className="relative flex items-center justify-center mb-4 sm:mb-6 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px))]">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleHomeClick}
+                    className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+                  >
+                    <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">На главную</span>
+                  </Button>
+                </div>
+                <div className="flex flex-col items-center">
+                  <h2 className="font-display font-bold text-lg sm:text-xl">Обучение</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Курс открыт по площадке, счёт на которой подтверждён
+                  </p>
+                </div>
+                <div className="absolute right-0 -top-3">
+                  <SimpleMenu />
+                </div>
+              </div>
+
+              {accessLoading ? (
+                <div className="space-y-3">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="h-[104px] rounded-2xl bg-white/[0.03] animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <CoursePicker
+                  access={courseAccess}
+                  partners={partners}
+                  completedByCourse={completedByCourse}
+                  onSelect={(selected) => {
+                    setCourse(selected);
+                    setView('modules');
+                  }}
+                />
+              )}
+            </div>
+          </main>
+        </div>
+        <BottomNav onHomeClick={handleHomeClick} />
+      </div>
+    );
+  }
+
   // Render modules list
   return (
     <div className="min-h-screen scanline pb-16">
@@ -377,15 +466,17 @@ const Index = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleHomeClick}
+                  onClick={handleBackToCourses}
                   className="text-muted-foreground hover:text-foreground text-xs sm:text-sm focus:outline-none focus-visible:outline-none focus-visible:ring-0"
                 >
                   <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">На главную</span>
+                  <span className="hidden sm:inline">Курсы</span>
                 </Button>
               </div>
               <div className="flex flex-col items-center">
-                <h2 className="font-display font-bold text-lg sm:text-xl">Модули обучения</h2>
+                <h2 className="font-display font-bold text-lg sm:text-xl">
+                  {course?.title ?? 'Модули обучения'}
+                </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   Проходи уроки и открывай новые
                 </p>
@@ -396,7 +487,7 @@ const Index = () => {
             </motion.div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-              {modules.map((module, index) => (
+              {courseModules.map((module, index) => (
                 <ModuleCard
                   key={module.id}
                   module={module}
