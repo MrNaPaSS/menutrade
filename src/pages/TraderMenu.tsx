@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
@@ -9,7 +8,6 @@ import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { LearningDrawer } from '@/components/trader-menu/LearningDrawer';
 import { courses } from '@/data/courses';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { ToolRow } from '@/components/trader-menu/ToolRow';
@@ -17,8 +15,7 @@ import { ToolRow } from '@/components/trader-menu/ToolRow';
 const TraderMenu = () => {
   const navigate = useNavigate();
   const { completedByCourse } = useProgress();
-  const { courses: courseAccess, partners } = useCourseAccess();
-  const [learningOpen, setLearningOpen] = useState(false);
+  const { courses: courseAccess } = useCourseAccess();
 
   // Сводка для кнопки: сколько направлений открыто и общий прогресс
   const STRATEGY_MODULES = new Set(['module-3', 'module-4', 'module-5']);
@@ -84,7 +81,7 @@ const TraderMenu = () => {
               {/* Обучение отдельной кнопкой: три направления с прогрессом
                   открываются шторкой, а не занимают треть меню */}
               <button
-                onClick={() => setLearningOpen(true)}
+                onClick={() => navigate('/learning')}
                 className="group w-full text-left rounded-2xl p-4 mb-6
                            bg-primary/[0.07] border border-primary/25
                            transition-colors duration-200 hover:bg-primary/[0.11]
@@ -166,14 +163,6 @@ const TraderMenu = () => {
           </div>
         </main>
       </div>
-      <LearningDrawer
-        open={learningOpen}
-        onOpenChange={setLearningOpen}
-        access={courseAccess}
-        partners={partners}
-        completedByCourse={completedByCourse}
-        onSelect={(course) => navigate('/learning', { state: { courseId: course.id } })}
-      />
       <BottomNav onHomeClick={handleHomeClick} />
     </div>
   );
