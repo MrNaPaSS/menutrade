@@ -46,7 +46,15 @@ export function Header() {
   const initial = user?.first_name?.[0]?.toUpperCase() ?? 'Т';
 
   return (
-    <header className="max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.75rem))]">
+    <header
+      className="max-w-lg mx-auto px-4"
+      /* Полосу кнопок Telegram обходим наполовину: графити заходит в её
+         пустую середину, между «Закрыть» и «...», и шапка поднимается */
+      style={{
+        paddingTop:
+          'calc(env(safe-area-inset-top, 0px) + var(--tg-content-top, 0.75rem) / 2)',
+      }}
+    >
       <motion.img
         src={`${basePath()}nmnh_logo.png`}
         alt="NO MONEY - NO HONEY"

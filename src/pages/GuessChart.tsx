@@ -143,23 +143,40 @@ const GuessChart = () => {
   return (
     <div className="min-h-[100dvh] bg-background relative">
       <MatrixRain />
-      <div className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-6 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.75rem))]">
-        {/* Шапка */}
-        <div className="flex items-center justify-between pb-1">
-          <Button variant="ghost" size="sm" className="text-xs sm:text-sm -ml-2" onClick={() => navigate('/home')}>
-            <ArrowLeft className="mr-1 h-4 w-4" /> На главную
-          </Button>
+      <div
+        className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-6"
+        style={{
+          paddingTop:
+            'calc(env(safe-area-inset-top, 0px) + var(--tg-content-top, 0.75rem) / 2)',
+        }}
+      >
+        {/* Шапка: стрелка и таймер стоят в одной строке с названием,
+            чтобы график начинался выше */}
+        <div className="relative flex items-center justify-center min-h-9">
+          <button
+            onClick={() => navigate('/home')}
+            aria-label="На главную"
+            className="absolute left-0 w-9 h-9 flex items-center justify-center rounded-lg
+                       text-muted-foreground hover:text-foreground hover:bg-white/5
+                       transition-colors active:scale-95"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+
+          <h1 className="font-display font-bold text-lg sm:text-xl text-foreground neon-text-subtle">
+            Куда пойдёт график
+          </h1>
+
           {isPlaying && (
-            <div className={`flex items-center gap-1.5 font-mono text-lg sm:text-xl ${timeLeft <= 3 ? 'text-red-400' : 'text-primary'}`}>
+            <div className={`absolute right-0 flex items-center gap-1.5 font-mono text-lg sm:text-xl ${timeLeft <= 3 ? 'text-red-400' : 'text-primary'}`}>
               <Clock className={`h-5 w-5 ${timeLeft <= 3 ? 'animate-pulse' : ''}`} />
               <span>00:{timeLeft.toString().padStart(2, '0')}</span>
             </div>
           )}
         </div>
 
-        <div className="text-center pb-2 sm:pb-3">
-          <h1 className="font-display font-bold text-xl sm:text-2xl text-foreground neon-text-subtle">Куда пойдёт график</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Тренируй насмотренность: определи направление цены</p>
+        <div className="text-center pb-2">
+          <p className="text-muted-foreground text-xs sm:text-sm">Тренируй насмотренность: определи направление цены</p>
           {!hasFullAccess && (
             <p className="text-[11px] text-muted-foreground/80 mt-1 font-mono">
               Осталось графиков сегодня: <span className="text-primary">{attempts.left}</span> из {FREE_ROUNDS_PER_DAY}

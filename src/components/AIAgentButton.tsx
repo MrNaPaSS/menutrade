@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { Brain } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 
@@ -11,8 +12,14 @@ import { useChatHistory } from '@/hooks/useChatHistory';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
+// Экраны, где плавающая кнопка мешает: на тренажёре она висит прямо
+// над графиком и разбором. Агент никуда не девается - он открывается
+// из меню трейдера
+const HIDDEN_ON = ['/guess-chart'];
+
 export function AIAgentButton() {
   const reducedMotion = useReducedMotion();
+  const { pathname } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { history } = useChatHistory();
@@ -41,6 +48,10 @@ export function AIAgentButton() {
     setUnreadCount(0);
   };
 
+  // Скрываем только кнопку: если чат уже открыт, закрывать его на
+  // переходе между экранами нельзя
+  const hidden = HIDDEN_ON.includes(pathname) && !isOpen;
+
   return (
     <>
       <motion.button
@@ -64,9 +75,9 @@ export function AIAgentButton() {
         )}
         initial={{ scale: 0, opacity: 0 }}
         animate={{
-          scale: isOpen ? 0.9 : 1,
-          opacity: isOpen ? 0 : 1,
-          pointerEvents: isOpen ? 'none' : 'auto'
+          scale: isOpen || hidden ? 0.9 : 1,
+          opacity: isOpen || hidden ? 0 : 1,
+          pointerEvents: isOpen || hidden ? 'none' : 'auto'
         }}
         transition={{ type: 'spring', duration: 0.5, bounce: 0.2 }}
         whileTap={{ scale: 0.95 }}
