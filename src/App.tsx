@@ -15,12 +15,6 @@ import Settings from "./pages/Settings";
 import Library from "./pages/Library";
 import NotFound from "./pages/NotFound";
 import TraderMenu from "./pages/TraderMenu";
-import PromoCodes from "./pages/PromoCodes";
-import FAQ from "./pages/FAQ";
-import Level1 from "./pages/Level1";
-import Level2 from "./pages/Level2";
-import Level3 from "./pages/Level3";
-import Level4 from "./pages/Level4";
 import UserProfile from "./pages/UserProfile";
 import { AIAgentButton } from "./components/AIAgentButton";
 import { AppInitializer } from "./components/AppInitializer";
@@ -54,12 +48,6 @@ const AppContent = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/trader-menu" element={<TraderMenu />} />
-        <Route path="/promo-codes" element={<PromoCodes />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/level/1" element={<Level1 />} />
-        <Route path="/level/2" element={<Level2 />} />
-        <Route path="/level/3" element={<Level3 />} />
-        <Route path="/level/4" element={<Level4 />} />
         <Route path="/guess-chart" element={<GuessChart />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
