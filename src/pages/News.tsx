@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Newspaper, Calendar, TrendingUp, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -122,7 +121,6 @@ const News = () => {
 
     const handleHomeClick = () => navigate('/home');
 
-    useSwipeBack({ onSwipeBack: handleHomeClick, enabled: true });
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });

@@ -7,7 +7,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
 import { useNavigate } from 'react-router-dom';
 import { useUserAccess } from '@/contexts/UserAccessContext';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { useBackAction } from '@/contexts/BackNavigationContext';
 import { ToolRow } from '@/components/trader-menu/ToolRow';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { strategyModules } from '@/data/strategies';
@@ -417,11 +417,8 @@ const Strategies = () => {
     navigate('/');
   };
 
-  // Хук для свайпа назад - должен быть на верхнем уровне
-  useSwipeBack({
-    onSwipeBack: handleBackToModules,
-    enabled: view === 'content' && selectedModule !== null
-  });
+  // Из разбора стратегии возвращаемся к списку блоков, а не из раздела
+  useBackAction(handleBackToModules, view === 'content' && selectedModule !== null);
 
   // Загружаем контент только когда карточка попадает в область видимости
   useEffect(() => {

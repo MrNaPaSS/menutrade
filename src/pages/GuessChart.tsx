@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowUpCircle, ArrowDownCircle, Clock, ArrowLeft, RefreshCw, Trophy, Play, XCircle, TimerOff } from 'lucide-react';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { toast } from '@/components/ui/sonner';
 import { TradingChart } from '@/components/TradingChart';
 import { generatePattern, type GeneratedPattern, type ChartPoint } from '@/data/patternGenerator';
@@ -27,7 +26,6 @@ type Result = 'CORRECT' | 'WRONG' | 'TIMEOUT';
 const GuessChart = () => {
   const navigate = useNavigate();
 
-  useSwipeBack({ onSwipeBack: () => navigate('/home'), enabled: true });
 
   const { hasFullAccess } = useUserAccess();
   const { userId } = useTelegram();

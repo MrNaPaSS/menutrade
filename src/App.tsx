@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Home from "./pages/Home";
 import { RouteFallback } from "./components/RouteFallback";
@@ -16,6 +16,8 @@ import { TelegramDebug } from "./components/TelegramDebug";
 import { DebugLogin } from "./components/DebugLogin";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { usePrefetchRoutes } from "./hooks/usePrefetchRoutes";
+import { BackNavigationProvider } from "./contexts/BackNavigationContext";
+import { SwipeBackGesture } from "./components/SwipeBackGesture";
 
 // Экраны грузятся по требованию. Раньше приложение одним куском
 // тянуло все страницы разом - вместе с данными курса, стратегиями и
@@ -36,17 +38,26 @@ const UserProfile = lazy(() => import("./pages/UserProfile"));
 
 const queryClient = new QueryClient();
 
-const AppContent = () => {
-  // Убираем trailing slash из basename для правильной работы роутинга
-  const basename = import.meta.env.BASE_URL?.replace(/\/$/, '') || '';
+/**
+ * Что значит «назад» по умолчанию.
+ *
+ * Шаг по истории, а с главной уходить некуда - там жест ничего не
+ * делает, чтобы человек не вываливался из приложения случайным
+ * движением у края.
+ */
+const RoutedContent = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Пока человек на главной, в свободное время докачиваем остальные
-  // экраны: тогда нажатие в нижней панели открывает их сразу
-  usePrefetchRoutes();
+  const goBack = () => {
+    if (location.pathname === '/home' || location.pathname === '/') return;
+    navigate(-1);
+  };
 
   return (
-    <BrowserRouter basename={basename}>
+    <BackNavigationProvider fallback={goBack}>
       <ScrollToTop />
+      <SwipeBackGesture />
       <Suspense fallback={<RouteFallback />}>
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
@@ -69,6 +80,21 @@ const AppContent = () => {
       <AIAgentButton />
       <OnboardingTutorial />
       <CoinToast />
+    </BackNavigationProvider>
+  );
+};
+
+const AppContent = () => {
+  // Убираем trailing slash из basename для правильной работы роутинга
+  const basename = import.meta.env.BASE_URL?.replace(/\/$/, '') || '';
+
+  // Пока человек на главной, в свободное время докачиваем остальные
+  // экраны: тогда нажатие в нижней панели открывает их сразу
+  usePrefetchRoutes();
+
+  return (
+    <BrowserRouter basename={basename}>
+      <RoutedContent />
     </BrowserRouter>
   );
 };

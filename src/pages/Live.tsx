@@ -5,7 +5,6 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { BottomNav } from '@/components/BottomNav';
 import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
 import { useUserAccess } from '@/contexts/UserAccessContext';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Radio, CandlestickChart, MessagesSquare, Users, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -49,7 +48,6 @@ const Live = () => {
 
   const handleBack = () => navigate('/home');
 
-  useSwipeBack({ onSwipeBack: handleBack, enabled: true });
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });

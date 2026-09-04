@@ -8,7 +8,6 @@ import { useProgress } from '@/hooks/useProgress';
 import { useTelegramContext } from '@/contexts/TelegramContext';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { AdminStatsView } from '@/components/AdminStatsView';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Settings as SettingsIcon, RotateCcw, Globe, Bell, Info, Trash2, AlertTriangle, Shield, BarChart3, Users, FileDown, History, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -34,10 +33,6 @@ const Settings = () => {
   };
 
   // Хук для свайпа назад
-  useSwipeBack({
-    onSwipeBack: handleHomeClick,
-    enabled: true
-  });
 
   const handleResetProgress = () => {
     resetProgress();

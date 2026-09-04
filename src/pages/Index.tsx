@@ -14,7 +14,7 @@ import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { CoursePicker } from '@/components/CoursePicker';
 import { courses, type Course } from '@/data/courses';
 import type { CourseId } from '@/lib/courseAccess';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { useBackAction } from '@/contexts/BackNavigationContext';
 import { Module, Lesson, QuizQuestion } from '@/types/lesson';
 import { ArrowLeft, RotateCcw, Trophy, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -148,17 +148,17 @@ const Index = () => {
 
   const progress = getProgress();
 
-  // Хуки для свайпа назад - должны быть на верхнем уровне
-  // Всегда вызываем хуки в одном порядке, но управляем через enabled
-  const swipeBackFromContent = useSwipeBack({
-    onSwipeBack: handleBackToLessons,
-    enabled: view === 'content' && selectedLesson !== null && selectedModule !== null
-  });
-
-  const swipeBackFromLessons = useSwipeBack({
-    onSwipeBack: handleBackToModules,
-    enabled: (view === 'lessons' || view === 'module-test') && selectedModule !== null
-  });
+  // Что значит «назад» на каждом виде. Жест один на всё приложение,
+  // здесь только сказано, куда он ведёт отсюда
+  useBackAction(handleBackToCourses, view === 'modules');
+  useBackAction(
+    handleBackToModules,
+    (view === 'lessons' || view === 'module-test') && selectedModule !== null
+  );
+  useBackAction(
+    handleBackToLessons,
+    view === 'content' && selectedLesson !== null && selectedModule !== null
+  );
 
   // Скроллим вверх при изменении view
   useEffect(() => {

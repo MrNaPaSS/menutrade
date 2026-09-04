@@ -8,7 +8,7 @@ import { Quiz } from "./Quiz";
 import { SimpleMenu } from "@/components/SimpleMenu";
 import { GestureHint } from "@/components/GestureHint";
 import { Button } from "@/components/ui/button";
-import { useSwipeBack } from "@/hooks/useSwipeBack";
+import { useBackAction } from '@/contexts/BackNavigationContext';
 import type { Lesson } from "@/types/lesson";
 import {
   CandlestickChart,
@@ -743,11 +743,8 @@ export function LessonContent({ lesson, onBack, onComplete,
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-  // Хук для свайпа назад
-  useSwipeBack({
-    onSwipeBack: onBack,
-    enabled: true
-  });
+  // Пока открыт урок, «назад» ведёт к списку уроков
+  useBackAction(onBack);
 
   // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: Ленивая загрузка компонентов графиков
   const [isContentLoaded, setIsContentLoaded] = useState(false);

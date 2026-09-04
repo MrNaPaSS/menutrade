@@ -43,31 +43,36 @@ export const COIN_REWARDS: Record<CoinReason, number> = {
 export const COIN_EVENT = 'nmnh-coins-granted';
 
 /**
- * Сообщает о событии. Ничего не возвращает и не бросает: начисление monet
- * не должно мешать учёбе. Повторы безопасны - платформа отсекает их по ref.
+ * Сообщает о событии и не бросает: начисление монет не должно мешать
+ * учёбе. Повторы безопасны - платформа отсекает их по ref.
+ *
+ * Возвращает true, только если бот событие принял. Там, где от этого
+ * зависит видимое действие человека - забрать ежедневный подарок, -
+ * ответ обязательно нужно дождаться: иначе кнопка погаснет, а монет не
+ * будет, и повторить он уже не сможет.
  */
-export function sendCoinEvent(ref: string, reason: CoinReason): void {
+export async function sendCoinEvent(ref: string, reason: CoinReason): Promise<boolean> {
     const data = initData();
-    if (!data) return; // вне Telegram начислять некому
+    if (!data) return false; // вне Telegram начислять некому
 
-    fetch(`${botApiBase()}/coin-event`, {
-        method: 'POST',
-        headers: BOT_API_HEADERS,
-        body: JSON.stringify({ initData: data, ref, reason }),
-    })
-        .then(res => res.json())
-        .then(json => {
-            // Показываем начисление только когда бот его принял: иначе
-            // человек увидит монеты, которых нет
-            if (json?.success) {
-                window.dispatchEvent(new CustomEvent(COIN_EVENT, {
-                    detail: { amount: COIN_REWARDS[reason], reason },
-                }));
-            }
-        })
-        .catch(() => {
-            /* Связи нет - бот доначислит из очереди при следующем событии */
+    try {
+        const res = await fetch(`${botApiBase()}/coin-event`, {
+            method: 'POST',
+            headers: BOT_API_HEADERS,
+            body: JSON.stringify({ initData: data, ref, reason }),
         });
+        const json = await res.json();
+        if (!json?.success) return false;
+
+        // Подсказку показываем только когда бот принял событие: иначе
+        // человек увидит монеты, которых нет
+        window.dispatchEvent(new CustomEvent(COIN_EVENT, {
+            detail: { amount: COIN_REWARDS[reason], reason },
+        }));
+        return true;
+    } catch {
+        return false; // связи нет
+    }
 }
 
 /** Баланс монет. null - платформа недоступна или мы вне Telegram. */

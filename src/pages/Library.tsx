@@ -5,7 +5,6 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, BookOpen, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -88,10 +87,6 @@ const Library = () => {
   };
 
   // Хук для свайпа назад
-  useSwipeBack({ 
-    onSwipeBack: handleHomeClick,
-    enabled: true
-  });
 
   const handleReadOnline = (bookTitle: string, author: string) => {
     const searchQuery = encodeURIComponent(`${bookTitle} ${author}`);

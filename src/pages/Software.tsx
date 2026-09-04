@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SoftwareDrawer } from '@/components/SoftwareDrawer';
@@ -20,10 +19,6 @@ const Software = () => {
   };
 
   // Хук для свайпа назад
-  useSwipeBack({ 
-    onSwipeBack: handleHomeClick,
-    enabled: true
-  });
 
 
   return (

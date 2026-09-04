@@ -22,15 +22,25 @@ const WEEK_DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 export function DailyCalendar() {
     const { claimedDays, takenToday, markClaimed } = useDailyClaim();
     const [sending, setSending] = useState(false);
+    const [failed, setFailed] = useState(false);
 
     const today = todayKey();
 
-    const claim = useCallback(() => {
+    const claim = useCallback(async () => {
         if (takenToday || sending) return;
         setSending(true);
-        sendCoinEvent(`daily_${today}`, 'daily_checkin');
-        markClaimed();
-        setTimeout(() => setSending(false), 600);
+        setFailed(false);
+
+        // Отмечаем забранным только после ответа бота. Раньше отметка
+        // ставилась сразу: если начисление не проходило, кнопка гасла,
+        // монет не было, и повторить человек уже не мог
+        const accepted = await sendCoinEvent(`daily_${today}`, 'daily_checkin');
+        if (accepted) {
+            markClaimed();
+        } else {
+            setFailed(true);
+        }
+        setSending(false);
     }, [takenToday, sending, today, markClaimed]);
 
     const start = weekStart();
@@ -78,7 +88,7 @@ export function DailyCalendar() {
 
             <motion.button
                 onClick={claim}
-                disabled={takenToday}
+                disabled={takenToday || sending}
                 whileTap={takenToday ? undefined : { scale: 0.98 }}
                 className={cn(
                     'w-full rounded-xl py-3 font-medium flex items-center justify-center gap-2',
@@ -93,6 +103,8 @@ export function DailyCalendar() {
                         <Check className="w-4 h-4" />
                         Сегодня забрано
                     </>
+                ) : sending ? (
+                    'Забираем...'
                 ) : (
                     <>
                         <Coins className="w-4 h-4" />
@@ -100,6 +112,14 @@ export function DailyCalendar() {
                     </>
                 )}
             </motion.button>
+
+            {/* Отказ не прячем: человек должен знать, что монеты не
+                пришли, и что кнопка осталась рабочей */}
+            {failed && (
+                <p className="text-xs text-amber-400/90 mt-2 text-center">
+                    Не получилось забрать. Попробуйте ещё раз через минуту
+                </p>
+            )}
         </div>
     );
 }

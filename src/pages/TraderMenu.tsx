@@ -4,7 +4,6 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -32,10 +31,6 @@ const TraderMenu = () => {
   );
   const overallPercent = totals.total > 0 ? Math.round((totals.done / totals.total) * 100) : 0;
 
-  useSwipeBack({
-    onSwipeBack: () => navigate('/home'),
-    enabled: true
-  });
 
   const handleHomeClick = () => {
     navigate('/home');
