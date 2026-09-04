@@ -13,6 +13,9 @@ import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { CoursesModal } from '@/components/trader-menu/CoursesModal';
 import { StrategiesModal } from '@/components/trader-menu/StrategiesModal';
+import { SoftwareListModal } from '@/components/trader-menu/SoftwareListModal';
+import { SoftwareModal } from '@/components/SoftwareModal';
+import type { SoftwareItem } from '@/data/software';
 import { courses } from '@/data/courses';
 import { strategyModules } from '@/data/strategies';
 import { libraryCategories } from '@/data/library';
@@ -50,6 +53,10 @@ const TraderMenu = () => {
 
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [strategiesOpen, setStrategiesOpen] = useState(false);
+  const [softwareOpen, setSoftwareOpen] = useState(false);
+  // Карточка продукта поверх списка: закрыв её, человек
+  // возвращается к списку, а не на экран целиком
+  const [softwareItem, setSoftwareItem] = useState<SoftwareItem | null>(null);
 
   const handleHomeClick = () => navigate('/home');
 
@@ -184,12 +191,19 @@ const TraderMenu = () => {
                 title="Наш софт"
                 caption="Индикатор, расширение, платформа"
                 value={String(softwareItems.length)}
-                onClick={() => navigate('/software')}
+                onClick={() => setSoftwareOpen(true)}
               />
             </div>
           </div>
         </main>
       </div>
+
+      <SoftwareListModal
+        open={softwareOpen && !softwareItem}
+        onClose={() => setSoftwareOpen(false)}
+        onSelect={setSoftwareItem}
+      />
+      <SoftwareModal item={softwareItem} onClose={() => setSoftwareItem(null)} />
 
       <StrategiesModal
         open={strategiesOpen}

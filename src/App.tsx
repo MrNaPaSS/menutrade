@@ -29,7 +29,6 @@ const Index = lazy(() => import("./pages/Index"));
 const Strategies = lazy(() => import("./pages/Strategies"));
 const Referral = lazy(() => import("./pages/Referral"));
 const News = lazy(() => import("./pages/News"));
-const Software = lazy(() => import("./pages/Software"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Library = lazy(() => import("./pages/Library"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -67,7 +66,6 @@ const RoutedContent = () => {
         <Route path="/strategies" element={<Strategies />} />
         <Route path="/referral" element={<Referral />} />
         <Route path="/news" element={<News />} />
-        <Route path="/software" element={<Software />} />
         <Route path="/library" element={<Library />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<UserProfile />} />
