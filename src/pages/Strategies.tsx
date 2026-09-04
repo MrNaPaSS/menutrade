@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, ReactNode } from 'react';
-import { motion, useScroll, useMotionValueEvent, Variants } from 'framer-motion';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { GestureHint } from '@/components/GestureHint';
@@ -8,7 +8,7 @@ import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
 import { useNavigate } from 'react-router-dom';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
-import { ModuleCard } from '@/components/ModuleCard';
+import { ToolRow } from '@/components/trader-menu/ToolRow';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { strategyModules } from '@/data/strategies';
 import { Module } from '@/types/lesson';
@@ -349,30 +349,10 @@ const MarkdownComponents: any = {
   ),
 };
 
-const moduleListVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const moduleItemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 15
-    }
-  }
-};
-
 type View = 'modules' | 'content';
+
+// Считаем по факту: блоки и разборы меняются, вписанное число устареет
+const totalStrategyLessons = strategyModules.reduce((sum, m) => sum + m.lessons.length, 0);
 
 const Strategies = () => {
   const navigate = useNavigate();
@@ -384,7 +364,9 @@ const Strategies = () => {
   const [showScrollHint, setShowScrollHint] = useState(false);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  // В состоянии положение прокрутки перерисовывало весь раздел на
+  // каждом кадре движения пальца - в разметке оно не участвует
+  const lastScrollY = useRef(0);
   const [loadedCardIndex, setLoadedCardIndex] = useState<Set<number>>(new Set([0]));
   const { scrollY } = useScroll();
 
@@ -395,18 +377,11 @@ const Strategies = () => {
 
   // Логика скрытия заголовка при прокрутке
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const currentScrollY = latest;
+    const previous = lastScrollY.current;
+    lastScrollY.current = latest;
 
-    // Показываем при прокрутке вверх или если прокрутка меньше 50px
-    if (currentScrollY < lastScrollY || currentScrollY < 50) {
-      setIsHeaderVisible(true);
-    }
-    // Скрываем при прокрутке вниз больше 50px
-    else if (currentScrollY > lastScrollY && currentScrollY > 50) {
-      setIsHeaderVisible(false);
-    }
-
-    setLastScrollY(currentScrollY);
+    const shouldShow = latest < previous || latest < 50;
+    setIsHeaderVisible(visible => (visible === shouldShow ? visible : shouldShow));
   });
 
   // Скроллим вверх при изменении view
@@ -720,25 +695,31 @@ const Strategies = () => {
         <main className="p-4 sm:p-6 md:p-8 pb-16 flex justify-center">
           <div className="max-w-4xl w-full mx-auto">
 
-            {/* Modules with Staggered Animation */}
+            {/* Стратегии - справочник, а не курс: прогресса по ним нет,
+                поэтому вместо карточек с прогрессом список с составом.
+                Одно появление на весь список, а не по очереди */}
             <motion.div
-              className="grid grid-cols-1 lg:grid-cols-2 gap-4"
-              variants={moduleListVariants}
-              initial="hidden"
-              animate="visible"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, ease: 'easeOut' }}
             >
-              {strategyModules.map((module, index) => (
-                <ModuleCard
-                  key={module.id}
-                  module={module}
-                  index={index}
-                  onClick={() => handleModuleClick(module)}
-                  badge="Strategy"
-                  showProgress={false}
-                  showArrow={true}
-                  variants={moduleItemVariants}
-                />
-              ))}
+              <p className="text-xs text-muted-foreground mb-3 px-1">
+                {totalStrategyLessons} разборов в {strategyModules.length} блоках. Читать можно
+                в любом порядке - это справочник, а не последовательный курс
+              </p>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden
+                              divide-y divide-white/[0.06]">
+                {strategyModules.map((module) => (
+                  <ToolRow
+                    key={module.id}
+                    emoji={module.icon}
+                    title={module.title}
+                    meta={`${module.lessons.length} ${module.lessons.length === 1 ? 'разбор' : 'разборов'} · ${module.description}`}
+                    onClick={() => handleModuleClick(module)}
+                  />
+                ))}
+              </div>
             </motion.div>
           </div>
         </main>

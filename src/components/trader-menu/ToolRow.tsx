@@ -6,7 +6,10 @@ interface ToolRowProps {
     title: string;
     /** Что внутри, цифрами: «51 книга в 8 разделах» */
     meta: string;
-    icon: LucideIcon;
+    /** Значок из набора - для инструментов */
+    icon?: LucideIcon;
+    /** Или эмодзи - у модулей курса он свой */
+    emoji?: string;
     onClick: () => void;
 }
 
@@ -18,7 +21,7 @@ interface ToolRowProps {
  * пять пунктов. Теперь строка сама и есть кнопка, а разделы собраны в
  * один список: меньше рамок, меньше размытий, всё помещается разом.
  */
-export const ToolRow = memo(function ToolRow({ title, meta, icon: Icon, onClick }: ToolRowProps) {
+export const ToolRow = memo(function ToolRow({ title, meta, icon: Icon, emoji, onClick }: ToolRowProps) {
     return (
         <button
             onClick={onClick}
@@ -31,7 +34,7 @@ export const ToolRow = memo(function ToolRow({ title, meta, icon: Icon, onClick 
                              transition-colors duration-200
                              group-hover:border-primary/30 group-hover:text-primary
                              text-muted-foreground">
-                <Icon className="w-[18px] h-[18px]" />
+                {Icon ? <Icon className="w-[18px] h-[18px]" /> : <span className="text-base">{emoji}</span>}
             </span>
 
             <span className="flex-1 min-w-0">
