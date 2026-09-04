@@ -25,6 +25,7 @@ import UserProfile from "./pages/UserProfile";
 import { AIAgentButton } from "./components/AIAgentButton";
 import { AppInitializer } from "./components/AppInitializer";
 import { OnboardingTutorial } from "./components/OnboardingTutorial";
+import { CoinToast } from "./components/CoinToast";
 import { TelegramProvider } from "./contexts/TelegramContext";
 import { UserAccessProvider } from "./contexts/UserAccessContext";
 import { TelegramDebug } from "./components/TelegramDebug";
@@ -65,6 +66,7 @@ const AppContent = () => {
       </Routes>
       <AIAgentButton />
       <OnboardingTutorial />
+      <CoinToast />
     </BrowserRouter>
   );
 };

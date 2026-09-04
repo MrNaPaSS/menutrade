@@ -78,6 +78,19 @@ const Index = () => {
     setView('module-test');
   };
 
+  // Тест предлагаем в конце последнего урока модуля - когда человек уже
+  // дочитал материал. Модуль, который закрыт, повторно проходить незачем.
+  const currentModuleQuestions = selectedModule
+    ? selectedModule.lessons.flatMap(lesson => lesson.quiz || [])
+    : [];
+  const isLastLessonOfModule = !!(selectedModule && selectedLesson
+    && selectedModule.lessons[selectedModule.lessons.length - 1]?.id === selectedLesson.id);
+  const offerModuleTest = !!(
+    isLastLessonOfModule
+    && currentModuleQuestions.length > 0
+    && !selectedModule?.isCompleted
+  );
+
   const handleModuleTestComplete = () => {
     if (selectedModule) {
       completeModule(selectedModule.id);
@@ -182,6 +195,8 @@ const Index = () => {
             lesson={currentLesson}
             onBack={handleBackToLessons}
             onComplete={handleLessonComplete}
+            offerModuleTest={offerModuleTest}
+            onModuleTest={handleModuleTestClick}
           />
         </div>
         <BottomNav onHomeClick={handleHomeClick} />
@@ -322,18 +337,14 @@ const Index = () => {
                 ))}
               </div>
 
-              {moduleQuestions.length > 0 && (
-                <button
-                  onClick={handleModuleTestClick}
-                  disabled={!allLessonsCompleted || currentModule.isCompleted}
-                  className={`w-full glass-card rounded-xl p-3 neon-border transition-all duration-300 flex items-center justify-center gap-2.5 font-display font-semibold text-sm sm:text-base ${allLessonsCompleted && !currentModule.isCompleted
-                    ? 'hover:bg-primary/10 cursor-pointer'
-                    : 'opacity-50 cursor-not-allowed'
-                    }`}
-                >
-                  <Brain className={`w-5 h-5 flex-shrink-0 ${allLessonsCompleted && !currentModule.isCompleted ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <span>{currentModule.isCompleted ? 'Модуль пройден!' : allLessonsCompleted ? 'Пройти тест по модулю' : 'Пройти тест по модулю (пройдите все уроки)'}</span>
-                </button>
+              {/* Тест предлагается в конце последнего урока. Внизу списка
+                  оставляем только отметку, что модуль уже закрыт */}
+              {moduleQuestions.length > 0 && currentModule.isCompleted && (
+                <div className="w-full glass-card rounded-xl p-3 neon-border flex items-center
+                                justify-center gap-2.5 font-display font-semibold text-sm sm:text-base">
+                  <Brain className="w-5 h-5 flex-shrink-0 text-primary" />
+                  <span>Модуль пройден!</span>
+                </div>
               )}
             </div>
           </main>

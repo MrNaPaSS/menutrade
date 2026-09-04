@@ -229,6 +229,9 @@ interface LessonContentProps {
   lesson: Lesson;
   onBack: () => void;
   onComplete?: () => void;
+  /** Показать предложение пройти тест по модулю в конце последнего урока */
+  offerModuleTest?: boolean;
+  onModuleTest?: () => void;
 }
 
 // Функция для преобразования строк с эмодзи в список
@@ -731,7 +734,8 @@ function parseContentToCards(content: string): string[] {
   return cards;
 }
 
-export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps) {
+export function LessonContent({ lesson, onBack, onComplete,
+                               offerModuleTest, onModuleTest }: LessonContentProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [api, setApi] = useState<CarouselApi>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -1427,6 +1431,20 @@ export function LessonContent({ lesson, onBack, onComplete }: LessonContentProps
               >
                 <Brain className="w-6 h-6 text-primary" />
                 <span>Пройти квиз</span>
+              </button>
+            )}
+
+            {/* Последний урок модуля пройден - предлагаем тест здесь, а не
+                кнопкой внизу списка: человек уже дочитал и готов проверить себя */}
+            {isLastCard && offerModuleTest && (
+              <button
+                onClick={onModuleTest}
+                className="mt-4 w-full glass-card rounded-xl p-4 neon-border neon-border-intense
+                           hover:bg-primary/10 transition-all duration-300 flex items-center
+                           justify-center gap-2 font-display font-semibold text-base min-h-[44px]"
+              >
+                <Brain className="w-6 h-6 text-primary" />
+                <span>Пройти тест по модулю</span>
               </button>
             )}
           </div>

@@ -22,6 +22,22 @@ interface BalanceInfo {
     shopUrl: string;
 }
 
+/**
+ * Сколько монет даёт событие. Тарифы держит платформа, здесь копия -
+ * чтобы показать «+5» до того, как придёт ответ сервера. Если тарифы
+ * на платформе поменяют, поправить и тут.
+ */
+export const COIN_REWARDS: Record<CoinReason, number> = {
+    lesson_watched: 5,
+    academy_joined: 10,
+    module_completed: 15,
+    test_passed: 25,
+    course_completed: 100,
+};
+
+/** Событие для всплывающей подсказки о начислении. */
+export const COIN_EVENT = 'nmnh-coins-granted';
+
 function botApiBase(): string {
     return import.meta.env.DEV
         ? '/bot-api'
@@ -48,9 +64,20 @@ export function sendCoinEvent(ref: string, reason: CoinReason): void {
             'ngrok-skip-browser-warning': 'true',
         },
         body: JSON.stringify({ initData: data, ref, reason }),
-    }).catch(() => {
-        /* Связи нет - бот доначислит из очереди при следующем событии */
-    });
+    })
+        .then(res => res.json())
+        .then(json => {
+            // Показываем начисление только когда бот его принял: иначе
+            // человек увидит монеты, которых нет
+            if (json?.success) {
+                window.dispatchEvent(new CustomEvent(COIN_EVENT, {
+                    detail: { amount: COIN_REWARDS[reason], reason },
+                }));
+            }
+        })
+        .catch(() => {
+            /* Связи нет - бот доначислит из очереди при следующем событии */
+        });
 }
 
 /** Баланс монет. null - платформа недоступна или мы вне Telegram. */

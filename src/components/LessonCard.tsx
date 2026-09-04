@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
+import { COIN_REWARDS } from '@/lib/coins';
 import { Lesson } from '@/types/lesson';
-import { Lock, CheckCircle, PlayCircle, Clock, ChevronRight } from 'lucide-react';
+import { Lock, CheckCircle, PlayCircle, Clock, ChevronRight, Coins } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LessonCardProps {
@@ -82,6 +83,17 @@ export function LessonCard({ lesson, onClick, index }: LessonCardProps) {
             <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             <span className="font-semibold">{lesson.duration}</span>
           </div>
+
+          {/* Награда за урок. Пройденным не показываем: монеты уже получены */}
+          {!lesson.isLocked && !lesson.isCompleted && (
+            <div className="flex items-center gap-1 text-[10px] sm:text-xs px-2 py-1 rounded-lg
+                            flex-shrink-0 text-primary bg-primary/10 border border-primary/20">
+              <Coins className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span className="font-semibold tabular-nums">
+                +{COIN_REWARDS.lesson_watched}
+              </span>
+            </div>
+          )}
 
           {!lesson.isLocked && (
             <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors group-hover:translate-x-1 duration-300" />
