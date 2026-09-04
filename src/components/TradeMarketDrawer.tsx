@@ -38,7 +38,7 @@ const BROKERS: Record<Market, Broker[]> = {
       name: 'FxPro',
       tagline: 'Классический форекс: MT4, MT5, cTrader',
       minDeposit: 'от $101',
-      url: 'https://direct.fxpro.partners/click?pid=8057&offer_id=149',
+      url: platformLinks.fxPro,
       pitch: [
         'Валюты, металлы, индексы и акции',
         'Терминалы MT4, MT5 и cTrader',

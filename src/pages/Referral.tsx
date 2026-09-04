@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { fetchCoinBalance } from '@/lib/coins';
 import { DailyCalendar } from '@/components/DailyCalendar';
+import { PartnerQuests } from '@/components/PartnerQuests';
 import { cn } from '@/lib/utils';
 
 interface RewardLevel {
@@ -194,6 +195,12 @@ const Referral = () => {
                             событие уйдёт из очереди позже */}
                         <div className="mb-3 sm:mb-4">
                             <DailyCalendar />
+                        </div>
+
+                        {/* Задания за партнёрок: отметки ставит бот, поэтому
+                            блок живёт отдельно от данных рефералки */}
+                        <div className="mb-3 sm:mb-4">
+                            <PartnerQuests />
                         </div>
 
                         {loading && (

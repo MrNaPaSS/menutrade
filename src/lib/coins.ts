@@ -6,6 +6,8 @@
  * устанавливает, кто именно прошёл урок, и уже сам идёт на платформу.
  */
 
+import { BOT_API_HEADERS, botApiBase, initData } from '@/lib/botApi';
+
 export type CoinReason =
     | 'lesson_watched'
     | 'module_completed'
@@ -40,17 +42,6 @@ export const COIN_REWARDS: Record<CoinReason, number> = {
 /** Событие для всплывающей подсказки о начислении. */
 export const COIN_EVENT = 'nmnh-coins-granted';
 
-function botApiBase(): string {
-    return import.meta.env.DEV
-        ? '/bot-api'
-        : (import.meta.env.VITE_BOT_API_URL || 'http://localhost:8081');
-}
-
-function initData(): string {
-    return (window as { Telegram?: { WebApp?: { initData?: string } } })
-        .Telegram?.WebApp?.initData || '';
-}
-
 /**
  * Сообщает о событии. Ничего не возвращает и не бросает: начисление monet
  * не должно мешать учёбе. Повторы безопасны - платформа отсекает их по ref.
@@ -61,10 +52,7 @@ export function sendCoinEvent(ref: string, reason: CoinReason): void {
 
     fetch(`${botApiBase()}/coin-event`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true',
-        },
+        headers: BOT_API_HEADERS,
         body: JSON.stringify({ initData: data, ref, reason }),
     })
         .then(res => res.json())
@@ -90,10 +78,7 @@ export async function fetchCoinBalance(): Promise<BalanceInfo | null> {
     try {
         const res = await fetch(`${botApiBase()}/coin-balance`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true',
-            },
+            headers: BOT_API_HEADERS,
             body: JSON.stringify({ initData: data }),
         });
         const json = await res.json();
