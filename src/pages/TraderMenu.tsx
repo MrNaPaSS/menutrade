@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
@@ -6,43 +7,53 @@ import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { ArrowLeft, GraduationCap, Target, Activity, BookOpen, Code, ArrowRight } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useHasHover } from '@/hooks/useHasHover';
 
-const TraderMenu = () => {
-  const navigate = useNavigate();
-  const hasHover = useHasHover();
-  const { getProgress } = useProgress();
-  const progress = getProgress();
+interface ActionCardProps {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  colorClass?: 'primary' | 'secondary';
+  buttonText: string;
+  index?: number;
+  /** На тач-экранах наведения нет, и крутить иконку незачем */
+  hasHover: boolean;
+}
 
-  useSwipeBack({
-    onSwipeBack: () => navigate('/home'),
-    enabled: true
-  });
-
-  const handleHomeClick = () => {
-    navigate('/home');
-  };
-
-  // Helper component for standard premium action cards
-  const ActionCard = ({
-    title,
-    description,
-    icon: Icon,
-    onClick,
-    colorClass = "primary",
-    buttonText,
-    index = 0
-  }: any) => (
+/**
+ * Карточка раздела.
+ *
+ * Живёт на уровне модуля, а не внутри страницы. Раньше она объявлялась
+ * в теле компонента - при каждой перерисовке React видел новый тип и
+ * пересоздавал все карточки заново, вместе с анимацией появления.
+ * Отсюда и подёргивания при входе в меню.
+ */
+const ActionCard = memo(function ActionCard({
+  title,
+  description,
+  icon: Icon,
+  onClick,
+  colorClass = 'primary',
+  buttonText,
+  index = 0,
+  hasHover,
+}: ActionCardProps) {
+  return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06, type: "spring", stiffness: 300, damping: 25 }}
+      // Задержка не растёт дальше пятой карточки, и это короткий переход,
+      // а не пружина: список должен собраться, а не приезжать
+      transition={{ delay: Math.min(index, 4) * 0.04, duration: 0.25, ease: 'easeOut' }}
       className="mb-4 sm:mb-6"
     >
       <div
-        className="group relative glass-card rounded-2xl p-5 sm:p-6 neon-border cursor-pointer transition-all duration-300 hover:bg-white/5 active:scale-[0.98]"
+        className="group relative glass-card rounded-2xl p-5 sm:p-6 neon-border cursor-pointer
+                   transition-colors duration-200 hover:bg-white/5 active:scale-[0.98]"
         onClick={onClick}
       >
         <div className="flex items-start gap-4 sm:gap-6">
@@ -53,7 +64,8 @@ const TraderMenu = () => {
             )} />
             <motion.div
               className={cn(
-                "relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center border transition-all duration-300 backdrop-blur-md",
+                "relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center",
+                "border backdrop-blur-md transition-colors duration-200",
                 colorClass === "primary"
                   ? "bg-primary/15 border-primary/30 group-hover:border-primary/50"
                   : "bg-secondary/15 border-secondary/30 group-hover:border-secondary/50"
@@ -75,7 +87,8 @@ const TraderMenu = () => {
             <Button
               variant="outline"
               size="sm"
-              className="w-full justify-between group/btn border-white/10 hover:border-primary/50 hover:bg-primary/10 transition-all"
+              className="w-full justify-between group/btn border-white/10 hover:border-primary/50
+                         hover:bg-primary/10 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onClick();
@@ -89,6 +102,22 @@ const TraderMenu = () => {
       </div>
     </motion.div>
   );
+});
+
+const TraderMenu = () => {
+  const navigate = useNavigate();
+  const hasHover = useHasHover();
+  const { getProgress } = useProgress();
+  const progress = getProgress();
+
+  useSwipeBack({
+    onSwipeBack: () => navigate('/home'),
+    enabled: true
+  });
+
+  const handleHomeClick = () => {
+    navigate('/home');
+  };
 
   return (
     <div className="min-h-[100dvh] scanline pb-16">
@@ -125,6 +154,7 @@ const TraderMenu = () => {
             </p>
 
             <ActionCard
+              hasHover={hasHover}
               title="Обучение"
               description="48 уроков по модулям, с тестами"
               icon={GraduationCap}
@@ -134,6 +164,7 @@ const TraderMenu = () => {
             />
 
             <ActionCard
+              hasHover={hasHover}
               title="Торговые стратегии"
               description="Готовые схемы входа и выхода с примерами"
               icon={Target}
@@ -144,6 +175,7 @@ const TraderMenu = () => {
             />
 
             <ActionCard
+              hasHover={hasHover}
               title="Куда пойдёт график"
               description="Тренажёр насмотренности на реальных графиках"
               icon={Activity}
@@ -153,6 +185,7 @@ const TraderMenu = () => {
             />
 
             <ActionCard
+              hasHover={hasHover}
               title="Библиотека"
               description="Книги по трейдингу, психологии и капиталу"
               icon={BookOpen}
@@ -163,6 +196,7 @@ const TraderMenu = () => {
             />
 
             <ActionCard
+              hasHover={hasHover}
               title="Наш софт"
               description="Индикаторы и инструменты для торговли"
               icon={Code}

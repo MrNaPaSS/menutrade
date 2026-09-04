@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Brain } from 'lucide-react';
 
 interface LoadingScreenProps {
@@ -12,33 +12,16 @@ const basePath = () => import.meta.env.BASE_URL || '/';
 /**
  * Экран загрузки.
  *
- * Порядок картинок важен. Раньше экран сразу рисовал запасную иконку
- * мозга и только потом, вслепую, перебирал пути к логотипу с таймаутом
- * в две секунды на каждый. Из-за этого открытие начиналось с чужого
- * значка, а логотип появлялся спустя пару секунд - ровно то мелькание,
- * которое видно на телефоне.
+ * Открытие показывает графити NMNH и больше ничего: это логотип
+ * академии, и никакой другой картинке перед ним появляться не нужно.
  *
- * Теперь сначала показывается статичный логотип - он лёгкий и приходит
- * быстро, а как только догрузится анимация, она встаёт на его место.
- * Мозг остаётся только на случай, когда не пришло ни то, ни другое.
+ * Раньше экран сразу рисовал значок мозга и только потом вслепую
+ * перебирал пути к логотипу, по две секунды таймаута на каждый.
+ * Отсюда чужая иконка в начале и логотип спустя пару секунд.
  */
 export function LoadingScreen({ message = 'Загрузка...', imagePath }: LoadingScreenProps) {
-  const still = imagePath || `${basePath()}nmnh_logo.png`;
-  const animated = `${basePath()}pepe_animated.gif`;
-
-  const [src, setSrc] = useState<string | null>(still);
-
-  useEffect(() => {
-    // Свой путь передали - подменять его анимацией не нужно
-    if (imagePath) return;
-
-    let cancelled = false;
-    const img = new Image();
-    img.onload = () => { if (!cancelled) setSrc(animated); };
-    img.src = animated;
-
-    return () => { cancelled = true; };
-  }, [imagePath, animated]);
+  const [failed, setFailed] = useState(false);
+  const src = imagePath || `${basePath()}nmnh_logo.png`;
 
   return (
     <div className="fixed inset-0 z-[9999] bg-background flex items-center justify-center">
@@ -56,7 +39,7 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           />
 
-          {src ? (
+          {!failed ? (
             <img
               src={src}
               alt="NO MONEY - NO HONEY"
@@ -64,8 +47,9 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
               // лишний переход читается как ещё одно мелькание
               className="relative max-w-[300px] max-h-[300px] md:max-w-[400px] md:max-h-[400px]
                          w-auto h-auto object-contain rounded-2xl block"
-              // Не пришла даже статичная картинка - остаётся запасной значок
-              onError={() => setSrc(null)}
+              // Картинка не открылась - остаётся простой значок,
+              // лишь бы экран не оказался пустым
+              onError={() => setFailed(true)}
             />
           ) : (
             <motion.div
