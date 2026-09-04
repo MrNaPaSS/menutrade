@@ -50,7 +50,7 @@ export function Header() {
       <motion.img
         src={`${basePath()}nmnh_logo.png`}
         alt="NO MONEY - NO HONEY"
-        className="block mx-auto w-[min(200px,52vw)] h-auto object-contain select-none"
+        className="block mx-auto w-[min(120px,32vw)] h-auto object-contain select-none"
         draggable={false}
         initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
