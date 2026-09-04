@@ -1045,7 +1045,7 @@ export function LessonContent({ lesson, onBack, onComplete,
                       className={cn(
                         "glass-card rounded-xl p-4 neon-border flex flex-col overflow-hidden relative mx-auto w-full",
                         embedded
-                          ? "h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_310px)]"
+                          ? "h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_255px)]"
                           : "h-[calc(var(--tg-viewport-height,100dvh)_-_var(--tg-content-top,0px)_-_245px)]"
                       )}
                       style={{ touchAction: 'pan-y pinch-zoom' }}

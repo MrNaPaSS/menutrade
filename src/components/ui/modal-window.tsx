@@ -20,6 +20,23 @@ interface ModalWindowProps {
     onBack?: () => void;
     /** Содержимое само отвечает за отступы и прокрутку */
     bare?: boolean;
+    /**
+     * Не рисовать шапку окна.
+     *
+     * Нужно там, где у содержимого своя шапка с органами управления -
+     * например у AI-агента с выбором режима и историей чатов. Две
+     * шапки подряд читаются как ошибка вёрстки.
+     */
+    hideHeader?: boolean;
+    /** Окно пошире: для чата и всего, где текст идёт длинными строками */
+    wide?: boolean;
+    /**
+     * Прокрутку берёт на себя содержимое.
+     *
+     * У чата своя область прокрутки; если прокручивать ещё и тело
+     * окна, полос становится две и они мешают друг другу.
+     */
+    noScroll?: boolean;
     children: ReactNode;
 }
 
@@ -46,6 +63,9 @@ export function ModalWindow({
     fullscreen = false,
     onBack,
     bare = false,
+    hideHeader = false,
+    wide = false,
+    noScroll = false,
     children,
 }: ModalWindowProps) {
     const reduced = useReducedMotion();
@@ -92,7 +112,10 @@ export function ModalWindow({
                             "relative overflow-hidden border border-[hsl(142_30%_20%)] flex flex-col",
                             fullscreen
                                 ? "w-full h-full rounded-none border-0"
-                                : "w-full max-w-md max-h-[82dvh] rounded-[26px]"
+                                : cn(
+                                    "w-full rounded-[26px]",
+                                    wide ? "max-w-3xl h-[86dvh] md:h-[80vh]" : "max-w-md max-h-[82dvh]"
+                                )
                         )}
                         style={{
                             background: 'linear-gradient(180deg, hsl(142 22% 12%) 0%, hsl(140 28% 6.5%) 100%)',
@@ -109,10 +132,45 @@ export function ModalWindow({
                             style={{ background: 'hsl(142 76% 52% / 0.14)' }}
                         />
 
-                        <header className="relative flex items-start justify-between gap-3 px-5 pt-5 pb-4">
-                            <div className="min-w-0">
+                        {!hideHeader && (
+                        <header className={cn(
+                            "relative px-5 pb-4",
+                            fullscreen
+                                ? "pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,12px)+12px)]"
+                                : "pt-5"
+                        )}>
+                            {/* Шаг назад слева, как в любом экране: стрелка
+                                справа читается как «вперёд». Крестик, наоборот,
+                                привычен справа */}
+                            {onBack && (
+                                <button
+                                    onClick={onBack}
+                                    aria-label="Назад"
+                                    className="absolute left-4 top-[calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+12px)] w-8 h-8 rounded-full flex items-center
+                                               justify-center border border-white/[0.08] bg-white/[0.04]
+                                               transition-colors duration-200 hover:bg-white/[0.09]
+                                               focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                >
+                                    <ArrowLeft className="w-4 h-4" style={{ color: MODAL_CAPTION }} />
+                                </button>
+                            )}
+
+                            {!onBack && (
+                                <button
+                                    onClick={onClose}
+                                    aria-label="Закрыть"
+                                    className="absolute right-4 top-[calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+12px)] w-8 h-8 rounded-full flex items-center
+                                               justify-center border border-white/[0.08] bg-white/[0.04]
+                                               transition-colors duration-200 hover:bg-white/[0.09]
+                                               focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                >
+                                    <X className="w-4 h-4" style={{ color: MODAL_CAPTION }} />
+                                </button>
+                            )}
+
+                            <div className={cn('min-w-0', onBack ? 'text-center px-10' : 'pr-12')}>
                                 <h2
-                                    className="font-display font-bold text-[18px] tracking-tight leading-none"
+                                    className="font-display font-bold text-[18px] tracking-tight leading-tight"
                                     style={{ color: MODAL_TITLE }}
                                 >
                                     {title}
@@ -123,23 +181,12 @@ export function ModalWindow({
                                     </p>
                                 )}
                             </div>
-
-                            <button
-                                onClick={onBack ?? onClose}
-                                aria-label={onBack ? 'Назад' : 'Закрыть'}
-                                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                                           border border-white/[0.08] bg-white/[0.04]
-                                           transition-colors duration-200 hover:bg-white/[0.09]
-                                           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                            >
-                                {onBack
-                                    ? <ArrowLeft className="w-4 h-4" style={{ color: MODAL_CAPTION }} />
-                                    : <X className="w-4 h-4" style={{ color: MODAL_CAPTION }} />}
-                            </button>
                         </header>
+                        )}
 
                         <div className={cn(
-                            "relative overflow-y-auto flex-1 min-h-0",
+                            "relative flex-1 min-h-0",
+                            noScroll ? "flex flex-col" : "overflow-y-auto",
                             bare ? "" : "px-3.5 pb-4 space-y-2.5"
                         )}>
                             {children}

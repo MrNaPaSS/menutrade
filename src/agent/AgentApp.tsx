@@ -1,4 +1,5 @@
 import { ChatWindow } from '@/agent/components/chat/ChatWindow';
+import { ModalWindow } from '@/components/ui/modal-window';
 import { useTelegram } from '@/hooks/useTelegram';
 
 interface AgentAppProps {
@@ -8,27 +9,28 @@ interface AgentAppProps {
 /**
  * AI-агент, перенесённый из проекта MrNaPaSS/agent.
  *
- * Открывается окном поверх академии. Заменена только точка входа:
- * экран авторизации агента не нужен - пользователь уже вошёл в академии,
- * данные берём из её контекста Telegram. Кнопка возврата встроена
- * в шапку агента, чтобы не перекрывать его меню истории чатов.
+ * Открывается тем же окном, что и остальные разделы: подложка гасит
+ * фон размытием, окно вырастает из середины, Escape и нажатие мимо
+ * закрывают. Раньше у агента была своя обвязка - другая подложка,
+ * другие скругления, другое движение, - и он выбивался из приложения.
+ *
+ * Своя шапка у агента остаётся: в ней выбор режима и рынка и история
+ * чатов. Две шапки подряд читались бы как ошибка вёрстки.
  */
 export function AgentApp({ onBack }: AgentAppProps) {
   const { user } = useTelegram();
 
   return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm"
-      onClick={onBack}
+    <ModalWindow
+      open
+      onClose={onBack}
+      title="AI-агент"
+      hideHeader
+      wide
+      bare
+      noScroll
     >
-      <div
-        // relative - якорь для панели истории внутри агента
-        className="relative flex h-[86dvh] w-full max-w-3xl flex-col overflow-hidden
-                   rounded-2xl border border-white/20 bg-background shadow-2xl md:h-[80vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <ChatWindow user={user} onBack={onBack} />
-      </div>
-    </div>
+      <ChatWindow user={user} onBack={onBack} />
+    </ModalWindow>
   );
 }
