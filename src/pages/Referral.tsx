@@ -5,7 +5,7 @@ import { MatrixRain } from '@/components/MatrixRain';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { useUserAccess } from '@/contexts/UserAccessContext';
-import { fetchCoinBalance } from '@/lib/coins';
+import { useCoinBalance } from '@/hooks/useCoinBalance';
 import { DailyCalendar } from '@/components/DailyCalendar';
 import { PartnerQuests } from '@/components/PartnerQuests';
 import { cn } from '@/lib/utils';
@@ -81,6 +81,10 @@ const Referral = () => {
     const [data, setData] = useState<ReferralData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // Монеты NMNH. Хук слушает начисления, поэтому число на этом же
+    // экране растёт сразу после того, как забрали подарок, - раньше
+    // оно ждало, пока человек уйдёт с экрана и вернётся
+    const { coins } = useCoinBalance();
     const [copied, setCopied] = useState(false);
 
     // Какая награда сейчас забирается, ник в TradingView и состояние отправки
@@ -88,7 +92,6 @@ const Referral = () => {
     const [tradingview, setTradingview] = useState('');
     const [sending, setSending] = useState(false);
     const [claimError, setClaimError] = useState<string | null>(null);
-    const [coins, setCoins] = useState<Awaited<ReturnType<typeof fetchCoinBalance>>>(null);
 
     useEffect(() => {
         if (!userId) {
@@ -119,14 +122,6 @@ const Referral = () => {
         return () => { cancelled = true; };
     }, [userId]);
 
-    // Монеты NMNH: копятся за учёбу и торговлю, тратятся в магазине платформы
-    useEffect(() => {
-        let cancelled = false;
-        fetchCoinBalance().then(data => {
-            if (!cancelled) setCoins(data);
-        });
-        return () => { cancelled = true; };
-    }, []);
 
     const copyLink = useCallback(async () => {
         if (!data?.link) return;

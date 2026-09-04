@@ -17,6 +17,11 @@ const ROUTES = [
     () => import('@/pages/News'),
     () => import('@/pages/TraderMenu'),
     () => import('@/pages/Live'),
+    // Данные стратегий и библиотеки нужны ещё и меню трейдера - оно
+    // показывает, сколько там разборов и книг. Догрузив их в простое,
+    // мы не платим за это при открытии меню
+    () => import('@/pages/Strategies'),
+    () => import('@/pages/Library'),
 ];
 
 type IdleWindow = Window & {

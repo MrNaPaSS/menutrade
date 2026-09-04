@@ -78,8 +78,8 @@ export const CoursePicker = memo(function CoursePicker({
                             <motion.div
                                 className="absolute inset-x-0 top-0 h-[3px] bg-primary
                                            shadow-[0_0_10px_hsl(142_76%_52%_/_0.5)] origin-left"
-                                initial={{ scaleX: reduced ? Math.max(percent, 2) / 100 : 0 }}
-                                animate={{ scaleX: Math.max(percent, 2) / 100 }}
+                                initial={{ scaleX: reduced ? percent / 100 : 0 }}
+                                animate={{ scaleX: percent / 100 }}
                                 transition={{
                                     delay: 0.2 + index * 0.05,
                                     duration: 0.6,
