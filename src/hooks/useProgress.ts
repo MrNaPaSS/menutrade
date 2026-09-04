@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { sendCoinEvent } from '@/lib/coins';
 import { modules as allModules } from '@/data/lessons';
 import { Module, Lesson } from '@/types/lesson';
 import { useTelegramContext } from '@/contexts/TelegramContext';
@@ -140,6 +141,16 @@ export function useProgress() {
         return { ...module, lessons: updatedLessons };
       });
 
+      // Монеты за учёбу. Отправляем здесь, а не в компоненте урока:
+      // так событие уходит один раз, из единственного места, где
+      // прохождение действительно засчитывается.
+      sendCoinEvent(`lesson_${moduleId}_${lessonId}`, 'lesson_watched');
+
+      const finished = newModules.find(m => m.id === moduleId);
+      if (finished && finished.lessons.every(l => l.isCompleted)) {
+        sendCoinEvent(`module_${moduleId}`, 'module_completed');
+      }
+
       return newModules;
     });
   };
@@ -178,6 +189,8 @@ export function useProgress() {
 
   const completeMasterTest = () => {
     localStorage.setItem(masterTestKey, 'true');
+    // Итоговый тест - самое дорогое событие академии
+    sendCoinEvent('master_test', 'test_passed');
   };
 
   const isAllModulesCompleted = () => {

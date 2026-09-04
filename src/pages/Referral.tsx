@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Copy, Gift, Lock, Share2, Users } from 'lucide-react';
+import { Check, Coins, Copy, Gift, Lock, Share2, Users } from 'lucide-react';
 import { MatrixRain } from '@/components/MatrixRain';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { useUserAccess } from '@/contexts/UserAccessContext';
+import { fetchCoinBalance } from '@/lib/coins';
 import { cn } from '@/lib/utils';
 
 interface RewardLevel {
@@ -47,6 +48,17 @@ const SHARE_TEXT = [
     'Заходи по ссылке:',
 ].join('\n');
 
+/** Открывает внешнюю ссылку через Telegram, иначе обычной вкладкой. */
+function shareOpen(url: string): void {
+    const tg = (window as { Telegram?: { WebApp?: { openLink?: (u: string) => void } } })
+        .Telegram?.WebApp;
+    if (tg?.openLink) {
+        tg.openLink(url);
+    } else {
+        window.open(url, '_blank', 'noopener');
+    }
+}
+
 /** Открывает окно «поделиться» Telegram, иначе обычную ссылку. */
 function shareLink(link: string): void {
     // Ссылку кладём и в url, и в конец текста: клиенты Telegram по-разному
@@ -74,6 +86,7 @@ const Referral = () => {
     const [tradingview, setTradingview] = useState('');
     const [sending, setSending] = useState(false);
     const [claimError, setClaimError] = useState<string | null>(null);
+    const [coins, setCoins] = useState<Awaited<ReturnType<typeof fetchCoinBalance>>>(null);
 
     useEffect(() => {
         if (!userId) {
@@ -103,6 +116,15 @@ const Referral = () => {
 
         return () => { cancelled = true; };
     }, [userId]);
+
+    // Монеты NMNH: копятся за учёбу и торговлю, тратятся в магазине платформы
+    useEffect(() => {
+        let cancelled = false;
+        fetchCoinBalance().then(data => {
+            if (!cancelled) setCoins(data);
+        });
+        return () => { cancelled = true; };
+    }, []);
 
     const copyLink = useCallback(async () => {
         if (!data?.link) return;
@@ -186,6 +208,43 @@ const Referral = () => {
 
                         {data && (
                             <div className="space-y-3 sm:space-y-4">
+                                {coins && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 16 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="glass-card rounded-xl p-4 sm:p-5 neon-border"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-11 h-11 rounded-xl flex items-center justify-center
+                                                            bg-gradient-to-br from-primary/15 to-primary/25
+                                                            border border-primary/20 text-primary flex-shrink-0">
+                                                <Coins className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs text-muted-foreground">Монеты NMNH</p>
+                                                <p className="font-display font-bold text-2xl text-primary tabular-nums">
+                                                    {coins.balance}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <p className="text-xs text-muted-foreground mt-3">
+                                            {coins.visited
+                                                ? 'Копятся за уроки и торговлю, тратятся в магазине'
+                                                : 'Копятся за уроки и торговлю. Потратить их можно на nmnh.trade'}
+                                        </p>
+
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full justify-center mt-3"
+                                            onClick={() => shareOpen(coins.shopUrl)}
+                                        >
+                                            Открыть магазин
+                                        </Button>
+                                    </motion.div>
+                                )}
+
                                 {/* Прогресс до награды */}
                                 <motion.div
                                     initial={{ opacity: 0, y: 16 }}
