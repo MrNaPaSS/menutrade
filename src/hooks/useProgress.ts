@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { sendCoinEvent } from '@/lib/coins';
 import { fetchProgress, resetProgressOnServer, saveProgress } from '@/lib/progressApi';
 import { applyCompleted, collectCompleted, sameCompleted, unionCompleted } from '@/lib/progressSync';
+import { loadLocalCompleted, saveLocalCompleted } from '@/lib/localProgress';
 import { modules as allModules } from '@/data/lessons';
-import { Module, Lesson } from '@/types/lesson';
+import { Module } from '@/types/lesson';
 import { useTelegramContext } from '@/contexts/TelegramContext';
 import { registerUser } from '@/utils/userStats';
 
@@ -30,98 +31,40 @@ export function useProgress() {
   const storageKey = getStorageKey(userId);
   const masterTestKey = getMasterTestKey(userId);
 
-  const [modules, setModules] = useState<Module[]>(() => {
-    const saved = localStorage.getItem(storageKey);
-    let loadedModules: Module[];
-    
-    if (saved) {
-      const savedModules = JSON.parse(saved);
-      // Фильтруем модули стратегий из сохраненного прогресса
-      const filteredSavedModules = savedModules.filter((m: Module) => 
-        m.id !== 'module-3' && m.id !== 'module-4' && m.id !== 'module-5'
-      );
-      // Объединяем сохраненный прогресс с актуальным контентом из initialModules
-      loadedModules = filteredSavedModules.map((savedModule: Module) => {
-        const initialModule = initialModules.find(m => m.id === savedModule.id);
-        if (!initialModule) return null;
-        
-        return {
-          ...savedModule,
-          lessons: savedModule.lessons.map((savedLesson: Lesson, lessonIndex: number) => {
-            const initialLesson = initialModule.lessons.find(l => l.id === savedLesson.id);
-            if (!initialLesson) return savedLesson;
-            
-            // Нормальная логика блокировки: первый урок открыт, остальные открываются после завершения предыдущего
-            let isLocked = lessonIndex > 0;
-            if (lessonIndex > 0) {
-              const previousLesson = savedModule.lessons[lessonIndex - 1];
-              isLocked = !previousLesson.isCompleted;
-            }
-            
-            // Сохраняем прогресс, но используем актуальный контент и правильный isLocked
-            return {
-              ...savedLesson,
-              content: initialLesson.content,
-              quiz: initialLesson.quiz,
-              isLocked,
-            };
-          })
-        };
-      }).filter((module): module is Module => module !== null);
-      
-      // Добавляем новые модули, которых нет в сохраненном прогрессе
-      const savedModuleIds = new Set(loadedModules.map(m => m.id));
-      const newModules = initialModules
-        .filter(m => !savedModuleIds.has(m.id))
-        .map((module) => ({
-          ...module,
-          lessons: module.lessons.map((lesson, index) => ({ 
-            ...lesson, 
-            isLocked: index > 0,
-            isCompleted: false 
-          }))
-        }));
-      
-      loadedModules = [...loadedModules, ...newModules];
-    } else {
-      // Нормальная логика: первый урок каждого модуля открыт, остальные заблокированы
-      loadedModules = initialModules.map((module) => ({
-        ...module,
-        lessons: module.lessons.map((lesson, index) => ({ 
-          ...lesson, 
-          isLocked: index > 0,
-          isCompleted: false
-        }))
-      }));
-    }
-    
-    return loadedModules;
-  });
+  // Из локальной копии берём только ключи закрытых уроков: тексты и
+  // блокировки восстанавливаются из данных курса. Раньше здесь
+  // разбиралось всё дерево модулей - сотни килобайт JSON в главном
+  // потоке, ровно перед первым кадром.
+  const [modules, setModules] = useState<Module[]>(
+    () => applyCompleted(initialModules, loadLocalCompleted(storageKey))
+  );
 
   // Сохраняем прогресс при изменении
   useEffect(() => {
-    if (userId) {
-      const currentStorageKey = getStorageKey(userId);
-      localStorage.setItem(currentStorageKey, JSON.stringify(modules));
-      
-      // Сохраняем метаданные пользователя для статистики
-      // Вычисляем прогресс напрямую из modules, без вызова функции getProgress
-      const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0);
-      const completedLessons = modules.reduce(
-        (acc, m) => acc + m.lessons.filter(l => l.isCompleted).length,
-        0
-      );
-      const progressValue = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-      const userStats = {
-        userId,
-        lastActivity: new Date().toISOString(),
-        progress: progressValue,
-        completedLessons,
-        totalLessons
-      };
+    if (!userId) return;
+
+    const completed = collectCompleted(modules);
+    saveLocalCompleted(getStorageKey(userId), completed);
+
+    // Метаданные для статистики: считаем из уже собранного списка,
+    // второй раз обходить модули незачем
+    const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0);
+    const progressValue = totalLessons > 0
+      ? Math.round((completed.length / totalLessons) * 100)
+      : 0;
+    const userStats = {
+      userId,
+      lastActivity: new Date().toISOString(),
+      progress: progressValue,
+      completedLessons: completed.length,
+      totalLessons,
+    };
+    try {
       localStorage.setItem(`pepe-trader-stats-${userId}`, JSON.stringify(userStats));
+    } catch {
+      /* памяти нет - статистика не то, ради чего стоит падать */
     }
-  }, [modules, userId]); // Убрали storageKey из зависимостей, так как он вычисляется из userId
+  }, [modules, userId]);
 
   // Прогресс с сервера. Он источник правды: браузер чистят и телефоны
   // меняют, а учёба должна оставаться. Локальная копия остаётся кэшем -

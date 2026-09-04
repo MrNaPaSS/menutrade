@@ -3,19 +3,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import GuessChart from "./pages/GuessChart";
+import { lazy, Suspense } from "react";
 import Home from "./pages/Home";
-import Live from "./pages/Live";
-import Index from "./pages/Index";
-import Strategies from "./pages/Strategies";
-import Referral from "./pages/Referral";
-import News from "./pages/News";
-import Software from "./pages/Software";
-import Settings from "./pages/Settings";
-import Library from "./pages/Library";
-import NotFound from "./pages/NotFound";
-import TraderMenu from "./pages/TraderMenu";
-import UserProfile from "./pages/UserProfile";
+import { RouteFallback } from "./components/RouteFallback";
 import { AIAgentButton } from "./components/AIAgentButton";
 import { AppInitializer } from "./components/AppInitializer";
 import { OnboardingTutorial } from "./components/OnboardingTutorial";
@@ -25,6 +15,24 @@ import { UserAccessProvider } from "./contexts/UserAccessContext";
 import { TelegramDebug } from "./components/TelegramDebug";
 import { DebugLogin } from "./components/DebugLogin";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { usePrefetchRoutes } from "./hooks/usePrefetchRoutes";
+
+// Экраны грузятся по требованию. Раньше приложение одним куском
+// тянуло все страницы разом - вместе с данными курса, стратегиями и
+// двумя библиотеками графиков. На телефоне это секунды до первого
+// кадра, хотя человек открывает один экран.
+const GuessChart = lazy(() => import("./pages/GuessChart"));
+const Live = lazy(() => import("./pages/Live"));
+const Index = lazy(() => import("./pages/Index"));
+const Strategies = lazy(() => import("./pages/Strategies"));
+const Referral = lazy(() => import("./pages/Referral"));
+const News = lazy(() => import("./pages/News"));
+const Software = lazy(() => import("./pages/Software"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Library = lazy(() => import("./pages/Library"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const TraderMenu = lazy(() => import("./pages/TraderMenu"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
 
 const queryClient = new QueryClient();
 
@@ -32,9 +40,14 @@ const AppContent = () => {
   // Убираем trailing slash из basename для правильной работы роутинга
   const basename = import.meta.env.BASE_URL?.replace(/\/$/, '') || '';
 
+  // Пока человек на главной, в свободное время докачиваем остальные
+  // экраны: тогда нажатие в нижней панели открывает их сразу
+  usePrefetchRoutes();
+
   return (
     <BrowserRouter basename={basename}>
       <ScrollToTop />
+      <Suspense fallback={<RouteFallback />}>
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
@@ -52,6 +65,7 @@ const AppContent = () => {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
       <AIAgentButton />
       <OnboardingTutorial />
       <CoinToast />

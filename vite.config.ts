@@ -16,6 +16,27 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Отдельно выносим только то, что нужно каждому экрану: сам
+        // React и анимации. Библиотеки графиков и markdown в списке
+        // быть не должны - перечисление имени тянет в кусок и все его
+        // зависимости, а через общую из них кусок становится нужен
+        // главному экрану, где графиков нет. Rollup сам положит их
+        // в тот кусок, который их просит.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (/node_modules\/(react|react-dom|react-router|react-router-dom)\//.test(id)) {
+            return 'react';
+          }
+          if (id.includes('node_modules/framer-motion/')) return 'motion';
+        },
+      },
+    },
+    // Куски стали мельче, прежний порог только шумит в выводе
+    chunkSizeWarningLimit: 900,
+  },
   plugins: [react()].filter(Boolean),
   resolve: {
     alias: {

@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Brain } from 'lucide-react';
-import { AgentApp } from '@/agent/AgentApp';
+import { lazy, Suspense } from 'react';
+
+// Агент со своим чатом, историей и разметкой markdown открывается по
+// кнопке. В основном куске ему делать нечего: большинство заходов
+// в академию его не открывают вовсе.
+const AgentApp = lazy(() => import('@/agent/AgentApp').then(m => ({ default: m.AgentApp })));
 import { useChatHistory } from '@/hooks/useChatHistory';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -105,7 +110,11 @@ export function AIAgentButton() {
         )}
       </motion.button>
 
-      {isOpen && <AgentApp onBack={() => setIsOpen(false)} />}
+      {isOpen && (
+        <Suspense fallback={null}>
+          <AgentApp onBack={() => setIsOpen(false)} />
+        </Suspense>
+      )}
     </>
   );
 }

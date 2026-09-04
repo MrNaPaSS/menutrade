@@ -27,6 +27,8 @@ export function MatrixRain() {
 
     let animationId: number;
     let particles: Particle[] = [];
+    // Какой шрифт сейчас стоит в контексте. -1 значит «неизвестно»
+    let currentSize = -1;
 
     const chars = '01アイウエオカキクケコサシスセソタチツテト🐸💚📈📉💰₿Ξ';
     const charArray = chars.split('');
@@ -34,6 +36,8 @@ export function MatrixRain() {
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      // Смена размера обнуляет состояние контекста вместе со шрифтом
+      currentSize = -1;
       initParticles();
     };
 
@@ -48,7 +52,7 @@ export function MatrixRain() {
           speed: 1 + Math.random() * 3,
           char: charArray[Math.floor(Math.random() * charArray.length)],
           opacity: 0.1 + Math.random() * 0.5,
-          size: 12 + Math.random() * 6
+          size: 12 + Math.floor(Math.random() * 7)
         });
       }
     };
@@ -61,6 +65,30 @@ export function MatrixRain() {
     const FRAME_MS = 1000 / 30;
     let lastFrame = 0;
 
+    // Строки шрифта и цвета считаем один раз: в кадре они повторяются
+    // сотню раз, а различаются десятком значений
+    const fontCache = new Map<number, string>();
+    const fontFor = (size: number) => {
+      let font = fontCache.get(size);
+      if (!font) {
+        font = `${size}px "JetBrains Mono", monospace`;
+        fontCache.set(size, font);
+      }
+      return font;
+    };
+
+    const fillCache = new Map<number, string>();
+    const fillFor = (opacity: number) => {
+      const step = Math.round(opacity * 20); // шаг прозрачности незаметен глазу
+      let fill = fillCache.get(step);
+      if (!fill) {
+        fill = `rgba(74, 222, 128, ${(step / 20).toFixed(2)})`;
+        fillCache.set(step, fill);
+      }
+      return fill;
+    };
+
+
     const draw = (now = 0) => {
       animationId = requestAnimationFrame(draw);
 
@@ -72,31 +100,19 @@ export function MatrixRain() {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((particle, index) => {
-        // Gradient color based on position
-        const gradient = ctx.createLinearGradient(
-          particle.x, 
-          particle.y - 20, 
-          particle.x, 
-          particle.y
-        );
-        gradient.addColorStop(0, `rgba(34, 197, 94, 0)`);
-        gradient.addColorStop(0.5, `rgba(34, 197, 94, ${particle.opacity * 0.5})`);
-        gradient.addColorStop(1, `rgba(74, 222, 128, ${particle.opacity})`);
+        // Символ рисуется сплошным цветом. Прежде под каждый создавался
+        // отдельный градиент - сотня объектов в кадре, тридцать раз в
+        // секунду, ради перехода высотой в двадцать точек.
+        ctx.fillStyle = fillFor(particle.opacity);
 
-        ctx.fillStyle = gradient;
-        ctx.font = `${particle.size}px "JetBrains Mono", monospace`;
-        
-        // Draw main character
-        ctx.fillText(particle.char, particle.x, particle.y);
-        
-        // Draw glow for some characters
-        if (Math.random() > 0.97) {
-          ctx.shadowColor = 'rgba(34, 197, 94, 0.8)';
-          ctx.shadowBlur = 20;
-          ctx.fillStyle = 'rgba(134, 239, 172, 0.9)';
-          ctx.fillText(particle.char, particle.x, particle.y);
-          ctx.shadowBlur = 0;
+        // Разбор строки шрифта дорог, а размеров у нас всего семь:
+        // ставим шрифт только когда он вправду меняется
+        if (particle.size !== currentSize) {
+          currentSize = particle.size;
+          ctx.font = fontFor(particle.size);
         }
+
+        ctx.fillText(particle.char, particle.x, particle.y);
 
         // Update particle
         particle.y += particle.speed;
@@ -114,7 +130,7 @@ export function MatrixRain() {
             speed: 1 + Math.random() * 3,
             char: charArray[Math.floor(Math.random() * charArray.length)],
             opacity: 0.1 + Math.random() * 0.5,
-            size: 12 + Math.random() * 6
+            size: 12 + Math.floor(Math.random() * 7)
           };
         }
       });
