@@ -9,7 +9,7 @@ import { useTelegram } from '@/hooks/useTelegram';
 import { useDailyAttempts } from '@/hooks/useDailyAttempts';
 import { ArrowLeft, Target, Activity, BookOpen, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { LearningCard } from '@/components/trader-menu/LearningCard';
+import { LearningPanel } from '@/components/trader-menu/LearningPanel';
 import { ToolTile } from '@/components/trader-menu/ToolTile';
 import { strategyModules } from '@/data/strategies';
 import { libraryCategories } from '@/data/library';
@@ -78,7 +78,7 @@ const TraderMenu = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
             >
-              <LearningCard
+              <LearningPanel
                 access={courseAccess}
                 partners={partners}
                 completedByCourse={completedByCourse}
@@ -86,18 +86,22 @@ const TraderMenu = () => {
               />
             </motion.div>
 
-            <h2 className="text-xs text-muted-foreground mt-6 mb-2.5 px-1">
+            <h2
+              className="text-[13px] font-medium mt-7 mb-3 px-1"
+              style={{ color: 'hsl(142 18% 55%)' }}
+            >
               Инструменты
             </h2>
 
             {/* Сетка вместо списка: у каждого раздела своя площадь, и
                 четыре плитки помещаются на экран без прокрутки */}
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-3">
               <ToolTile
                 index={0}
                 title="Стратегии"
                 figure={`${STRATEGY_LESSONS} ${plural(STRATEGY_LESSONS, 'разбор', 'разбора', 'разборов')}`}
                 icon={Target}
+                tone="cyan"
                 onClick={() => navigate('/strategies')}
               />
               <ToolTile
@@ -109,7 +113,8 @@ const TraderMenu = () => {
                     : `${attempts.left} ${plural(attempts.left, 'попытка', 'попытки', 'попыток')} сегодня`
                 }
                 icon={Activity}
-                accent={!attempts.exhausted}
+                tone="green"
+                live={!attempts.exhausted}
                 onClick={() => navigate('/guess-chart')}
               />
               <ToolTile
@@ -117,6 +122,7 @@ const TraderMenu = () => {
                 title="Библиотека"
                 figure={`${LIBRARY_BOOKS} ${plural(LIBRARY_BOOKS, 'книга', 'книги', 'книг')}`}
                 icon={BookOpen}
+                tone="amber"
                 onClick={() => navigate('/library')}
               />
               <ToolTile
@@ -124,6 +130,7 @@ const TraderMenu = () => {
                 title="Наш софт"
                 figure={`${softwareItems.length} ${plural(softwareItems.length, 'инструмент', 'инструмента', 'инструментов')}`}
                 icon={Code}
+                tone="violet"
                 onClick={() => navigate('/software')}
               />
             </div>
