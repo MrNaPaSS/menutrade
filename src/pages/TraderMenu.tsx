@@ -95,7 +95,7 @@ const TraderMenu = () => {
       <MatrixRain />
       <div className="relative z-10">
         {/* Header с кнопкой назад */}
-        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4">
+        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm pb-2 px-4">
           <div className="relative flex items-center justify-center py-2 sm:py-3">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Button
