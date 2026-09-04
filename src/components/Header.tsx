@@ -48,12 +48,11 @@ export function Header() {
   return (
     <header
       className="max-w-lg mx-auto px-4"
-      /* Полосу кнопок Telegram обходим наполовину: графити заходит в её
-         пустую середину, между «Закрыть» и «...», и шапка поднимается */
-      style={{
-        paddingTop:
-          'calc(env(safe-area-inset-top, 0px) + var(--tg-content-top, 0.75rem) / 2)',
-      }}
+      /* Полосу кнопок Telegram не обходим совсем: графити встаёт прямо
+         в её пустую середину, между «Закрыть» и «...». Ростом в 120px
+         оно проходит полосу насквозь, поэтому строка ниже всё равно
+         начинается под кнопками и ничего не перекрывает */
+      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 2px)' }}
     >
       <motion.img
         src={`${basePath()}nmnh_logo.png`}
