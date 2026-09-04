@@ -38,7 +38,7 @@ export const ToolRow = memo(function ToolRow({ title, meta, icon: Icon, emoji, o
             </span>
 
             <span className="flex-1 min-w-0">
-                <span className="block font-display font-semibold text-sm tracking-wide
+                <span className="block font-semibold text-sm tracking-wide
                                  transition-colors duration-200 group-hover:text-primary">
                     {title}
                 </span>

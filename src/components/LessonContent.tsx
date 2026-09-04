@@ -1127,7 +1127,7 @@ export function LessonContent({ lesson, onBack, onComplete,
                                       return <p className="text-sm text-foreground/90 leading-relaxed mb-3 break-words overflow-wrap-anywhere word-break-break-word whitespace-normal">{children}</p>;
                                     },
                                     h1: ({ children }) => (
-                                      <h1 className="font-display text-base font-bold text-foreground mt-0 mb-4 neon-text flex items-center gap-2 pt-2 break-words overflow-wrap-anywhere">
+                                      <h1 className="text-base font-bold text-foreground mt-0 mb-4 neon-text flex items-center gap-2 pt-2 break-words overflow-wrap-anywhere">
                                         <span className="w-1 h-6 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
                                         <span className="break-words overflow-wrap-anywhere min-w-0">{children}</span>
                                       </h1>
@@ -1409,7 +1409,7 @@ export function LessonContent({ lesson, onBack, onComplete,
                                 onClick={() => setShowQuiz(true)}
                                 className="w-full rounded-xl px-4 py-3 neon-border bg-[hsl(140,30%,10%)]
                                            hover:bg-primary/10 transition-colors flex items-center
-                                           justify-center gap-2 font-display font-semibold text-sm min-h-[44px]"
+                                           justify-center gap-2 font-semibold text-sm min-h-[44px]"
                               >
                                 <Brain className="w-5 h-5 text-primary" />
                                 <span>Пройти квиз</span>

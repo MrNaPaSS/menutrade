@@ -298,7 +298,7 @@ const Referral = () => {
                                     transition={{ delay: 0.06 }}
                                     className="glass-card rounded-xl p-4 sm:p-5 neon-border"
                                 >
-                                    <h3 className="font-display font-bold text-base mb-2">
+                                    <h3 className="font-bold text-base mb-2">
                                         Твоя ссылка
                                     </h3>
                                     <p className="font-mono text-xs text-muted-foreground break-all mb-3">
@@ -348,7 +348,7 @@ const Referral = () => {
 
                                 {/* Награды */}
                                 <div className="space-y-2 sm:space-y-3">
-                                    <h3 className="font-display font-bold text-base mt-5 mb-1">Награды</h3>
+                                    <h3 className="font-bold text-base mt-5 mb-1">Награды</h3>
 
                                     {data.levels.map((level, index) => (
                                         <motion.div
@@ -374,7 +374,7 @@ const Referral = () => {
 
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <h4 className="font-display font-bold text-sm">{level.name}</h4>
+                                                    <h4 className="font-bold text-sm">{level.name}</h4>
                                                     {level.claimed && (
                                                         <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                                                             получена

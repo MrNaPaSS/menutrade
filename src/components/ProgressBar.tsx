@@ -32,7 +32,7 @@ export function ProgressBar({ progress, showLabel = true }: ProgressBarProps) {
           {/* key на значении: цифра меняется редко и заметно, короткий
               отклик здесь уместен - он показывает, что именно изменилось */}
           <motion.span
-            className="text-sm font-bold text-primary font-display tabular-nums"
+            className="text-sm font-bold text-primary tabular-nums"
             key={progress}
             initial={reduced ? false : { scale: 1.15, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}

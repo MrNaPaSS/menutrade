@@ -108,7 +108,7 @@ export function Header({ progress, hideOnScroll = false }: HeaderProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <h1 className="font-display font-bold whitespace-nowrap text-[clamp(0.95rem,4.6vw,1.25rem)] tracking-normal sm:tracking-wider">
+            <h1 className="font-bold whitespace-nowrap text-[clamp(0.95rem,4.6vw,1.25rem)] tracking-normal sm:tracking-wider">
               <span className="neon-text-subtle">NO MONEY</span>
               <span className="text-foreground mx-1.5">-</span>
               <span className="neon-text-subtle">NO HONEY</span>

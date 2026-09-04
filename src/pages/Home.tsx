@@ -142,7 +142,7 @@ const Home = () => {
                         </motion.div>
 
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-display text-base sm:text-lg font-bold tracking-wide mb-1 flex items-center gap-2">
+                          <h3 className="text-base sm:text-lg font-bold tracking-wide mb-1 flex items-center gap-2">
                             {section.title}
                             {'badge' in section && section.badge && (
                               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/30">

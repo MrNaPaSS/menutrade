@@ -350,7 +350,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           </div>
 
           <Button
-            className="w-full h-12 font-display font-bold neon-glow"
+            className="w-full h-12 font-bold neon-glow"
             disabled={submitting}
             onClick={handleSubmit}
           >
@@ -554,7 +554,7 @@ function CryptoInfo() {
       <div className="rounded-xl border border-accent/40 bg-accent/10 p-3">
         <div className="flex items-center gap-2 mb-1">
           <Gift className="w-4 h-4 text-accent flex-shrink-0" />
-          <span className="text-sm font-display font-bold text-accent">Бонус от меня: +100% к первому депозиту</span>
+          <span className="text-sm font-bold text-accent">Бонус от меня: +100% к первому депозиту</span>
         </div>
         <p className="text-xs text-foreground/90 leading-relaxed">
           Вносишь $100 - получаешь $200 рабочих. Максимум бонуса $100. Это реальные деньги для торговли.
@@ -598,7 +598,7 @@ function MarketCard({ icon, label, tagline, onClick }: MarketCardProps) {
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-display font-bold text-base text-foreground">{label}</div>
+        <div className="font-bold text-base text-foreground">{label}</div>
         <div className="text-xs text-muted-foreground mt-0.5">{tagline}</div>
       </div>
       <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />

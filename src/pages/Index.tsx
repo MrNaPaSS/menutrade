@@ -3,8 +3,7 @@ import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
-import { ModuleCard } from '@/components/ModuleCard';
-import { LessonCard } from '@/components/LessonCard';
+import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { LessonContent } from '@/components/LessonContent';
 import { BottomNav } from '@/components/BottomNav';
 import { MasterTest } from '@/components/MasterTest';
@@ -16,9 +15,19 @@ import { courses, type Course } from '@/data/courses';
 import type { CourseId } from '@/lib/courseAccess';
 import { useBackAction } from '@/contexts/BackNavigationContext';
 import { Module, Lesson, QuizQuestion } from '@/types/lesson';
-import { ArrowLeft, RotateCcw, Trophy, Brain } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Trophy, Brain, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { masterTest, masterTestPassingThreshold } from '@/data/masterTest';
+
+/** Общая рамка для группы строк - как в меню трейдера. */
+const PANEL_STYLE = {
+  background: 'linear-gradient(180deg, hsl(142 20% 10%) 0%, hsl(140 27% 6.5%) 100%)',
+  boxShadow: '0 12px 32px -22px hsl(0 0% 0%), inset 0 1px 0 hsl(142 42% 38% / 0.12)',
+} as const;
+
+const PANEL_CLASS =
+  'rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden divide-y divide-[hsl(142_22%_13%)]';
 
 type View = 'courses' | 'modules' | 'lessons' | 'content' | 'master-test' | 'module-test';
 
@@ -356,13 +365,23 @@ const Index = () => {
 
           <main className="p-4 sm:p-5 md:p-6 pb-8 sm:pb-10 flex justify-center">
             <div className="max-w-lg md:max-w-3xl w-full mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-2.5 mb-3">
+              <div className={cn(PANEL_CLASS, 'mb-3')} style={PANEL_STYLE}>
                 {currentModule.lessons.map((lesson, index) => (
-                  <LessonCard
+                  <TerminalRow
                     key={lesson.id}
-                    lesson={lesson}
-                    onClick={() => handleLessonClick(lesson)}
                     index={index}
+                    icon={
+                      lesson.isCompleted
+                        ? <Check className="w-[18px] h-[18px]" />
+                        : <span className="font-mono text-[13px] tabular-nums">{index + 1}</span>
+                    }
+                    tone="green"
+                    title={lesson.title}
+                    caption={lesson.duration ? `${lesson.duration}` : 'Урок'}
+                    value={lesson.isCompleted ? 'пройден' : undefined}
+                    valueLive={lesson.isCompleted}
+                    locked={lesson.isLocked}
+                    onClick={lesson.isLocked ? undefined : () => handleLessonClick(lesson)}
                   />
                 ))}
               </div>
@@ -484,17 +503,33 @@ const Index = () => {
               </div>
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-              {courseModules.map((module, index) => (
-                <ModuleCard
-                  key={module.id}
-                  module={module}
-                  onClick={() => handleModuleClick(module)}
-                  index={index}
-                  badge="Module"
-                  showArrow={true}
-                />
-              ))}
+            {/* Строки, а не карточки в сетке: те оставляли половину
+                площади пустой, а здесь видно состав модуля и прогресс */}
+            <div className={PANEL_CLASS} style={PANEL_STYLE}>
+              {courseModules.map((module, index) => {
+                const total = module.lessons.length;
+                const done = module.lessons.filter(l => l.isCompleted).length;
+                const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+                const locked = module.lessons[0]?.isLocked ?? false;
+
+                return (
+                  <TerminalRow
+                    key={module.id}
+                    index={index}
+                    icon={module.icon}
+                    tone="green"
+                    title={module.title}
+                    caption={locked
+                      ? 'Откроется после предыдущего модуля'
+                      : `${done} из ${total} уроков`}
+                    value={locked ? undefined : `${percent}%`}
+                    valueLive={!locked && done > 0}
+                    progress={locked ? undefined : percent}
+                    locked={locked}
+                    onClick={locked ? undefined : () => handleModuleClick(module)}
+                  />
+                );
+              })}
             </div>
 
             {/* Master Test Card */}

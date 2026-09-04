@@ -264,7 +264,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
 
                         {/* Центр - Название и Текущий режим */}
                         <div className="flex flex-col items-center text-center">
-                            <h1 className="text-sm sm:text-base font-display neon-text-subtle flex items-center gap-1.5">
+                            <h1 className="text-sm sm:text-base neon-text-subtle flex items-center gap-1.5">
                                 AI {currentMode === 'teacher' ? 'Ментор' : 'Аналитик'}
                                 <Zap className="w-3 h-3 text-accent animate-pulse" />
                             </h1>

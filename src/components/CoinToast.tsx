@@ -67,7 +67,7 @@ export function CoinToast() {
                                    border border-primary/40 shadow-lg"
                     >
                         <Coins className="w-4 h-4 text-primary" />
-                        <span className="font-display font-bold text-sm text-primary tabular-nums">
+                        <span className="font-bold text-sm text-primary tabular-nums">
                             +{grant.amount}
                         </span>
                         <span className="text-xs text-muted-foreground">{grant.label}</span>

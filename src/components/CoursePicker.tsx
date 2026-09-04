@@ -102,7 +102,7 @@ export const CoursePicker = memo(function CoursePicker({
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                         <h3 className={cn(
-                                            'font-display font-bold text-base tracking-wide truncate',
+                                            'font-bold text-base tracking-wide truncate',
                                             !open && 'text-muted-foreground'
                                         )}>
                                             {course.title}

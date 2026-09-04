@@ -47,7 +47,7 @@ export function PartnerQuests() {
                     <Target className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h3 className="font-display font-bold text-base">Задания</h3>
+                    <h3 className="font-bold text-base">Задания</h3>
                     <p className="text-xs text-muted-foreground">
                         {left > 0
                             ? `Регистрация с депозитом на площадке. Можно забрать ещё ${left} монет`
@@ -85,7 +85,7 @@ export function PartnerQuests() {
 
                         <div className="flex flex-col items-end gap-1 flex-shrink-0">
                             <span className={cn(
-                                'text-sm font-display font-bold tabular-nums',
+                                'text-sm font-bold tabular-nums',
                                 quest.done ? 'text-primary' : 'text-foreground'
                             )}>
                                 +{quest.coins}

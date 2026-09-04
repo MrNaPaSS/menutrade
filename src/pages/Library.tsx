@@ -246,7 +246,7 @@ const Library = () => {
 
                             {/* Информация о книге */}
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-display font-bold text-sm sm:text-base mb-1">
+                              <h4 className="font-bold text-sm sm:text-base mb-1">
                                 {book.title}
                               </h4>
                               <p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">

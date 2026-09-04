@@ -109,7 +109,7 @@ const Live = () => {
                         <Icon className="w-5 h-5 text-primary" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="font-display font-bold text-sm mb-0.5">{feature.title}</h3>
+                        <h3 className="font-bold text-sm mb-0.5">{feature.title}</h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
                       </div>
                     </div>

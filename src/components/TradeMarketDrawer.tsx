@@ -137,7 +137,7 @@ export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps
                           <Icon className="w-5 h-5 text-primary" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-display font-bold text-sm">{meta.label}</p>
+                          <p className="font-bold text-sm">{meta.label}</p>
                           <p className="text-xs text-muted-foreground">{meta.hint}</p>
                         </div>
                         <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -153,7 +153,7 @@ export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps
                                  transition-transform duration-100 active:scale-[0.98]"
                     >
                       <div className="flex items-center justify-between gap-2 mb-1">
-                        <p className="font-display font-bold text-sm">{item.name}</p>
+                        <p className="font-bold text-sm">{item.name}</p>
                         <span className="text-[10px] font-mono text-primary border border-primary/30
                                          rounded-full px-2 py-0.5 flex-shrink-0">
                           {item.minDeposit}

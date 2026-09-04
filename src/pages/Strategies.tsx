@@ -118,7 +118,7 @@ function removeEmojiFromChildren(children: ReactNode): ReactNode {
 // Markdown Components for Strategies
 const MarkdownComponents: any = {
   h1: ({ children }: any) => (
-    <h1 className="font-display text-base font-bold text-foreground mt-0 mb-4 neon-text flex items-center gap-2 pt-2 break-words overflow-wrap-anywhere">
+    <h1 className="text-base font-bold text-foreground mt-0 mb-4 neon-text flex items-center gap-2 pt-2 break-words overflow-wrap-anywhere">
       <span className="w-1 h-4 bg-primary rounded-full shadow-[0_0_12px_rgba(34,197,94,0.7)] flex-shrink-0"></span>
       <span className="break-words overflow-wrap-anywhere">{children}</span>
     </h1>

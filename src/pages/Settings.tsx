@@ -157,7 +157,7 @@ const Settings = () => {
                         <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
                       </div>
                       <div>
-                        <h3 className="font-display font-bold text-base sm:text-lg">Админ-панель</h3>
+                        <h3 className="font-bold text-base sm:text-lg">Админ-панель</h3>
                         <p className="text-xs text-muted-foreground">Управление системой</p>
                       </div>
                     </div>
