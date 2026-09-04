@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { sendCoinEvent } from '@/lib/coins';
+import { fetchProgress, resetProgressOnServer, saveProgress } from '@/lib/progressApi';
+import { applyCompleted, collectCompleted, sameCompleted, unionCompleted } from '@/lib/progressSync';
 import { modules as allModules } from '@/data/lessons';
 import { Module, Lesson } from '@/types/lesson';
 import { useTelegramContext } from '@/contexts/TelegramContext';
@@ -121,6 +123,51 @@ export function useProgress() {
     }
   }, [modules, userId]); // Убрали storageKey из зависимостей, так как он вычисляется из userId
 
+  // Прогресс с сервера. Он источник правды: браузер чистят и телефоны
+  // меняют, а учёба должна оставаться. Локальная копия остаётся кэшем -
+  // вне Telegram и без связи приложение работает по ней.
+  const syncedRef = useRef<string[] | null>(null);
+  const [masterTestPassed, setMasterTestPassed] = useState(
+    () => localStorage.getItem(masterTestKey) === 'true'
+  );
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+
+    fetchProgress().then(remote => {
+      if (cancelled || !remote) return;
+
+      // Что сервер уже знает. Если локально закрыто больше, следующий
+      // эффект это заметит и дошлёт - так уцелеют уроки, пройденные
+      // до появления синхронизации
+      syncedRef.current = remote.completed;
+
+      setModules(prev => applyCompleted(
+        prev,
+        unionCompleted(collectCompleted(prev), remote.completed)
+      ));
+
+      if (remote.master_test) {
+        setMasterTestPassed(true);
+        localStorage.setItem(masterTestKey, 'true');
+      }
+    });
+
+    return () => { cancelled = true; };
+  }, [userId, masterTestKey]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const completed = collectCompleted(modules);
+    // Не тревожим сервер тем, что он уже знает
+    if (syncedRef.current && sameCompleted(syncedRef.current, completed)) return;
+
+    syncedRef.current = completed;
+    saveProgress({ completed, master_test: masterTestPassed });
+  }, [modules, masterTestPassed, userId]);
+
   const completeLesson = (moduleId: string, lessonId: string) => {
     setModules(prevModules => {
       const newModules = prevModules.map(module => {
@@ -176,6 +223,11 @@ export function useProgress() {
       }))
     }));
     setModules(resetModules);
+    setMasterTestPassed(false);
+    // Сброс - единственный способ обнулить прогресс на сервере:
+    // обычная запись его только дополняет
+    syncedRef.current = [];
+    resetProgressOnServer();
     localStorage.removeItem(storageKey);
     localStorage.removeItem(masterTestKey);
     if (userId) {
@@ -183,11 +235,10 @@ export function useProgress() {
     }
   };
 
-  const isMasterTestCompleted = () => {
-    return localStorage.getItem(masterTestKey) === 'true';
-  };
+  const isMasterTestCompleted = () => masterTestPassed;
 
   const completeMasterTest = () => {
+    setMasterTestPassed(true);
     localStorage.setItem(masterTestKey, 'true');
     // Итоговый тест - самое дорогое событие академии
     sendCoinEvent('master_test', 'test_passed');
