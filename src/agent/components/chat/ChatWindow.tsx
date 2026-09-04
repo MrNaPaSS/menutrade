@@ -72,9 +72,9 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
         if (textareaRef.current) {
             const el = textareaRef.current;
             el.style.height = 'auto';
-            // 36px - высота пустой строки: столько же, сколько у кнопок
+            // 32px - высота пустой строки: столько же, сколько у кнопок
             // по краям, чтобы пилюля не разъезжалась
-            el.style.height = `${Math.min(Math.max(el.scrollHeight, 36), 140)}px`;
+            el.style.height = `${Math.min(Math.max(el.scrollHeight, 32), 132)}px`;
         }
     }, [input]);
 
@@ -431,17 +431,17 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         </div>
                     )}
 
-                    <div className="flex items-end gap-2 rounded-[24px] border border-white/[0.09]
-                                    bg-white/[0.04] px-2 py-2 max-w-2xl mx-auto
+                    <div className="flex items-end gap-1.5 rounded-[22px] border border-white/[0.09]
+                                    bg-white/[0.04] px-1.5 py-1.5 max-w-2xl mx-auto
                                     focus-within:border-primary/40 transition-colors">
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             aria-label="Прикрепить файл"
-                            className="h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0
+                            className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0
                                        text-muted-foreground hover:text-foreground hover:bg-white/[0.06]
                                        transition-colors"
                         >
-                            <Paperclip className="w-[18px] h-[18px]" />
+                            <Paperclip className="w-[17px] h-[17px]" />
                         </button>
                         <input
                             ref={fileInputRef}
@@ -485,8 +485,8 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                                 onKeyDown={handleKeyDown}
                                 placeholder={currentMode === 'teacher' ? "Задайте вопрос ментору..." : "Опишите ситуацию на рынке..."}
                                 className={cn(
-                                    'w-full h-9 max-h-[140px] resize-none bg-transparent overflow-y-auto',
-                                    'py-2 px-1 text-[15px] leading-[1.45] outline-none',
+                                    'w-full h-8 max-h-[132px] resize-none bg-transparent overflow-y-auto',
+                                    'py-[5px] px-1 text-[15px] leading-[1.4] outline-none',
                                     'placeholder:text-muted-foreground/60'
                                 )}
                                 disabled={isLoading}
@@ -498,7 +498,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                             onClick={handleSend}
                             disabled={(!input.trim() && files.length === 0) || isLoading}
                             className={cn(
-                                'h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0',
+                                'h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0',
                                 'transition-colors',
                                 (!input.trim() && files.length === 0) || isLoading
                                     ? 'bg-white/[0.06] text-muted-foreground'
@@ -506,7 +506,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                             )}
                             whileTap={{ scale: 0.94 }}
                         >
-                            <Send className="w-[18px] h-[18px]" />
+                            <Send className="w-[17px] h-[17px]" />
                         </motion.button>
                     </div>
                 </div>
