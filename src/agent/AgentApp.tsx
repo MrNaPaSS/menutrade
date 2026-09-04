@@ -16,6 +16,10 @@ interface AgentAppProps {
  *
  * Своя шапка у агента остаётся: в ней выбор режима и рынка и история
  * чатов. Две шапки подряд читались бы как ошибка вёрстки.
+ *
+ * На весь экран, а не карточкой посреди страницы: переписка идёт
+ * длинными сообщениями, а панель истории выезжает слева на всю высоту -
+ * в окне на восемьдесят процентов экрана всё это ютится.
  */
 export function AgentApp({ onBack }: AgentAppProps) {
   const { user } = useTelegram();
@@ -26,7 +30,7 @@ export function AgentApp({ onBack }: AgentAppProps) {
       onClose={onBack}
       title="AI-агент"
       hideHeader
-      wide
+      fullscreen
       bare
       noScroll
     >

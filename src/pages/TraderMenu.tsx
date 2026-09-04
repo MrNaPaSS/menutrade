@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
 import { SimpleMenu } from '@/components/SimpleMenu';
@@ -7,7 +7,7 @@ import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
-import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap } from 'lucide-react';
+import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
@@ -15,6 +15,9 @@ import { LearningModal } from '@/components/trader-menu/LearningModal';
 import { StrategiesModal } from '@/components/trader-menu/StrategiesModal';
 import { SoftwareListModal } from '@/components/trader-menu/SoftwareListModal';
 import { SoftwareModal } from '@/components/SoftwareModal';
+// Агент со своим чатом и историей нужен не каждому заходу -
+// подгружаем его только когда открывают
+const AgentApp = lazy(() => import('@/agent/AgentApp').then(m => ({ default: m.AgentApp })));
 import type { SoftwareItem } from '@/data/software';
 import { courses } from '@/data/courses';
 import { strategyModules } from '@/data/strategies';
@@ -57,6 +60,7 @@ const TraderMenu = () => {
   // Карточка продукта поверх списка: закрыв её, человек
   // возвращается к списку, а не на экран целиком
   const [softwareItem, setSoftwareItem] = useState<SoftwareItem | null>(null);
+  const [agentOpen, setAgentOpen] = useState(false);
 
   const handleHomeClick = () => navigate('/home');
 
@@ -186,6 +190,14 @@ const TraderMenu = () => {
               />
               <TerminalRow
                 index={3}
+                icon={<Brain className="w-[18px] h-[18px]" />}
+                tone="cyan"
+                title="AI-агент"
+                caption="Разбор графика и обучение по трём рынкам"
+                onClick={() => setAgentOpen(true)}
+              />
+              <TerminalRow
+                index={4}
                 icon={<Code className="w-[18px] h-[18px]" />}
                 tone="violet"
                 title="Наш софт"
@@ -197,6 +209,12 @@ const TraderMenu = () => {
           </div>
         </main>
       </div>
+
+      {agentOpen && (
+        <Suspense fallback={null}>
+          <AgentApp onBack={() => setAgentOpen(false)} />
+        </Suspense>
+      )}
 
       <SoftwareListModal
         open={softwareOpen && !softwareItem}

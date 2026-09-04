@@ -71,7 +71,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 140)}px`;
         }
     }, [input]);
 
@@ -357,9 +357,12 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                 {/* Messages Area */}
                 <div
                     ref={scrollAreaRef}
-                    className="flex-1 overflow-y-auto px-2 sm:px-3"
+                    className="flex-1 overflow-y-auto px-4"
                 >
-                    <div className="py-3 sm:py-4">
+                    {/* Ширина строки ограничена: читать длинный разбор во
+                        всю ширину экрана тяжело. Между репликами воздух,
+                        как в мобильных чатах, а не плотный список */}
+                    <div className="max-w-2xl mx-auto py-4 space-y-6">
                         {history.length === 0 && showTemplates && (
                             <div className="space-y-2 sm:space-y-3">
                                 {/* Welcome */}
@@ -413,7 +416,11 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                 </div>
 
                 {/* Input Area */}
-                <div className="px-2 sm:px-3 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-1.5 border-t border-border/30 bg-background/80 backdrop-blur-sm flex-shrink-0">
+                {/* Поле ввода одной пилюлей, как в мобильных Claude и
+                    ChatGPT: вложение внутри слева, отправка кружком справа.
+                    Рамка во всю ширину и три отдельные кнопки в ряд
+                    выглядели как форма, а не как строка переписки */}
+                <div className="px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 flex-shrink-0">
                     {/* File thumbnails */}
                     {files.length > 0 && (
                         <div className="mb-1.5">
@@ -421,13 +428,17 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         </div>
                     )}
 
-                    <div className="flex gap-1.5 items-center">
-                        {/* Paperclip */}
+                    <div className="flex items-end gap-2 rounded-[24px] border border-white/[0.09]
+                                    bg-white/[0.04] px-2 py-2 max-w-2xl mx-auto
+                                    focus-within:border-primary/40 transition-colors">
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="h-[34px] sm:h-[38px] w-[34px] sm:w-[38px] rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-white/5 transition-colors border border-white/10 flex-shrink-0"
+                            aria-label="Прикрепить файл"
+                            className="h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0
+                                       text-muted-foreground hover:text-foreground hover:bg-white/[0.06]
+                                       transition-colors"
                         >
-                            <Paperclip className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <Paperclip className="w-[18px] h-[18px]" />
                         </button>
                         <input
                             ref={fileInputRef}
@@ -459,9 +470,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                             }}
                         />
 
-                        {/* Input */}
-                        <div className="flex-1 relative group">
-                            <div className="absolute -inset-0.5 bg-primary/10 blur opacity-0 group-focus-within:opacity-100 transition duration-500 rounded-lg" />
+                        <div className="flex-1 min-w-0">
                             <textarea
                                 ref={textareaRef}
                                 value={input}
@@ -469,11 +478,10 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                                 onKeyDown={handleKeyDown}
                                 placeholder={currentMode === 'teacher' ? "Задайте вопрос ментору..." : "Опишите ситуацию на рынке..."}
                                 className={cn(
-                                    'relative w-full min-h-[34px] sm:min-h-[38px] max-h-[120px] resize-none',
-                                    'input-glass rounded-lg py-1.5 px-3 text-xs sm:text-sm',
-                                    'placeholder:text-muted-foreground/50'
+                                    'w-full min-h-[36px] max-h-[140px] resize-none bg-transparent',
+                                    'py-2 px-1 text-[15px] leading-[1.45] outline-none',
+                                    'placeholder:text-muted-foreground/60'
                                 )}
-                                style={{ lineHeight: '1.2' }}
                                 disabled={isLoading}
                             />
                         </div>
@@ -483,14 +491,15 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                             onClick={handleSend}
                             disabled={(!input.trim() && files.length === 0) || isLoading}
                             className={cn(
-                                'h-[34px] sm:h-[38px] w-[34px] sm:w-[38px] rounded-lg flex items-center justify-center flex-shrink-0 transition-all touch-feedback',
+                                'h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0',
+                                'transition-colors',
                                 (!input.trim() && files.length === 0) || isLoading
-                                    ? 'bg-white/5 text-muted-foreground border border-white/10'
-                                    : 'bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20'
+                                    ? 'bg-white/[0.06] text-muted-foreground'
+                                    : 'bg-primary text-primary-foreground'
                             )}
-                            whileTap={{ scale: 0.95 }}
+                            whileTap={{ scale: 0.94 }}
                         >
-                            <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <Send className="w-[18px] h-[18px]" />
                         </motion.button>
                     </div>
                 </div>
