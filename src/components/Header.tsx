@@ -52,7 +52,7 @@ export function Header() {
          в её пустую середину, между «Закрыть» и «...». Ростом в 120px
          оно проходит полосу насквозь, поэтому строка ниже всё равно
          начинается под кнопками и ничего не перекрывает */
-      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 2px)' }}
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <motion.img
         src={`${basePath()}nmnh_logo.png`}
@@ -65,7 +65,7 @@ export function Header() {
       />
 
       <motion.div
-        className="flex items-center justify-between gap-2 -mt-1"
+        className="flex items-center justify-between gap-2 -mt-4"
         initial={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.06, ease: [0.23, 1, 0.32, 1] }}
