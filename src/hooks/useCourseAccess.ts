@@ -4,9 +4,9 @@ import { fetchCourseAccess, type AccessState, type CourseId } from '@/lib/course
 interface CourseAccessState {
     courses: Record<CourseId, AccessState>;
     partners: Record<CourseId, string>;
-    /** Пока идёт запрос, открытых курсов не показываем - иначе мигнёт */
+    /** Идёт ли ещё запрос */
     loading: boolean;
-    /** Бот не ответил: вне Telegram или нет связи */
+    /** Бот не ответил: вне Telegram, нет связи или сервер не поднят */
     offline: boolean;
 }
 
@@ -16,20 +16,48 @@ const ALL_CLOSED: Record<CourseId, AccessState> = {
     crypto: 'closed',
 };
 
+const CACHE_KEY = 'nmnh-course-access';
+
+function loadCache(): { courses: Record<CourseId, AccessState>; partners: Record<CourseId, string> } | null {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed?.courses ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
+function saveCache(value: { courses: Record<CourseId, AccessState>; partners: Record<CourseId, string> }): void {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(value));
+    } catch {
+        /* памяти нет - обойдёмся, просто спросим бота в следующий раз */
+    }
+}
+
 /**
  * Доступ к курсам.
  *
- * Решение принимает бот, здесь оно только отображается. Если бот не
- * ответил, курсы не открываются сами собой: доступ - это то, за что
- * человек регистрируется у партнёра, и выдавать его по молчанию сети
- * нельзя.
+ * Решение принимает бот. Но недоступный сервер не должен отбирать
+ * учёбу: пока идёт запрос и если он не удался, работает последний
+ * известный ответ из памяти браузера. Иначе перезапуск бота или
+ * секунда без сети обнуляют человеку все счётчики и прячут курс,
+ * который он проходит.
+ *
+ * Кэш только смягчает перебои - выдать доступ он не может: там лежит
+ * ровно то, что бот когда-то ответил этому же человеку.
  */
 export function useCourseAccess(): CourseAccessState {
-    const [state, setState] = useState<CourseAccessState>({
-        courses: ALL_CLOSED,
-        partners: {} as Record<CourseId, string>,
-        loading: true,
-        offline: false,
+    const [state, setState] = useState<CourseAccessState>(() => {
+        const cached = loadCache();
+        return {
+            courses: cached?.courses ?? ALL_CLOSED,
+            partners: cached?.partners ?? ({} as Record<CourseId, string>),
+            loading: true,
+            offline: false,
+        };
     });
 
     useEffect(() => {
@@ -37,12 +65,15 @@ export function useCourseAccess(): CourseAccessState {
 
         fetchCourseAccess().then(data => {
             if (cancelled) return;
-            setState({
-                courses: data?.courses ?? ALL_CLOSED,
-                partners: data?.partners ?? ({} as Record<CourseId, string>),
-                loading: false,
-                offline: !data,
-            });
+
+            if (data) {
+                saveCache(data);
+                setState({ ...data, loading: false, offline: false });
+                return;
+            }
+
+            // Не ответил - остаёмся на том, что показывали, и говорим об этом
+            setState(prev => ({ ...prev, loading: false, offline: true }));
         });
 
         return () => { cancelled = true; };

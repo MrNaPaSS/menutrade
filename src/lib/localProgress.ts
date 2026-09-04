@@ -56,8 +56,20 @@ export function loadLocalCompleted(key: string): string[] {
     return [];
 }
 
-export function saveLocalCompleted(key: string, completed: string[]): void {
+/**
+ * Сохраняет ключи закрытых уроков.
+ *
+ * Пустой список поверх непустого не пишется. Это предохранитель, а не
+ * тонкость: стоило приложению на секунду решить, что уроков у человека
+ * нет - недоступный сервер, закрытый курс, ошибка в расчёте, - и запись
+ * стирала накопленное безвозвратно. Именно так и произошло. Обнулить
+ * можно только осознанным сбросом, у него отдельный флаг.
+ */
+export function saveLocalCompleted(key: string, completed: string[], allowEmpty = false): void {
     try {
+        if (completed.length === 0 && !allowEmpty && loadLocalCompleted(key).length > 0) {
+            return;
+        }
         localStorage.setItem(key, JSON.stringify({ completed }));
     } catch {
         /* места нет или приватный режим - прогресс всё равно на сервере */

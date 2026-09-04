@@ -62,3 +62,27 @@ export function unionCompleted(a: string[], b: string[]): string[] {
 export function sameCompleted(a: string[], b: string[]): boolean {
     return a.length === b.length && a.every((key, i) => key === b[i]);
 }
+
+/**
+ * Какому курсу принадлежит ключ урока.
+ *
+ * Приставки те же, что знает бот (COURSE_PREFIX в academy_access.py):
+ * crypto-*, fx-*, а без приставки - бинарные опционы, первый курс
+ * академии. Менять их здесь, не поправив там, нельзя.
+ */
+export function courseOfKey(key: string): string | null {
+    if (!key.includes(':')) return null;
+    if (key.startsWith('crypto-')) return 'crypto';
+    if (key.startsWith('fx-')) return 'forex';
+    return 'binary';
+}
+
+/** Курсы, где уже есть пройденные уроки. */
+export function startedCourses(completed: string[]): Set<string> {
+    const found = new Set<string>();
+    completed.forEach(key => {
+        const course = courseOfKey(key);
+        if (course) found.add(course);
+    });
+    return found;
+}

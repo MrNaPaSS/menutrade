@@ -23,6 +23,15 @@ export const BOT_API_HEADERS = {
 } as const;
 
 /**
+ * Сколько ждём ответа бота.
+ *
+ * Без предела недоступный сервер держит обещание до таймаута браузера -
+ * это десятки секунд, всё это время экран показывает заглушку и
+ * выглядит сломанным. Восемь секунд с запасом хватает медленной сети.
+ */
+const TIMEOUT_MS = 8000;
+
+/**
  * POST на сервер бота с подписью. null - мы вне Telegram, связи нет
  * или бот ответил отказом: экраны в этом случае просто не рисуют блок.
  */
@@ -30,15 +39,21 @@ export async function postSigned<T>(path: string, body: Record<string, unknown> 
     const data = initData();
     if (!data) return null;
 
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
     try {
         const res = await fetch(`${botApiBase()}${path}`, {
             method: 'POST',
             headers: BOT_API_HEADERS,
             body: JSON.stringify({ initData: data, ...body }),
+            signal: controller.signal,
         });
         const json = await res.json();
         return json?.success ? (json as T) : null;
     } catch {
         return null;
+    } finally {
+        clearTimeout(timer);
     }
 }

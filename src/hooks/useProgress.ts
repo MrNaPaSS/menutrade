@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sendCoinEvent } from '@/lib/coins';
 import { fetchProgress, resetProgressOnServer, saveProgress } from '@/lib/progressApi';
-import { applyCompleted, lessonKey, sameCompleted, unionCompleted } from '@/lib/progressSync';
+import { applyCompleted, lessonKey, sameCompleted, startedCourses, unionCompleted } from '@/lib/progressSync';
 import { loadLocalCompleted, saveLocalCompleted } from '@/lib/localProgress';
 import { courses } from '@/data/courses';
 import { Module } from '@/types/lesson';
@@ -31,7 +31,7 @@ const getMasterTestKey = (userId: string | null) => getStorageKey(userId, 'maste
  */
 export function useProgress() {
   const { userId } = useTelegramContext();
-  const { courses: access, loading: accessLoading } = useCourseAccess();
+  const { courses: access, loading: accessLoading, offline } = useCourseAccess();
 
   const storageKey = getStorageKey(userId);
   const masterTestKey = getMasterTestKey(userId);
@@ -42,13 +42,28 @@ export function useProgress() {
   );
   const syncedRef = useRef<string[] | null>(null);
 
-  // Уроки открытых курсов. Пока доступ не пришёл, список пуст - выдавать
-  // курс по молчанию сети нельзя, за него человек платит регистрацией
+  // Уроки открытых курсов.
+  //
+  // Если бот не ответил, к ответу добавляются курсы, в которых у
+  // человека уже есть пройденные уроки. Выдать этим ничего нельзя -
+  // только вернуть то, что он и так проходил, - зато перезапуск бота
+  // или секунда без сети не обнуляют ему счётчики и не прячут курс.
+  // Ровно то же правило бот применяет у себя.
+  const openIds = useMemo(() => {
+    const ids = new Set(
+      courses.filter(course => access[course.id] === 'open').map(course => course.id as string)
+    );
+    if (offline) {
+      startedCourses(completed).forEach(id => ids.add(id));
+    }
+    return ids;
+  }, [access, offline, completed]);
+
   const openModules = useMemo(
     () => courses
-      .filter(course => access[course.id] === 'open')
+      .filter(course => openIds.has(course.id))
       .flatMap(course => course.modules.filter(m => !STRATEGY_MODULES.has(m.id))),
-    [access]
+    [openIds]
   );
 
   const modules: Module[] = useMemo(
@@ -149,6 +164,9 @@ export function useProgress() {
     // обычная запись его только дополняет
     syncedRef.current = [];
     resetProgressOnServer();
+    // Осознанный сброс - единственное место, где пустой список
+    // разрешено записать поверх накопленного
+    saveLocalCompleted(storageKey, [], true);
     localStorage.removeItem(storageKey);
     localStorage.removeItem(masterTestKey);
     if (userId) localStorage.removeItem(`pepe-trader-stats-${userId}`);
