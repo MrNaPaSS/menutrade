@@ -9,14 +9,12 @@ import { LessonContent } from '@/components/LessonContent';
 import { BottomNav } from '@/components/BottomNav';
 import { MasterTest } from '@/components/MasterTest';
 import { Quiz } from '@/components/Quiz';
-import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
 import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { CoursePicker } from '@/components/CoursePicker';
 import { courses, type Course } from '@/data/courses';
 import type { CourseId } from '@/lib/courseAccess';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
-import { useUserAccess } from '@/contexts/UserAccessContext';
 import { Module, Lesson, QuizQuestion } from '@/types/lesson';
 import { ArrowLeft, RotateCcw, Trophy, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,7 +31,6 @@ const Index = () => {
   // со всеми карточками уроков и их пружинами.
   const lastScrollY = useRef(0);
   const { scrollY } = useScroll();
-  const { hasFullAccess, isLoading: userLoading } = useUserAccess();
   const { courses: courseAccess, partners } = useCourseAccess();
   const location = useLocation();
 
@@ -70,9 +67,10 @@ const Index = () => {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
   // Проверка доступа
-  if (!userLoading && !hasFullAccess) {
-    return <AccessDeniedScreen feature="обучение" onBack={() => navigate('/home')} />;
-  }
+  // Стены на весь раздел больше нет: направления показываем всем, а
+  // закрывает их замок на каждом курсе. Человек без верификации должен
+  // видеть, что рынков три и что именно открывает каждый - иначе он не
+  // узнает, ради чего заводить счёт.
 
   const handleModuleClick = (module: Module) => {
     setSelectedModule(module);
