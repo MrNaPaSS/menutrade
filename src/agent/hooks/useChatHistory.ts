@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AIMode } from '@/agent/config/prompts';
+import type { MarketChoice } from '@/agent/config/markets';
 
 export interface FileAttachment {
     name: string;
@@ -22,6 +23,8 @@ export interface ChatSession {
     title: string;
     messages: ChatMessage[];
     mode: AIMode; // Добавляем поле для режима AI
+    /** Рынок разговора: бинарки, форекс, крипта или «определи сам» */
+    market: MarketChoice;
     createdAt: number;
     updatedAt: number;
 }
@@ -38,10 +41,13 @@ function getStoredSessions(): ChatSession[] {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             const sessions = JSON.parse(saved);
-            // Миграция старых данных: добавляем mode если нет
+            // Миграция старых данных: у прежних чатов не было ни
+            // режима, ни рынка. Рынок ставим 'auto': агент раньше знал
+            // только бинарки, но старые чаты могли быть о чём угодно
             return sessions.map((s: any) => ({
                 ...s,
-                mode: s.mode || 'teacher'
+                mode: s.mode || 'teacher',
+                market: s.market || 'auto',
             }));
         }
     } catch (error) {
@@ -69,6 +75,7 @@ export function useChatHistory() {
     const activeSession = sessions.find(s => s.id === activeSessionId) || null;
     const history = activeSession?.messages || [];
     const currentMode: AIMode = activeSession?.mode || 'teacher';
+    const currentMarket: MarketChoice = activeSession?.market || 'auto';
 
     // Сохранение при изменении
     useEffect(() => {
@@ -82,6 +89,7 @@ export function useChatHistory() {
             title: title || `Чат ${sessions.length + 1}`,
             messages: [],
             mode: 'teacher', // По умолчанию всегда Ментор
+            market: 'auto', // Рынок определяем по вопросу, пока не выбрали
             createdAt: Date.now(),
             updatedAt: Date.now(),
         };
@@ -106,6 +114,15 @@ export function useChatHistory() {
     const switchSession = useCallback((sessionId: string) => {
         setActiveSessionId(sessionId);
     }, []);
+
+    // Установка рынка для текущей сессии
+    const setSessionMarket = useCallback((market: MarketChoice) => {
+        setSessions(prev => prev.map(session => (
+            session.id === activeSessionId
+                ? { ...session, market, updatedAt: Date.now() }
+                : session
+        )));
+    }, [activeSessionId]);
 
     // Установка режима для текущей сессии
     const setSessionMode = useCallback((mode: AIMode) => {
@@ -199,11 +216,13 @@ export function useChatHistory() {
         activeSession,
         history,
         currentMode, // Экспортируем текущий режим
+        currentMarket,
         // Действия с сессиями
         createSession,
         deleteSession,
         switchSession,
         setSessionMode, // Экспортируем функцию смены режима
+        setSessionMarket,
         // Действия с сообщениями
         addMessage,
         updateMessage,

@@ -9,6 +9,7 @@ import { FileUpload } from './FileUpload';
 import { QuickTemplates } from './QuickTemplates';
 import { Sidebar } from '@/agent/components/Sidebar';
 import { ModeSelector } from '@/agent/components/ModeSelector';
+import { MARKET_META } from '@/agent/config/markets';
 import { cn } from '@/lib/utils';
 import type { TelegramUser } from '@/hooks/useTelegram';
 
@@ -36,10 +37,12 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
         activeSessionId,
         history,
         currentMode, // Получаем текущий режим из хука
+        currentMarket, // и рынок: от него зависит вердикт и расчёт риска
         createSession,
         deleteSession,
         switchSession,
         setSessionMode, // Получаем функцию смены режима
+        setSessionMarket,
         addMessage,
         updateMessage,
         clearHistory,
@@ -113,11 +116,12 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                 content: userMessage,
             });
 
-            // Передаем текущий режим явно
+            // Передаем текущий режим и рынок явно
             const response = await sendMessage(
                 apiMessages,
                 userFiles.length > 0 ? userFiles : undefined,
-                currentMode
+                currentMode,
+                currentMarket
             );
 
             addMessage({
@@ -136,7 +140,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
         } finally {
             setIsLoading(false);
         }
-    }, [input, files, history, isLoading, addMessage, currentMode]);
+    }, [input, files, history, isLoading, addMessage, currentMode, currentMarket]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -166,11 +170,12 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                 content: text,
             });
 
-            // Передаем текущий режим явно
+            // Передаем текущий режим и рынок явно
             const response = await sendMessage(
                 apiMessages,
                 undefined,
-                currentMode
+                currentMode,
+                currentMarket
             );
 
             addMessage({
@@ -269,6 +274,13 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                                 ) : (
                                     <><BarChart3 className="w-3 h-3" /> Анализ рынка</>
                                 )}
+                                {/* Рынок видно сразу: иначе непонятно, по чьим
+                                    правилам агент посчитает сделку */}
+                                <span className="opacity-60">
+                                    · {currentMarket === 'auto'
+                                        ? 'любой рынок'
+                                        : MARKET_META[currentMarket].label.toLowerCase()}
+                                </span>
                             </p>
                         </div>
 
@@ -297,6 +309,8 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                                     onClose={() => setShowModeSelector(false)}
                                     currentMode={currentMode}
                                     onSelectMode={setSessionMode} // Используем функцию из хука
+                                    currentMarket={currentMarket}
+                                    onSelectMarket={setSessionMarket}
                                 />
                             </div>
 
@@ -379,6 +393,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                                     <QuickTemplates
                                         onSelect={handleTemplateSelect}
                                         mode={currentMode}
+                                        market={currentMarket}
                                     />
                                 </div>
                             </div>

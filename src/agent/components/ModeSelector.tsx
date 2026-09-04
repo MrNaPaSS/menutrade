@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, BarChart3, Check } from 'lucide-react';
+import { GraduationCap, BarChart3, Check, Wand2 } from 'lucide-react';
 import { AIMode } from '@/agent/config/prompts';
+import { MARKETS, MARKET_META, type MarketChoice } from '@/agent/config/markets';
 import { cn } from '@/lib/utils';
 
 interface ModeSelectorProps {
@@ -8,9 +9,28 @@ interface ModeSelectorProps {
     onClose: () => void;
     currentMode: AIMode;
     onSelectMode: (mode: AIMode) => void;
+    currentMarket: MarketChoice;
+    onSelectMarket: (market: MarketChoice) => void;
 }
 
-export function ModeSelector({ isOpen, onClose, currentMode, onSelectMode }: ModeSelectorProps) {
+/** Порядок в меню: сперва «определи сам», дальше рынки как в академии. */
+const MARKET_CHOICES: { value: MarketChoice; label: string; hint: string }[] = [
+    { value: 'auto', label: 'Определить сам', hint: 'По вопросу и графику' },
+    ...MARKETS.map(market => ({
+        value: market as MarketChoice,
+        label: MARKET_META[market].label,
+        hint: MARKET_META[market].hint,
+    })),
+];
+
+export function ModeSelector({
+    isOpen,
+    onClose,
+    currentMode,
+    onSelectMode,
+    currentMarket,
+    onSelectMarket,
+}: ModeSelectorProps) {
     const handleSelect = (mode: AIMode) => {
         onSelectMode(mode);
         onClose();
@@ -32,7 +52,7 @@ export function ModeSelector({ isOpen, onClose, currentMode, onSelectMode }: Mod
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute right-0 top-full mt-2 w-[260px] z-50"
+                        className="absolute right-0 top-full mt-2 w-[280px] max-h-[70vh] overflow-y-auto z-50"
                     >
                         <div className="glass-card neon-border rounded-xl p-2 shadow-xl bg-background/95 backdrop-blur-xl">
                             <div className="px-2 py-1.5 mb-1 border-b border-border/30">
@@ -113,6 +133,57 @@ export function ModeSelector({ isOpen, onClose, currentMode, onSelectMode }: Mod
                                         </p>
                                     </div>
                                 </button>
+                            </div>
+
+                            {/* Рынок: от него зависит вердикт и расчёт риска.
+                                Сигнал индикатора один, а сделка разная */}
+                            <div className="px-2 py-1.5 mt-2 mb-1 border-t border-b border-border/30">
+                                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    Рынок
+                                </h3>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-1">
+                                {MARKET_CHOICES.map(choice => (
+                                    <button
+                                        key={choice.value}
+                                        onClick={() => {
+                                            onSelectMarket(choice.value);
+                                            onClose();
+                                        }}
+                                        className={cn(
+                                            'p-2 rounded-lg transition-all text-left group border',
+                                            currentMarket === choice.value
+                                                ? 'bg-primary/10 border-primary/30'
+                                                : 'border-transparent hover:bg-white/5'
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-1.5">
+                                            {choice.value === 'auto' && (
+                                                <Wand2 className={cn(
+                                                    'w-3 h-3 flex-shrink-0',
+                                                    currentMarket === choice.value
+                                                        ? 'text-primary'
+                                                        : 'text-muted-foreground'
+                                                )} />
+                                            )}
+                                            <span className={cn(
+                                                'text-xs font-medium leading-tight',
+                                                currentMarket === choice.value
+                                                    ? 'text-primary'
+                                                    : 'text-foreground'
+                                            )}>
+                                                {choice.label}
+                                            </span>
+                                            {currentMarket === choice.value && (
+                                                <Check className="w-3 h-3 text-primary flex-shrink-0 ml-auto" />
+                                            )}
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                                            {choice.hint}
+                                        </p>
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </motion.div>

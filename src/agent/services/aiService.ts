@@ -1,4 +1,5 @@
-import { detectAIMode, getPromptForMode, AIMode } from '@/agent/config/prompts';
+import { buildPrompt, detectAIMode, AIMode } from '@/agent/config/prompts';
+import { resolveMarket, type MarketChoice } from '@/agent/config/markets';
 
 // В production используем наш Cloudflare Worker, в dev - прямой запрос (если есть ключ)
 // Рабочий прокси академии - тот же, на котором AI работает в проде.
@@ -75,6 +76,7 @@ export async function sendMessage(
     messages: { role: 'user' | 'assistant'; content: string }[],
     files?: FileData[],
     explicitMode?: AIMode,
+    market: MarketChoice = 'auto',
     retries = 3
 ): Promise<string> {
     const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
@@ -83,22 +85,18 @@ export async function sendMessage(
     // ни в проде, ни локально. Прежняя проверка ключа в .env осталась
     // от отдельного приложения агента и ломала работу в разработке.
 
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+    const lastText = lastUserMessage?.content || '';
+    const hasFiles = !!files && files.length > 0;
+
     // Определение режима
-    let mode: AIMode;
+    const mode: AIMode = explicitMode || detectAIMode(lastText, hasFiles);
 
-    if (explicitMode) {
-        // Если режим выбран вручную - используем его
-        mode = explicitMode;
-    } else {
-        // Иначе автоопределение
-        const lastUserMessage = messages.filter(m => m.role === 'user').pop();
-        const hasFiles = files && files.length > 0;
-        mode = detectAIMode(lastUserMessage?.content || '', hasFiles || false);
-    }
-
-    const systemPrompt = getPromptForMode(mode);
-
-    console.log(`🤖 AI Mode: ${mode === 'analyst' ? '📊 АНАЛИТИК' : '📚 УЧИТЕЛЬ'} ${explicitMode ? '(Ручной)' : '(Авто)'}`);
+    // Рынок: выбранный человеком или узнанный по вопросу. Если не узнали,
+    // промпт получит правила всех трёх, и модель назовёт рынок сама -
+    // это честнее, чем молча посчитать сделку по бинаркам
+    const resolvedMarket = resolveMarket(market, lastText);
+    const systemPrompt = buildPrompt(mode, resolvedMarket);
 
     // Подготовка сообщений для API
     const apiMessages: AIMessage[] = [
