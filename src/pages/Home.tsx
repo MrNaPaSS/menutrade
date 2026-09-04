@@ -3,11 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
-import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { useProgress } from '@/hooks/useProgress';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
-import { useDailyClaim } from '@/hooks/useDailyClaim';
-import { Briefcase, ChevronRight, Radio } from 'lucide-react';
+import { ArrowRight, Briefcase, Coins, Radio } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ProgressRing } from '@/components/ProgressRing';
+import { useCountUp } from '@/hooks/useCountUp';
+import { courses } from '@/data/courses';
+import { cn } from '@/lib/utils';
 
 const CARD_STYLE = {
   background: 'linear-gradient(162deg, hsl(142 20% 12%) 0%, hsl(140 26% 7%) 62%)',
@@ -16,11 +19,17 @@ const CARD_STYLE = {
 
 const Home = () => {
   const navigate = useNavigate();
-  const { getProgress } = useProgress();
+  const { modules, getProgress, openCourses } = useProgress();
   const { coins } = useCoinBalance();
-  const { streak } = useDailyClaim();
 
   const progress = getProgress();
+  const shownPercent = useCountUp(progress);
+
+  const completedLessons = modules.reduce(
+    (acc, m) => acc + m.lessons.filter(l => l.isCompleted).length,
+    0
+  );
+  const completedModules = modules.filter(m => m.lessons.every(l => l.isCompleted)).length;
 
   const sections = [
     {
@@ -50,24 +59,24 @@ const Home = () => {
 
         <main className="px-4 pt-5 flex justify-center">
           <div className="max-w-lg w-full mx-auto space-y-4">
-            <StatusStrip
-              metrics={[
-                { value: coins?.balance ?? 0, label: 'монет', onClick: () => navigate('/referral') },
-                { value: streak, label: 'дней подряд' },
-                { value: progress, label: 'курса', suffix: '%' },
-              ]}
-            />
-
             {/* Два входа вместо трёх: новости переехали в меню трейдера.
                 Так главная помещается на экран без прокрутки */}
             {sections.map((section, index) => {
               const Icon = section.icon;
 
               return (
-                <motion.button
+                <motion.div
                   key={section.id}
                   id={section.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={section.onClick}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      section.onClick();
+                    }
+                  }}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.06 + index * 0.06, duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
@@ -76,7 +85,8 @@ const Home = () => {
                   className="group relative w-full text-left overflow-hidden rounded-[20px] p-4
                              border border-[hsl(142_28%_17%)] transition-[border-color] duration-200
                              hover:border-[hsl(142_40%_26%)]
-                             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50
+                             cursor-pointer"
                 >
                   <span
                     aria-hidden="true"
@@ -119,12 +129,83 @@ const Home = () => {
                       </span>
                     </span>
 
-                    <ChevronRight className="w-5 h-5 text-primary/50 flex-shrink-0
-                                             transition-transform duration-200 group-hover:translate-x-0.5" />
                   </div>
-                </motion.button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-between mt-3.5 group/btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      section.onClick();
+                    }}
+                  >
+                    <span className="font-semibold">{section.action}</span>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                  </Button>
+                </motion.div>
               );
             })}
+            {/* Статистика внизу, как и была: сюда доходят глазами после
+                разделов, а не встречают её первой */}
+            <motion.div
+              id="home-progress-stats"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
+              className="rounded-[20px] border border-[hsl(142_28%_17%)] p-4"
+              style={CARD_STYLE}
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <ProgressRing percent={progress}>
+                  <span className="font-bold text-xl text-primary tabular-nums leading-none">
+                    {shownPercent}%
+                  </span>
+                  <span className="text-[10px] text-muted-foreground mt-0.5">пройдено</span>
+                </ProgressRing>
+
+                <div className="min-w-0">
+                  <h2 className="font-semibold text-[15.5px] text-foreground">Ваш прогресс</h2>
+                  <p className="text-[12px] text-muted-foreground mt-0.5">
+                    {openCourses.length > 0
+                      ? `${openCourses.length} ${openCourses.length === 1 ? 'направление' : 'направления'} из ${courses.length}`
+                      : 'Направления откроются после подтверждения счёта'}
+                  </p>
+                </div>
+              </div>
+
+              <div className={cn('grid gap-2.5', coins ? 'grid-cols-3' : 'grid-cols-2')}>
+                <div className="text-center p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                  <div className="text-[22px] font-bold text-primary tabular-nums leading-none">
+                    {completedModules}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-1.5">Модулей</div>
+                </div>
+                <div className="text-center p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                  <div className="text-[22px] font-bold text-primary tabular-nums leading-none">
+                    {completedLessons}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-1.5">Уроков</div>
+                </div>
+
+                {/* Монеты рядом с учёбой: их учёбой и зарабатывают */}
+                {coins && (
+                  <button
+                    onClick={() => navigate('/referral')}
+                    className="text-center p-2.5 rounded-xl bg-white/[0.03] border border-primary/20
+                               transition-colors hover:bg-primary/[0.08]
+                               focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    <div className="text-[22px] font-bold text-primary tabular-nums leading-none
+                                    flex items-center justify-center gap-1">
+                      <Coins className="w-4 h-4" />
+                      {coins.balance}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">Монет</div>
+                  </button>
+                )}
+              </div>
+            </motion.div>
           </div>
         </main>
       </div>

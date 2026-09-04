@@ -20,14 +20,13 @@ const basePath = () => import.meta.env.BASE_URL || '/';
 /**
  * Шапка главной.
  *
- * Графити сверху по центру, под ним название академии: логотип - самое
- * узнаваемое, что есть у проекта, и в строке слева он читался как
- * значок раздела. Фото человека переехало на его место в углу: там оно
- * и уместно, как в любом приложении.
+ * Графити стоит в самой полосе кнопок Telegram - ровно между «Закрыть»
+ * слева и «…» справа. Середина этой полосы всегда пустует, и логотип
+ * занимает её, ничего не перекрывая и не отнимая высоты у экрана.
+ * Поэтому здесь единственное место в приложении, где отступ
+ * --tg-content-top намеренно не применяется.
  *
- * Полосы прогресса здесь больше нет - показатели собраны ниже одной
- * строкой вместе с монетами, чтобы главная помещалась на экран без
- * прокрутки.
+ * Фото человека - в углу под этой полосой, как в любом приложении.
  */
 export function Header() {
   const navigate = useNavigate();
@@ -47,8 +46,25 @@ export function Header() {
   const initial = user?.first_name?.[0]?.toUpperCase() ?? 'Т';
 
   return (
-    <header className="relative px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.75rem))]">
-      <div className="max-w-lg mx-auto">
+    <header className="relative">
+      {/* Логотип в полосе кнопок Telegram: только вертикальный отступ
+          системной строки, без --tg-content-top - иначе он опустится
+          под кнопки, а не встанет между ними */}
+      <div
+        className="pointer-events-none absolute inset-x-0 flex justify-center z-[55]"
+        style={{ top: 'calc(env(safe-area-inset-top) + 2px)' }}
+      >
+        <motion.img
+          src={`${basePath()}nmnh_logo.png`}
+          alt="NO MONEY - NO HONEY"
+          className="h-10 w-10 object-contain"
+          initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.32, ease: [0.23, 1, 0.32, 1] }}
+        />
+      </div>
+
+      <div className="max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.75rem))]">
         <div className="flex items-start justify-between">
           <button
             onClick={() => navigate('/profile')}
@@ -112,28 +128,14 @@ export function Header() {
           </DropdownMenu>
         </div>
 
-        {/* Логотип и название - одним блоком по центру, сразу под
-            строкой с фото и меню */}
         <motion.div
-          className="flex flex-col items-center -mt-3"
-          initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -6 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.34, ease: [0.23, 1, 0.32, 1] }}
+          className="flex flex-col items-center -mt-8"
+          initial={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
         >
-          <div className="relative">
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 rounded-full bg-primary/20 blur-2xl"
-            />
-            <img
-              src={`${basePath()}nmnh_logo.png`}
-              alt="NO MONEY - NO HONEY"
-              className="relative w-[92px] h-[92px] object-contain"
-            />
-          </div>
-
           <h1 className="font-display font-bold whitespace-nowrap text-[clamp(1rem,4.8vw,1.3rem)]
-                         tracking-wide mt-1">
+                         tracking-wide">
             <span className="neon-text-subtle">NO MONEY</span>
             <span className="text-foreground mx-1.5">-</span>
             <span className="neon-text-subtle">NO HONEY</span>
