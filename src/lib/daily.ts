@@ -55,3 +55,26 @@ export function saveClaimedDays(days: string[]): void {
 export function isClaimedToday(): boolean {
     return loadClaimedDays().includes(todayKey());
 }
+
+/**
+ * Сколько дней подряд человек забирал подарок.
+ *
+ * Считаем назад от сегодня; если сегодня ещё не забирал - от вчера,
+ * иначе серия обнулялась бы каждое утро до первого захода.
+ */
+export function claimStreak(days: string[]): number {
+    const taken = new Set(days);
+    const cursor = new Date();
+
+    if (!taken.has(dateKey(cursor))) {
+        cursor.setDate(cursor.getDate() - 1);
+        if (!taken.has(dateKey(cursor))) return 0;
+    }
+
+    let streak = 0;
+    while (taken.has(dateKey(cursor))) {
+        streak += 1;
+        cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+}

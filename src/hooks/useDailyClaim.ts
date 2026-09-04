@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { DAILY_CLAIM_EVENT, isClaimedToday, loadClaimedDays, saveClaimedDays, todayKey } from '@/lib/daily';
+import { claimStreak, DAILY_CLAIM_EVENT, isClaimedToday, loadClaimedDays, saveClaimedDays, todayKey } from '@/lib/daily';
 
 /**
  * Состояние ежедневного подарка.
@@ -32,6 +32,7 @@ export function useDailyClaim() {
 
     return {
         claimedDays: days,
+        streak: claimStreak(days),
         takenToday: days.includes(todayKey()),
         markClaimed,
     };
