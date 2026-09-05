@@ -2,63 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppBackground } from '@/components/AppBackground';
 import { EconomicCalendar } from '@/components/EconomicCalendar';
+import { MARKET_URL, TICKER_URL, TIMELINE_MARKET, type NewsMarket } from '@/data/newsWidgets';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { ArrowLeft, Newspaper, Calendar, TrendingUp, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-/**
- * Виджеты TradingView просим рисовать прозрачный фон - иначе внутри карточки
- * видно их собственный тёмно-синий прямоугольник, чужой нашей теме.
- */
-const TICKER_URL =
-    'https://s.tradingview.com/embed-widget/ticker-tape/?locale=ru#' +
-    encodeURIComponent(JSON.stringify({
-        symbols: [
-            { proName: 'FX:EURUSD', title: 'EUR/USD' },
-            { proName: 'FX:GBPUSD', title: 'GBP/USD' },
-            { proName: 'FX:USDJPY', title: 'USD/JPY' },
-            { proName: 'CMCMARKETS:GOLD', title: 'Золото' },
-            { proName: 'FOREXCOM:SPXUSD', title: 'S&P 500' },
-            { proName: 'BINANCE:BTCUSDT', title: 'BTC' },
-        ],
-        showSymbolLogo: false,
-        isTransparent: true,
-        displayMode: 'compact',
-        colorTheme: 'dark',
-        locale: 'ru',
-    }));
-
-const MARKET_URL =
-    'https://s.tradingview.com/embed-widget/market-overview/?locale=ru#' +
-    encodeURIComponent(JSON.stringify({
-        colorTheme: 'dark',
-        isTransparent: true,
-        dateRange: '12M',
-        showChart: true,
-        width: '100%',
-        height: '100%',
-        showSymbolLogo: true,
-        plotLineColorGrowing: 'rgba(34, 201, 94, 1)',
-        plotLineColorFalling: 'rgba(239, 68, 68, 1)',
-        gridLineColor: 'rgba(255, 255, 255, 0.06)',
-        scaleFontColor: '#9BB3A6',
-        belowLineFillColorGrowing: 'rgba(34, 201, 94, 0.12)',
-        belowLineFillColorFalling: 'rgba(239, 68, 68, 0.12)',
-        symbolActiveColor: 'rgba(34, 201, 94, 0.12)',
-        tabs: [{
-            title: 'Forex',
-            symbols: [
-                { s: 'FX:EURUSD', d: 'EUR / USD' },
-                { s: 'FX:GBPUSD', d: 'GBP / USD' },
-                { s: 'FX:USDJPY', d: 'USD / JPY' },
-                { s: 'FX:USDCHF', d: 'USD / CHF' },
-                { s: 'FX:AUDUSD', d: 'AUD / USD' },
-                { s: 'FX:USDCAD', d: 'USD / CAD' },
-            ],
-        }],
-    }));
+import { cn } from '@/lib/utils';
 
 interface WidgetFrameProps {
     src: string;
@@ -99,8 +49,13 @@ function WidgetFrame({ src, title, source, tall }: WidgetFrameProps) {
 
 const News = () => {
     const navigate = useNavigate();
+    const [market, setMarket] = useState<NewsMarket>('forex');
     const [activeTab, setActiveTab] = useState('calendar');
     const newsRef = useRef<HTMLDivElement>(null);
+
+    // Календарь только у форекса: заседания центробанков и занятость
+    // двигают валюту, а криптотрейдеру в ленте нужнее сам рынок
+    const withCalendar = market === 'forex';
 
     const handleHomeClick = () => navigate('/home');
 
@@ -112,24 +67,30 @@ const News = () => {
     // Лента новостей живёт на скрипте: iframe-версия виджета отдаёт пустую
     // страницу. Контейнер держим смонтированным всегда - внутри скрытой
     // вкладки виджет не получает размер и не рисуется.
+    //
+    // При смене рынка виджет пересобираем целиком: настройки он читает
+    // один раз при запуске и на месте не переключается
     useEffect(() => {
         const container = newsRef.current;
-        if (!container || container.querySelector('script[src*="timeline"]')) return;
+        if (!container) return;
+
+        container.innerHTML = '<div class="tradingview-widget-container__widget w-full"></div>';
 
         const script = document.createElement('script');
         script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js';
         script.async = true;
         script.innerHTML = JSON.stringify({
             displayMode: 'regular',
-            feedMode: 'all_symbols',
+            feedMode: 'market',
+            market: TIMELINE_MARKET[market],
             colorTheme: 'dark',
             isTransparent: true,
             locale: 'ru',
             width: '100%',
-            height: 440,
+            height: 560,
         });
         container.appendChild(script);
-    }, []);
+    }, [market]);
 
     return (
         <div className="min-h-[100dvh] scanline pb-24">
@@ -158,9 +119,37 @@ const News = () => {
 
                 <main className="px-3 sm:px-4 pb-8 flex justify-center">
                     <div className="max-w-lg w-full mx-auto">
+                        {/* Рынок выбирается первым: от него зависят и
+                            котировки, и лента, и обзор. Один общий набор
+                            показывал криптотрейдеру евро-доллар, а
+                            форекс-трейдеру биткоин - обоим лишнее */}
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                            {([['forex', 'Форекс'], ['crypto', 'Крипта']] as const).map(([id, label]) => (
+                                <button
+                                    key={id}
+                                    onClick={() => {
+                                        setMarket(id);
+                                        // У крипты календаря нет: если стояли
+                                        // на нём, уводим на ленту
+                                        if (id === 'crypto' && activeTab === 'calendar') setActiveTab('news');
+                                    }}
+                                    className={cn(
+                                        'h-10 rounded-xl text-[13px] font-medium border transition-colors',
+                                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+                                        market === id
+                                            ? 'bg-primary/12 border-primary/35 text-primary'
+                                            : 'bg-white/[0.03] border-white/[0.07] text-muted-foreground hover:bg-white/[0.06]'
+                                    )}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
                         {/* Котировки узкой полосой - это фон, а не отдельный блок */}
                         <iframe
-                            src={TICKER_URL}
+                            key={market}
+                            src={TICKER_URL[market]}
                             title="Котировки"
                             loading="lazy"
                             className="w-full h-[46px] border-0 block mb-3 rounded-lg overflow-hidden"
@@ -168,7 +157,14 @@ const News = () => {
                         />
 
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                            <TabsList className="grid w-full grid-cols-3 mb-3 h-auto p-1 rounded-xl border border-[hsl(142_26%_15%)] bg-[hsl(140_26%_8%)]">
+                            <TabsList
+                                className={cn(
+                                    'grid w-full mb-3 h-auto p-1 rounded-xl',
+                                    'border border-[hsl(142_26%_15%)] bg-[hsl(140_26%_8%)]',
+                                    withCalendar ? 'grid-cols-3' : 'grid-cols-2'
+                                )}
+                            >
+                                {withCalendar && (
                                 <TabsTrigger
                                     value="calendar"
                                     className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary text-xs px-2 py-2 min-h-[42px] gap-1.5"
@@ -176,6 +172,7 @@ const News = () => {
                                     <Calendar className="w-4 h-4" />
                                     Календарь
                                 </TabsTrigger>
+                                )}
                                 <TabsTrigger
                                     value="news"
                                     className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary text-xs px-2 py-2 min-h-[42px] gap-1.5"
@@ -192,6 +189,7 @@ const News = () => {
                                 </TabsTrigger>
                             </TabsList>
 
+                            {withCalendar && (
                             <TabsContent value="calendar" className="mt-0">
                                 {/* Своя вёрстка вместо виджета: из чужой
                                     страницы в рамке нельзя прочитать ни
@@ -199,6 +197,7 @@ const News = () => {
                                     предупредить о нём */}
                                 <EconomicCalendar />
                             </TabsContent>
+                            )}
 
                             <TabsContent
                                 value="news"
@@ -214,7 +213,7 @@ const News = () => {
 
                             <TabsContent value="analytics" className="mt-0">
                                 <WidgetFrame
-                                    src={MARKET_URL}
+                                    src={MARKET_URL[market]}
                                     title="Обзор рынка"
                                     source="https://www.tradingview.com/markets/"
                                     tall
