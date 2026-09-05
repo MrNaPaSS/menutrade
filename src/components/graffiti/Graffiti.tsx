@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -180,9 +181,12 @@ export function GraffitiBackdrop({ className }: { className?: string }) {
 export function GraffitiTornPanel({
     className,
     side = 'bottom',
+    style,
 }: {
     className?: string;
     side?: 'top' | 'bottom';
+    /** Высоту иногда надо считать через calc с env - классом такое не задать */
+    style?: CSSProperties;
 }) {
     return (
         <span
@@ -203,6 +207,7 @@ export function GraffitiTornPanel({
                 // Маска нарисована сплошной сверху и рваной снизу.
                 // Нижней полосе её переворачиваем, верхней оставляем как есть
                 transform: side === 'bottom' ? 'scaleY(-1)' : undefined,
+                ...style,
             }}
         />
     );

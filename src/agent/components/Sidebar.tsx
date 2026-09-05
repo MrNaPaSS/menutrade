@@ -101,10 +101,23 @@ export function Sidebar({
                             paddingBottom: 'env(safe-area-inset-bottom, 0px)',
                         }}
                     >
+                        {/* Кромки считаются от самого края шторки, а не от
+                            содержимого: иначе чёрное начинается ниже
+                            системной строки и полоса выглядит разорванной
+                            на куски */}
+                        <GraffitiTornPanel
+                            side="top"
+                            style={{
+                                height: 'calc(env(safe-area-inset-top, 0px) + var(--tg-content-top, 0px) + 86px)',
+                            }}
+                        />
+                        <GraffitiTornPanel
+                            side="bottom"
+                            style={{ height: 'calc(env(safe-area-inset-bottom, 0px) + 66px)' }}
+                        />
+
                         {/* Кто вы */}
                         <div className="relative flex items-center gap-3 px-4 py-3.5 flex-shrink-0">
-                            <GraffitiTornPanel side="top" className="-bottom-3" />
-
                             <span className="relative w-10 h-10 rounded-full flex-shrink-0 p-[3px]
                                              flex items-center justify-center overflow-hidden
                                              bg-background/60 border border-border/30">
@@ -136,7 +149,7 @@ export function Sidebar({
                             </button>
                         </div>
 
-                        <div className="px-3 pt-3 pb-2 flex-shrink-0">
+                        <div className="relative px-3 pt-3 pb-2 flex-shrink-0">
                             <button
                                 onClick={handleNewChat}
                                 className="w-full min-h-[42px] rounded-xl flex items-center justify-center gap-2
@@ -149,7 +162,7 @@ export function Sidebar({
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-3">
+                        <div className="relative flex-1 overflow-y-auto px-3 pb-3 space-y-3">
                             {GROUPS.map(([mode, groupTitle]) => {
                                 const groupSessions = sessions.filter(s => (s.mode || 'teacher') === mode);
                                 if (groupSessions.length === 0) return null;
@@ -237,8 +250,7 @@ export function Sidebar({
                         </div>
 
                         <div className="relative px-3 py-3 flex-shrink-0 text-center">
-                            <GraffitiTornPanel side="bottom" className="-top-3" />
-                            <p className="relative text-[10.5px] text-muted-foreground">
+                            <p className="text-[10.5px] text-muted-foreground">
                                 AI Ментор Академии здравого трейдера
                             </p>
                         </div>
