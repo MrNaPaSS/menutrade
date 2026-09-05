@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
-import { Target } from 'lucide-react';
+import { Lock, Target } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 import { GraffitiCheck } from '@/components/graffiti/Graffiti';
 import { courses, type Course } from '@/data/courses';
 import type { AccessState, CourseId } from '@/lib/courseAccess';
@@ -25,6 +27,14 @@ interface LearningModalProps {
 }
 
 const STRATEGY_MODULES = new Set(['module-3', 'module-4', 'module-5']);
+
+/**
+ * Сколько уроков видно без доступа.
+ *
+ * Двух хватает, чтобы человек увидел настоящие названия и понял, что
+ * материал не выдуман. Больше - и смотреть станет незачем.
+ */
+const PREVIEW_LESSONS = 2;
 
 function courseLessons(course: Course): number {
     return course.modules
@@ -57,11 +67,17 @@ export function LearningModal({
     const [module, setModule] = useState<Module | null>(null);
     const [lesson, setLesson] = useState<Lesson | null>(null);
 
-    // Модули выбранного курса берём из прогресса, а не из реестра:
-    // там уже проставлены пройденные уроки и блокировки
-    const courseModules = course
-        ? modules.filter(m => course.modules.some(cm => cm.id === m.id))
-        : [];
+    // Модули выбранного курса берём из прогресса: там уже проставлены
+    // пройденные уроки и блокировки. Но прогресс содержит только
+    // открытые курсы - у закрытого он пуст, и список выходил нулевым.
+    // Для такого курса берём состав из реестра
+    const courseModules = (() => {
+        if (!course) return [];
+        const withProgress = modules.filter(m => course.modules.some(cm => cm.id === m.id));
+        return withProgress.length > 0
+            ? withProgress
+            : course.modules.filter(m => !STRATEGY_MODULES.has(m.id));
+    })();
 
     // Живая версия открытого модуля: после прохождения урока список
     // должен показывать галочку сразу, а не после переоткрытия
@@ -135,38 +151,77 @@ export function LearningModal({
                     ? `${done} из ${currentModule.lessons.length} уроков пройдено`
                     : `${currentModule.lessons.length} ${currentModule.lessons.length === 1 ? 'урок' : currentModule.lessons.length < 5 ? 'урока' : 'уроков'} в модуле`}
             >
-                <div className="rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden
+                <div className="relative rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden
                                 divide-y divide-[hsl(142_22%_13%)]"
                     style={{ background: 'hsl(140 26% 8%)' }}
                 >
                     {currentModule.lessons.map((item, index) => {
                         const lessonLocked = !courseOpen || item.isLocked;
+                        // Без доступа первые два урока видно целиком, дальше
+                        // размытие: список должен показать, что материал
+                        // настоящий, но не отдать его
+                        const behindBlur = !courseOpen && !awaiting && index >= PREVIEW_LESSONS;
 
                         return (
-                            <TerminalRow
+                            <div
                                 key={item.id}
-                                index={index}
-                                icon={
-                                    item.isCompleted
-                                        ? <GraffitiCheck className="w-[19px] h-[19px]" delay={0.06 + index * 0.04} />
-                                        : <span className="font-mono text-[13px] tabular-nums">{index + 1}</span>
-                                }
-                                tone="green"
-                                title={item.title}
-                                caption={item.duration ?? 'Урок'}
-                                value={item.isCompleted ? 'пройден' : undefined}
-                                valueLive={item.isCompleted}
-                                locked={lessonLocked}
-                                onClick={
-                                    !lessonLocked ? () => setLesson(item)
-                                        // Замок из-за доступа ведёт на экран
-                                        // доступа, замок по порядку уроков -
-                                        // никуда: там просто рано
-                                        : (!courseOpen && !awaiting ? onLocked : undefined)
-                                }
-                            />
+                                className={cn(
+                                    'transition-[filter,opacity] duration-300',
+                                    behindBlur && 'blur-[3.5px] opacity-45 select-none pointer-events-none'
+                                )}
+                                aria-hidden={behindBlur}
+                            >
+                                <TerminalRow
+                                    index={index}
+                                    icon={
+                                        item.isCompleted
+                                            ? <GraffitiCheck className="w-[19px] h-[19px]" delay={0.06 + index * 0.04} />
+                                            : <span className="font-mono text-[13px] tabular-nums">{index + 1}</span>
+                                    }
+                                    tone="green"
+                                    title={item.title}
+                                    caption={item.duration ?? 'Урок'}
+                                    value={item.isCompleted ? 'пройден' : undefined}
+                                    valueLive={item.isCompleted}
+                                    locked={lessonLocked}
+                                    onClick={
+                                        !lessonLocked ? () => setLesson(item)
+                                            // Замок из-за доступа ведёт на экран
+                                            // доступа, замок по порядку уроков -
+                                            // никуда: там просто рано
+                                            : (!courseOpen && !awaiting ? onLocked : undefined)
+                                    }
+                                />
+                            </div>
                         );
                     })}
+
+                    {/* Кнопка поверх размытого хвоста: она и объясняет
+                        размытие, и даёт выход */}
+                    {!courseOpen && !awaiting && currentModule.lessons.length > PREVIEW_LESSONS && (
+                        <motion.button
+                            onClick={onLocked}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.15, duration: 0.3 }}
+                            className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end
+                                       gap-2.5 pb-5 pt-14 border-0
+                                       focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                            style={{
+                                background: 'linear-gradient(180deg, transparent, hsl(140 26% 8% / 0.9) 55%)',
+                                height: 'calc(100% - 132px)',
+                            }}
+                        >
+                            <Lock className="w-5 h-5" style={{ color: 'hsl(142 40% 55%)' }} />
+                            <span className="text-[13px] text-foreground font-medium">
+                                Ещё {currentModule.lessons.length - PREVIEW_LESSONS}{' '}
+                                {currentModule.lessons.length - PREVIEW_LESSONS === 1 ? 'урок' : 'уроков'} в модуле
+                            </span>
+                            <span className="text-[12.5px] font-semibold" style={{ color: 'hsl(142 76% 58%)' }}>
+                                Открыть доступ
+                            </span>
+                        </motion.button>
+                    )}
                 </div>
             </ModalWindow>
         );
