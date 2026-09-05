@@ -42,7 +42,7 @@ export function BottomNav({
   const location = useLocation();
   const [tradeOpen, setTradeOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  // Подарок за сегодня не забран - зажигаем точку у иконки
+  // Подарок за сегодня не забран - зажигаем точку у иконки бонусов
   const { takenToday } = useDailyClaim();
 
   const handleHomeClick = () => {
@@ -67,7 +67,7 @@ export function BottomNav({
     {
       id: "nav-referral",
       icon: Gift,
-      label: "Подарок",
+      label: "Бонусы",
       onClick: handleReferralClick,
       isActive: location.pathname === '/referral',
       badge: !takenToday,
@@ -185,7 +185,7 @@ export function BottomNav({
                           у иконки, без цифр и подписи */}
                       {item.badge && (
                         <span
-                          aria-label="Подарок ждёт"
+                          aria-label="Бонус ждёт"
                           className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full
                                      bg-red-500 border-2 border-background
                                      shadow-[0_0_6px_rgba(239,68,68,0.8)]"
