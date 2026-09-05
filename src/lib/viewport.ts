@@ -54,23 +54,53 @@ export function installViewportVars(): () => void {
 
     document.addEventListener('focusout', onBlur);
 
+    /**
+     * Догоняем размер несколько кадров подряд.
+     *
+     * visualViewport сообщает о клавиатуре один раз, а Telegram на Android
+     * доводит высоту анимацией уже после этого события. Одного замера мало:
+     * он приходится на середину движения. Полсекунды опроса стоят дёшево и
+     * снимают вопрос на всех платформах сразу.
+     */
+    let chase = 0;
+    const applySoon = () => {
+        cancelAnimationFrame(chase);
+        const until = Date.now() + 500;
+        const step = () => {
+            apply();
+            if (Date.now() < until) chase = requestAnimationFrame(step);
+        };
+        chase = requestAnimationFrame(step);
+    };
+
+    // Telegram узнаёт о клавиатуре раньше браузера и говорит об этом сам
+    const tg = (window as unknown as {
+        Telegram?: { WebApp?: { onEvent?: (e: string, h: () => void) => void;
+                                offEvent?: (e: string, h: () => void) => void } };
+    }).Telegram?.WebApp;
+    tg?.onEvent?.('viewportChanged', applySoon);
+
     if (!vv) {
-        window.addEventListener('resize', apply);
+        window.addEventListener('resize', applySoon);
         return () => {
-            window.removeEventListener('resize', apply);
+            cancelAnimationFrame(chase);
+            window.removeEventListener('resize', applySoon);
             document.removeEventListener('focusout', onBlur);
+            tg?.offEvent?.('viewportChanged', applySoon);
         };
     }
 
-    vv.addEventListener('resize', apply);
+    vv.addEventListener('resize', applySoon);
     vv.addEventListener('scroll', apply);
-    window.addEventListener('orientationchange', apply);
+    window.addEventListener('orientationchange', applySoon);
 
     return () => {
-        vv.removeEventListener('resize', apply);
+        cancelAnimationFrame(chase);
+        vv.removeEventListener('resize', applySoon);
         vv.removeEventListener('scroll', apply);
-        window.removeEventListener('orientationchange', apply);
+        window.removeEventListener('orientationchange', applySoon);
         document.removeEventListener('focusout', onBlur);
+        tg?.offEvent?.('viewportChanged', applySoon);
     };
 }
 

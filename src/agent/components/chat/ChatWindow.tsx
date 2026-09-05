@@ -250,7 +250,13 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                 user={user}
             />
 
-            <div className="relative flex flex-col h-full max-h-screen overflow-hidden bg-background">
+            {/* Место под клавиатуру забирает содержимое, а не окно: окно
+                во весь экран, поэтому пока Telegram молчит о новом размере,
+                снизу видно наш собственный фон, а не страницу под ним */}
+            <div
+                className="relative flex flex-col h-full max-h-screen overflow-hidden bg-background"
+                style={{ paddingBottom: 'var(--app-kb, 0px)' }}
+            >
                 {/* Шапка без разделительной черты: переписка и так
                     отделена от неё воздухом, а линия под названием резала
                     экран пополам */}

@@ -136,12 +136,18 @@ export function ModalWindow({
                        оставалось коротким - и снизу проглядывала страница
                        под ним */
                     style={{
-                        /* Отступ, а не высота: подложка внутри всё равно
-                           кроет экран целиком, поэтому под окном никогда
-                           не видно страницу - даже пока браузер не успел
-                           сообщить, что клавиатура убралась */
-                        paddingTop: `calc(${fullscreen ? '0px' : '1rem'} + var(--app-vtop, 0px))`,
-                        paddingBottom: `calc(${fullscreen ? '0px' : '1rem'} + var(--app-vbottom, 0px))`,
+                        /* Окно во весь экран не подстраивается под
+                           клавиатуру вовсе: Telegram на Android сообщает
+                           новый размер с задержкой в пару секунд, и всё это
+                           время под коротким окном была видна страница.
+                           Клавиатуру обходит уже само содержимое отступом
+                           снизу - там опоздание незаметно.
+
+                           Окно-карточка по-прежнему держится видимой части:
+                           иначе оно центрируется по области, половина
+                           которой под клавиатурой, и уезжает вниз */
+                        paddingTop: fullscreen ? 0 : 'calc(1rem + var(--app-vtop, 0px))',
+                        paddingBottom: fullscreen ? 0 : 'calc(1rem + var(--app-vbottom, 0px))',
                     }}
                 >
                     <motion.div
@@ -169,7 +175,7 @@ export function ModalWindow({
                         style={{
                             background: 'linear-gradient(180deg, hsl(142 22% 12%) 0%, hsl(140 28% 6.5%) 100%)',
                             boxShadow: '0 30px 70px -30px hsl(0 0% 0%), inset 0 1px 0 hsl(142 50% 45% / 0.16)',
-                            maxHeight: 'var(--app-vh, 100dvh)',
+                            maxHeight: fullscreen ? undefined : 'var(--app-vh, 100dvh)',
                         }}
                         initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: 16 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
