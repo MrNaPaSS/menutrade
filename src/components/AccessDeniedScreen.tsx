@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, GraduationCap, Layers, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AppBackground } from '@/components/AppBackground';
 import { GraffitiSpray } from '@/components/graffiti/Graffiti';
 import { RegistrationGate } from './RegistrationGate';
 import { useTelegram } from '@/hooks/useTelegram';
@@ -95,7 +94,10 @@ export function AccessDeniedScreen({ feature, onBack }: AccessDeniedScreenProps)
            оказывался под содержимым страницы, и нажатие на замок
            выглядело как ничего не делающее */
         <div className="fixed inset-0 z-[95] overflow-y-auto">
-            <AppBackground />
+            {/* Подложка как у окон: фон за экраном гаснет и мутнеет.
+                Раньше здесь рисовался второй набор фоновых слоёв
+                поверх страницы, и они складывались друг с другом */}
+            <div className="absolute inset-0 bg-black/72 backdrop-blur-[6px]" />
 
             <div
                 className="relative z-10 w-full max-w-md mx-auto px-4 pb-10"

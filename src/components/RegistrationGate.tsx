@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AppBackground } from '@/components/AppBackground';
 import { GraffitiSpray } from '@/components/graffiti/Graffiti';
 import { useTelegram } from '@/hooks/useTelegram';
 import { useUserAccess } from '@/contexts/UserAccessContext';
@@ -736,7 +735,10 @@ function MarketCard({ icon, label, tagline, onClick }: MarketCardProps) {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-[96] overflow-y-auto">
-      <AppBackground />
+      {/* Подложка как у окон: фон за экраном гаснет и мутнеет.
+          Раньше здесь рисовался второй набор фоновых слоёв
+          поверх страницы, и они складывались друг с другом */}
+      <div className="absolute inset-0 bg-black/72 backdrop-blur-[6px]" />
 
       <div
         className="relative z-10 w-full max-w-md mx-auto px-4 pb-10"
