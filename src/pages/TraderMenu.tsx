@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { AppBackground } from '@/components/AppBackground';
 import { BottomNav } from '@/components/BottomNav';
@@ -6,7 +7,8 @@ import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
-import { ArrowLeft, Activity, BookOpen, Calculator, Code, GraduationCap, Brain, Newspaper, UserRound } from 'lucide-react';
+import { useTelegram } from '@/hooks/useTelegram';
+import { ArrowLeft, Activity, BookOpen, Calculator, Code, GraduationCap, Brain, Lock, Newspaper, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
@@ -51,6 +53,7 @@ const TraderMenu = () => {
   const { courses: courseAccess } = useCourseAccess();
   const { coins } = useCoinBalance();
   const { hasFullAccess } = useUserAccess();
+  const { user } = useTelegram();
   const { streak } = useDailyClaim();
 
   const [coursesOpen, setCoursesOpen] = useState(false);
@@ -123,18 +126,41 @@ const TraderMenu = () => {
                 а не материал академии, и строкой в списке инструментов
                 он читался бы как ещё один справочник */}
             <div className="flex items-stretch gap-2">
-              <button
-                onClick={() => setProfileOpen(true)}
+              <motion.button
+                onClick={() => (hasFullAccess ? setProfileOpen(true) : setLocked('профиль трейдера'))}
                 aria-label="Профиль трейдера"
-                className="w-[58px] flex-shrink-0 rounded-[18px] flex flex-col items-center justify-center gap-1
-                           border border-[hsl(142_26%_15%)] transition-colors
-                           hover:bg-white/[0.04]
+                whileTap={{ scale: 0.97 }}
+                className="relative w-[62px] flex-shrink-0 rounded-[18px] overflow-hidden
+                           flex flex-col items-center justify-center gap-1.5
+                           border border-[hsl(142_38%_24%)] transition-colors
+                           hover:border-[hsl(142_46%_30%)]
                            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                style={{ background: 'hsl(140 26% 8%)' }}
+                style={{ background: 'linear-gradient(168deg, hsl(142 30% 13%), hsl(140 28% 8%))' }}
               >
-                <UserRound className="w-[18px] h-[18px]" style={{ color: 'hsl(142 76% 62%)' }} />
-                <span className="text-[9.5px] text-muted-foreground leading-none">профиль</span>
-              </button>
+                {/* Фото человека вместо значка: свой профиль узнают по
+                    лицу быстрее, чем по подписи */}
+                <span className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center
+                                 border border-primary/25 bg-primary/10">
+                  {user?.photo_url ? (
+                    <img src={user.photo_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <UserRound className="w-4 h-4" style={{ color: 'hsl(142 76% 62%)' }} />
+                  )}
+                </span>
+
+                <span className="text-[9px] uppercase tracking-[0.06em] leading-none"
+                  style={{ color: hasFullAccess ? 'hsl(142 76% 58%)' : 'hsl(142 18% 45%)' }}>
+                  профиль
+                </span>
+
+                {/* Замок поверх фото: сразу видно, что раздел закрыт */}
+                {!hasFullAccess && (
+                  <span className="absolute inset-0 flex items-start justify-end p-1.5
+                                   bg-black/35 pointer-events-none">
+                    <Lock className="w-3.5 h-3.5" style={{ color: 'hsl(142 20% 60%)' }} />
+                  </span>
+                )}
+              </motion.button>
 
               <div className="min-w-0 flex-1">
                 <StatusStrip
