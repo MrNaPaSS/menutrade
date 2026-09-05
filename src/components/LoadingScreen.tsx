@@ -60,8 +60,12 @@ const SPARKS = Array.from({ length: SPARK_COUNT }, (_, i) => {
  * Система координат SVG - 400x760, растягивается на экран целиком.
  */
 const BOLT_TARGET = { x: 200, y: 330 };
-const BOLT_COUNT = 12;
+const BOLT_COUNT = 20;
 const BOLT_CYCLE = 5.4;
+// Волн меньше, чем разрядов: в каждую попадает по пять молний, и они
+// бьют одновременно. Одиночные удары по очереди читались как мигание,
+// залп - как гроза
+const BOLT_WAVES = 4;
 
 function buildBolt(seed: number, angleDeg: number) {
     let rnd = seed * 9301 + 49297;
@@ -110,20 +114,27 @@ function buildBolt(seed: number, angleDeg: number) {
     };
 }
 
+/** Вспышка одна на залп: двадцать слоёв поверх экрана и складывались
+    бы в белое пятно, и стоили бы двадцати композиций даром */
+const FLASHES = Array.from({ length: BOLT_WAVES }, (_, w) => ({
+    id: w,
+    delay: Number(((w * BOLT_CYCLE) / BOLT_WAVES).toFixed(2)),
+    x: [50, 26, 74, 44][w % 4],
+    y: [22, 58, 40, 76][w % 4],
+}));
+
 const BOLTS = Array.from({ length: BOLT_COUNT }, (_, i) => {
     // Разряды идут не по кругу подряд, а вразнобой: соседние по времени
     // молнии из соседних углов читались бы как бегущая строка
-    const order = (i * 5) % BOLT_COUNT;
+    // Номер волны берём по остатку: соседние по углу молнии попадают в
+    // разные волны, поэтому залп приходит сразу со всех сторон
+    const wave = i % BOLT_WAVES;
     const jitter = ((i * 37) % 19) - 9;
     const angleDeg = (360 / BOLT_COUNT) * i + jitter;
-    const rad = (angleDeg * Math.PI) / 180;
 
     return {
         id: i,
-        delay: Number(((order * BOLT_CYCLE) / BOLT_COUNT).toFixed(2)),
-        // Вспышка приходит со стороны разряда, а не всегда сверху
-        flashX: Math.round(50 + Math.cos(rad) * 42),
-        flashY: Math.round(50 + Math.sin(rad) * 42),
+        delay: Number(((wave * BOLT_CYCLE) / BOLT_WAVES).toFixed(2)),
         ...buildBolt(i + 3, angleDeg),
     };
 });
@@ -159,16 +170,25 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
             className="bolt"
             style={{ '--delay': `${bolt.delay}s`, '--cycle': `${BOLT_CYCLE}s` } as CSSProperties}
           >
-            {/* Свечение отдельным широким штрихом под ядром: один штрих
-                с тенью на телефоне размывается в кисель */}
+            {/* Свечение набрано двумя штрихами разной ширины, а не
+                размытием: filter: blur на двадцати разрядах телефон
+                пересчитывает на каждом кадре вспышки, и загрузка
+                начинает дёргаться. Два штриха дают тот же ореол даром */}
             <path
               d={bolt.main}
               stroke="hsl(142 76% 52%)"
-              strokeWidth={7}
+              strokeWidth={9}
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity={0.28}
-              style={{ filter: 'blur(6px)' }}
+              opacity={0.14}
+            />
+            <path
+              d={bolt.main}
+              stroke="hsl(142 76% 58%)"
+              strokeWidth={4.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={0.38}
             />
             {bolt.branches.map(branch => (
               <path
@@ -191,15 +211,15 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
         ))}
       </svg>
 
-      {/* Мерцание экрана в такт разряду */}
-      {BOLTS.map(bolt => (
+      {/* Мерцание экрана в такт залпу */}
+      {FLASHES.map(flash => (
         <span
-          key={bolt.id}
+          key={flash.id}
           aria-hidden="true"
           className="storm-flash absolute inset-0 pointer-events-none"
           style={{
-            background: `radial-gradient(ellipse at ${bolt.flashX}% ${bolt.flashY}%, hsl(142 76% 62% / 0.5), transparent 62%)`,
-            '--delay': `${bolt.delay}s`,
+            background: `radial-gradient(ellipse at ${flash.x}% ${flash.y}%, hsl(142 76% 62% / 0.55), transparent 66%)`,
+            '--delay': `${flash.delay}s`,
             '--cycle': `${BOLT_CYCLE}s`,
           } as CSSProperties}
         />
@@ -243,7 +263,7 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
             /* Плита стоит чуть левее центра: у самого графити рисунок
                смещён вправо, и подложка по центру контейнера выглядела
                сдвинутой */
-            className="absolute left-1/2 top-1/2 -ml-[18px] -translate-x-1/2 -translate-y-1/2
+            className="absolute left-1/2 top-1/2 -ml-[38px] -translate-x-1/2 -translate-y-1/2
                        w-[128%] aspect-square pointer-events-none"
             style={{
               background: 'hsl(150 34% 7%)',
