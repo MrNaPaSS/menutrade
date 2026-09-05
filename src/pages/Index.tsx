@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
+import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { LessonContent } from '@/components/LessonContent';
@@ -204,6 +205,7 @@ const Index = () => {
     return (
       <div className="min-h-[100dvh] scanline pb-16">
         <MatrixRain />
+      <GraffitiBackdrop />
         <div className="relative z-10">
           <SimpleMenu />
           <MasterTest
