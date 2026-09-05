@@ -39,7 +39,8 @@ export function PartnerQuests() {
         <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-card rounded-xl p-4 sm:p-5 neon-border"
+            className="rounded-[18px] border border-[hsl(142_26%_15%)] p-4 sm:p-5"
+            style={{ background: 'hsl(140 26% 8%)' }}
         >
             <div className="flex items-start gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center

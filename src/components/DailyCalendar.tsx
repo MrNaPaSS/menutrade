@@ -65,7 +65,8 @@ export function DailyCalendar() {
     });
 
     return (
-        <div className="glass-card rounded-xl p-4 sm:p-5 neon-border">
+        <div className="rounded-[18px] border border-[hsl(142_26%_15%)] p-4 sm:p-5"
+            style={{ background: 'hsl(140 26% 8%)' }}>
             <div className="flex items-baseline justify-between mb-3">
                 <h3 className="font-bold text-base">Заходи каждый день</h3>
                 <span className="text-xs text-muted-foreground">+{DAILY_COINS} монеты</span>

@@ -8,7 +8,14 @@ import { useUserAccess } from '@/contexts/UserAccessContext';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
 import { DailyCalendar } from '@/components/DailyCalendar';
 import { PartnerQuests } from '@/components/PartnerQuests';
+import { GraffitiSpray, GraffitiStar } from '@/components/graffiti/Graffiti';
+import { ProgressRing } from '@/components/ProgressRing';
+import { useCountUp } from '@/hooks/useCountUp';
 import { cn } from '@/lib/utils';
+
+// Те же поверхности, что во всех окнах и панелях приложения
+const PANEL = 'rounded-[18px] border border-[hsl(142_26%_15%)]';
+const PANEL_BG = { background: 'hsl(140 26% 8%)' } as const;
 
 interface RewardLevel {
     id: string;
@@ -168,6 +175,7 @@ const Referral = () => {
     const target = data?.levels[data.levels.length - 1]?.friends ?? 10;
     const balance = data?.balance ?? data?.activated ?? 0;
     const progress = data ? Math.min(100, Math.round((balance / target) * 100)) : 0;
+    const shownCoins = useCountUp(coins?.balance ?? 0);
 
     return (
         <div className="min-h-[100dvh] scanline pb-24">
@@ -176,13 +184,16 @@ const Referral = () => {
                 <main className="px-4 sm:px-5 md:px-6 pb-24 flex justify-center
                                pt-[calc(env(safe-area-inset-top)+3.5rem)] sm:pt-16">
                     <div className="max-w-lg w-full mx-auto">
-                        <div className="mb-4 sm:mb-6">
-                            <h2 className="font-display font-bold text-xl sm:text-2xl mb-1 sm:mb-2">
-                                Приводи друзей - получай бонусы
-                            </h2>
-                            <p className="text-xs sm:text-sm text-muted-foreground">
-                                За каждого квалифицированного реферала открывается награда
-                            </p>
+                        <div className="relative mb-4 sm:mb-5">
+                            <GraffitiSpray className="-top-10 -left-8 w-56 h-36" opacity={0.08} />
+                            <div className="relative">
+                                <h2 className="font-display font-bold text-[21px] tracking-tight">
+                                    Приводи друзей - получай бонусы
+                                </h2>
+                                <p className="text-[12.5px] text-muted-foreground mt-1.5">
+                                    Друг засчитывается после регистрации и депозита
+                                </p>
+                            </div>
                         </div>
 
                         {/* Календарь не зависит от данных рефералки: если бот
@@ -199,19 +210,19 @@ const Referral = () => {
                         </div>
 
                         {loading && (
-                            <div className="glass-card rounded-xl p-6 neon-border text-center text-muted-foreground text-sm">
+                            <div className={`${PANEL} p-6 text-center text-muted-foreground text-[13px]`} style={PANEL_BG}>
                                 Загружаем данные...
                             </div>
                         )}
 
                         {!loading && !userId && (
-                            <div className="glass-card rounded-xl p-6 neon-border text-center text-sm text-muted-foreground">
+                            <div className={`${PANEL} p-6 text-center text-[13px] text-muted-foreground`} style={PANEL_BG}>
                                 Открой приложение из бота, чтобы увидеть свою ссылку
                             </div>
                         )}
 
                         {!loading && error && (
-                            <div className="glass-card rounded-xl p-6 neon-border text-center text-sm text-muted-foreground">
+                            <div className={`${PANEL} p-6 text-center text-[13px] text-muted-foreground`} style={PANEL_BG}>
                                 {error}
                             </div>
                         )}
@@ -222,20 +233,31 @@ const Referral = () => {
                                     <motion.div
                                         initial={{ opacity: 0, y: 16 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="glass-card rounded-xl p-4 sm:p-5 neon-border"
+                                        className={`${PANEL} p-4 sm:p-5`} style={PANEL_BG}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-11 h-11 rounded-xl flex items-center justify-center
-                                                            bg-gradient-to-br from-primary/15 to-primary/25
-                                                            border border-primary/20 text-primary flex-shrink-0">
+                                            <span
+                                                className="w-11 h-11 rounded-[14px] flex items-center justify-center
+                                                           flex-shrink-0 border border-white/[0.07]"
+                                                style={{
+                                                    background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
+                                                    color: 'hsl(142 76% 62%)',
+                                                }}
+                                            >
                                                 <Coins className="w-5 h-5" />
-                                            </div>
+                                            </span>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-xs text-muted-foreground">Монеты NMNH</p>
-                                                <p className="font-display font-bold text-2xl text-primary tabular-nums">
-                                                    {coins.balance}
+                                                <p className="text-[11.5px] text-muted-foreground">Монеты NMNH</p>
+                                                {/* Счётчик набегает: так видно, что число живое,
+                                                    а не нарисовано на картинке */}
+                                                <p
+                                                    className="font-mono font-bold text-[26px] leading-none tabular-nums mt-1"
+                                                    style={{ color: 'hsl(142 76% 58%)' }}
+                                                >
+                                                    {shownCoins}
                                                 </p>
                                             </div>
+                                            <GraffitiStar className="w-10 h-10 flex-shrink-0" delay={0.2} />
                                         </div>
 
                                         <p className="text-xs text-muted-foreground mt-3">
@@ -259,36 +281,37 @@ const Referral = () => {
                                 <motion.div
                                     initial={{ opacity: 0, y: 16 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="glass-card rounded-xl p-4 sm:p-5 neon-border"
+                                    className={`${PANEL} p-4 sm:p-5`} style={PANEL_BG}
                                 >
-                                    <div className="flex items-baseline justify-between mb-2">
-                                        <span className="text-sm text-muted-foreground">
-                                            {data.next_level ? 'До награды' : 'Все награды открыты'}
-                                        </span>
-                                        <span className="font-display font-bold text-lg text-primary tabular-nums">
-                                            {balance}/{target}
-                                        </span>
-                                    </div>
+                                    {/* Кольцо вместо полосы: та же фигура, что
+                                        показывает прогресс обучения на главной */}
+                                    <div className="flex items-center gap-4">
+                                        <ProgressRing percent={progress}>
+                                            <span
+                                                className="font-mono font-bold text-[17px] tabular-nums leading-none"
+                                                style={{ color: 'hsl(142 76% 58%)' }}
+                                            >
+                                                {balance}
+                                            </span>
+                                            <span className="text-[10px] text-muted-foreground mt-0.5">из {target}</span>
+                                        </ProgressRing>
 
-                                    <div className="relative h-2.5 bg-muted/50 rounded-full overflow-hidden">
-                                        <motion.div
-                                            className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-secondary rounded-full"
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${progress}%` }}
-                                            transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
-                                        />
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-[15px] text-foreground">
+                                                {data.next_level ? 'До награды' : 'Все награды открыты'}
+                                            </p>
+                                            {data.remaining > 0 && (
+                                                <p className="text-[12px] text-muted-foreground mt-1">
+                                                    Осталось привести: {data.remaining}
+                                                </p>
+                                            )}
+                                            {data.spent > 0 && (
+                                                <p className="text-[12px] text-muted-foreground mt-0.5">
+                                                    Потрачено на награды: {data.spent}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-
-                                    {data.remaining > 0 && (
-                                        <p className="text-xs text-muted-foreground mt-2">
-                                            До ближайшей награды: {data.remaining}
-                                        </p>
-                                    )}
-                                    {data.spent > 0 && (
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            Потрачено на полученные награды: {data.spent}
-                                        </p>
-                                    )}
                                 </motion.div>
 
                                 {/* Ссылка */}
@@ -296,7 +319,7 @@ const Referral = () => {
                                     initial={{ opacity: 0, y: 16 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.06 }}
-                                    className="glass-card rounded-xl p-4 sm:p-5 neon-border"
+                                    className={`${PANEL} p-4 sm:p-5`} style={PANEL_BG}
                                 >
                                     <h3 className="font-bold text-base mb-2">
                                         Твоя ссылка
@@ -330,19 +353,25 @@ const Referral = () => {
                                     initial={{ opacity: 0, y: 16 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.12 }}
-                                    className="grid grid-cols-2 gap-2 sm:gap-4"
+                                    className="grid grid-cols-2 gap-2 sm:gap-3"
                                 >
-                                    <div className="glass-card rounded-xl p-4 neon-border text-center">
-                                        <div className="text-2xl font-bold text-primary tabular-nums mb-1">
+                                    <div className={`${PANEL} p-4 text-center`} style={PANEL_BG}>
+                                        <div
+                                            className="font-mono font-bold text-[24px] tabular-nums leading-none"
+                                            style={{ color: 'hsl(142 76% 58%)' }}
+                                        >
                                             {data.clicks}
                                         </div>
-                                        <div className="text-xs text-muted-foreground">Переходов</div>
+                                        <div className="text-[11.5px] text-muted-foreground mt-1.5">Переходов</div>
                                     </div>
-                                    <div className="glass-card rounded-xl p-4 neon-border text-center">
-                                        <div className="text-2xl font-bold text-primary tabular-nums mb-1">
+                                    <div className={`${PANEL} p-4 text-center`} style={PANEL_BG}>
+                                        <div
+                                            className="font-mono font-bold text-[24px] tabular-nums leading-none"
+                                            style={{ color: 'hsl(142 76% 58%)' }}
+                                        >
                                             {data.activated}
                                         </div>
-                                        <div className="text-xs text-muted-foreground">Прошли верификацию</div>
+                                        <div className="text-[11.5px] text-muted-foreground mt-1.5">Верификаций</div>
                                     </div>
                                 </motion.div>
 
@@ -357,28 +386,32 @@ const Referral = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: 0.18 + index * 0.06 }}
                                             className={cn(
-                                                'glass-card rounded-xl p-4 flex items-start gap-3',
-                                                level.reached ? 'neon-border' : 'border border-border/40 opacity-70'
+                                                'rounded-[18px] p-4 flex items-start gap-3 border',
+                                                level.reached
+                                                    ? 'border-[hsl(142_38%_24%)] bg-[hsl(142_30%_10%)]'
+                                                    : 'border-[hsl(142_18%_14%)] bg-[hsl(140_24%_7%)]'
                                             )}
                                         >
-                                            <div className={cn(
-                                                'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border',
-                                                level.reached
-                                                    ? 'bg-gradient-to-br from-primary/15 to-primary/25 border-primary/20 text-primary'
-                                                    : 'bg-muted/20 border-border/40 text-muted-foreground'
-                                            )}>
+                                            <span
+                                                className="w-10 h-10 rounded-[13px] flex items-center justify-center
+                                                           flex-shrink-0 border border-white/[0.07]"
+                                                style={{
+                                                    background: level.reached
+                                                        ? 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))'
+                                                        : 'hsl(142 20% 12%)',
+                                                    color: level.reached ? 'hsl(142 76% 62%)' : 'hsl(142 15% 42%)',
+                                                }}
+                                            >
                                                 {level.reached
                                                     ? <Gift className="w-5 h-5" />
                                                     : <Lock className="w-5 h-5" />}
-                                            </div>
+                                            </span>
 
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <h4 className="font-bold text-sm">{level.name}</h4>
                                                     {level.claimed && (
-                                                        <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                                                            получена
-                                                        </span>
+                                                        <GraffitiStar className="w-6 h-6 flex-shrink-0" delay={0.24} />
                                                     )}
                                                 </div>
                                                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -398,7 +431,10 @@ const Referral = () => {
                                                                 onChange={(e) => setTradingview(e.target.value)}
                                                                 placeholder="Ник в TradingView"
                                                                 autoFocus
-                                                                className="input-glass w-full rounded-lg px-3 py-2 text-sm"
+                                                                className="w-full rounded-xl px-3 py-2.5 text-[14px]
+                                                                           bg-[hsl(140_26%_8%)] border border-[hsl(142_26%_15%)]
+                                                                           text-foreground outline-none
+                                                                           focus:border-primary/50"
                                                             />
                                                             <div className="flex gap-2">
                                                                 <Button
@@ -447,9 +483,7 @@ const Referral = () => {
                                     </p>
                                 )}
 
-                                <p className="text-xs text-muted-foreground text-center pt-2">
-                                    Друг засчитывается после регистрации и депозита
-                                </p>
+
                             </div>
                         )}
                     </div>
