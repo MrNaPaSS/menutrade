@@ -101,6 +101,16 @@ export function ModalCard({
                         >
                             {title}
                         </span>
+                        {/* Замок стоит справа от названия, а не строкой
+                            ниже: так он читается как отметка на самой
+                            карточке, а не как ещё одна подпись */}
+                        {state === 'closed' && (
+                            <Lock
+                                className="ml-auto w-4 h-4 flex-shrink-0"
+                                style={{ color: 'hsl(142 18% 42%)' }}
+                            />
+                        )}
+
                         {/* Пройденное отмечает звезда, а не «100%»: цифру
                             надо прочитать, звезду видно сразу */}
                         {done && isOpen ? (
@@ -164,22 +174,18 @@ export function ModalCard({
                     )}
                 </>
             ) : (
-                <div className="flex items-center gap-2 mt-3">
-                    {state === 'pending' ? (
-                        <>
-                            <Clock className="w-3.5 h-3.5 text-amber-400/70 flex-shrink-0" />
-                            <span className="text-[12px] text-amber-400/80">
-                                {lockedNote ?? 'Ждём подтверждения'}
-                            </span>
-                        </>
-                    ) : (
-                        /* У закрытого только замок. Подпись вида «откроет
-                           счёт на X» объясняла условие раньше, чем человек
-                           успел заинтересоваться курсом - условие он узнает,
-                           когда нажмёт */
-                        <Lock className="w-4 h-4 flex-shrink-0" style={{ color: 'hsl(142 18% 42%)' }} />
-                    )}
-                </div>
+                /* У закрытого ничего внизу нет - только замок справа от
+                   названия. Подпись вида «откроет счёт на X» объясняла
+                   условие раньше, чем человек успел заинтересоваться, -
+                   он узнает его, когда нажмёт */
+                state === 'pending' && (
+                    <div className="flex items-center gap-2 mt-3">
+                        <Clock className="w-3.5 h-3.5 text-amber-400/70 flex-shrink-0" />
+                        <span className="text-[12px] text-amber-400/80">
+                            {lockedNote ?? 'Ждём подтверждения'}
+                        </span>
+                    </div>
+                )
             )}
         </motion.button>
     );
