@@ -26,26 +26,39 @@ interface StatusStripProps {
 const VALUE_COLOR = 'hsl(var(--foreground))';
 const LABEL_COLOR = 'hsl(var(--muted-foreground))';
 
+/**
+ * Разметка ячейки. Вынесена в константы, потому что ведущую ячейку
+ * рисует не этот файл, а тот, кто её передаёт, - и без общих слотов
+ * подписи разъезжаются по высоте.
+ */
+export const CELL = 'flex-1 flex flex-col items-center justify-start py-3.5 px-1 min-w-0';
+export const VALUE_SLOT = 'h-8 flex items-center justify-center';
+export const LABEL_SLOT =
+    'text-[10.5px] uppercase tracking-[0.08em] leading-[1.2] mt-1.5 text-center min-h-[25px]';
+
 function Figure({ metric }: { metric: Metric }) {
     const shown = useCountUp(metric.value);
 
     return (
-        <span className="flex-1 flex flex-col items-center justify-center py-3.5 min-w-0">
-            <span
-                className="font-bold text-[24px] leading-none tabular-nums tracking-[-0.02em]"
-                style={{ color: VALUE_COLOR }}
-            >
-                {shown}
-                {metric.suffix && (
-                    <span className="text-[13px] ml-0.5" style={{ color: LABEL_COLOR }}>
-                        {metric.suffix}
-                    </span>
-                )}
+        <span className={CELL}>
+            {/* Значение и подпись в слотах постоянной высоты: иначе
+                подписи стоят на разной высоте, когда рядом с цифрой
+                оказывается фото или значок */}
+            <span className={VALUE_SLOT}>
+                <span
+                    className="font-bold text-[24px] leading-none tabular-nums tracking-[-0.02em]"
+                    style={{ color: VALUE_COLOR }}
+                >
+                    {shown}
+                    {metric.suffix && (
+                        <span className="text-[13px] ml-0.5" style={{ color: LABEL_COLOR }}>
+                            {metric.suffix}
+                        </span>
+                    )}
+                </span>
             </span>
-            <span
-                className="text-[10.5px] uppercase tracking-[0.08em] mt-1.5 truncate"
-                style={{ color: LABEL_COLOR }}
-            >
+
+            <span className={LABEL_SLOT} style={{ color: LABEL_COLOR }}>
                 {metric.label}
             </span>
         </span>

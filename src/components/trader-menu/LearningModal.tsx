@@ -199,21 +199,26 @@ export function LearningModal({
                             icon={item.icon}
                             title={item.title}
                             description={item.description}
-                            state={locked ? (courseState === 'pending' ? 'pending' : 'closed') : 'open'}
+                            // Модуль закрытого направления тоже живой:
+                            // внутри виден список уроков, замки стоят на них
+                            state={awaiting ? 'pending' : (lockedByOrder && courseOpen ? 'closed' : 'open')}
+                            lockBadge={!courseOpen && !awaiting}
                             value={courseOpen ? `${percent}%` : undefined}
                             done={courseOpen && percent === 100}
                             progress={courseOpen ? percent : undefined}
                             footnote={courseOpen
                                 ? `${closed} из ${total} уроков`
                                 : `${total} ${total === 1 ? 'урок' : total < 5 ? 'урока' : 'уроков'}`}
-                            action={closed > 0 ? 'Продолжить' : 'Начать'}
+                            action={courseOpen ? (closed > 0 ? 'Продолжить' : 'Начать') : 'Посмотреть'}
                             lockedNote={courseState === 'pending'
                                 ? 'ID отправлен, ждём подтверждения'
                                 : 'Откроется после предыдущего модуля'}
                             // Модуль открывается всегда, кроме ожидания
                             // подтверждения: внутри виден список уроков,
                             // и замки стоят уже на них
-                            onClick={awaiting ? undefined : () => setModule(item)}
+                            onClick={awaiting || (courseOpen && lockedByOrder)
+                                ? undefined
+                                : () => setModule(item)}
                         />
                     );
                 })}
@@ -242,11 +247,17 @@ export function LearningModal({
                         icon={item.icon}
                         title={item.title}
                         description={item.description}
-                        state={state}
-                        value={`${percent}%`}
-                        progress={percent}
-                        footnote={`${done} из ${total} уроков`}
-                        action={done > 0 ? 'Продолжить' : 'Начать'}
+                        // Закрытое направление выглядит живым: войти
+                        // можно, замок стоит отметкой. Серая карточка
+                        // читалась как «сюда нельзя»
+                        state={state === 'pending' ? 'pending' : 'open'}
+                        lockBadge={state === 'closed'}
+                        value={state === 'open' ? `${percent}%` : undefined}
+                        progress={state === 'open' ? percent : undefined}
+                        footnote={state === 'open'
+                            ? `${done} из ${total} уроков`
+                            : `${total} ${total === 1 ? 'урок' : total < 5 ? 'урока' : 'уроков'}`}
+                        action={state === 'open' ? (done > 0 ? 'Продолжить' : 'Начать') : 'Посмотреть'}
                         lockedNote={state === 'pending' ? 'ID отправлен, ждём подтверждения' : undefined}
                         onClick={state === 'pending' ? undefined : () => setCourse(item)}
                     />

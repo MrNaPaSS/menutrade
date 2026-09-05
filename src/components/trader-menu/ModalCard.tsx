@@ -25,6 +25,14 @@ interface ModalCardProps {
     action?: string;
     /** Всё пройдено: вместо процента ставим звезду */
     done?: boolean;
+    /**
+     * Замок рядом с названием при живой карточке.
+     *
+     * Нужен там, где войти можно, а материал внутри закрыт: карточка
+     * приглашает заглянуть, но не обещает доступ. Серая карточка на том
+     * же месте читалась как «сюда нельзя», и внутрь никто не заходил.
+     */
+    lockBadge?: boolean;
     onClick?: () => void;
 }
 
@@ -46,6 +54,7 @@ export function ModalCard({
     lockedNote,
     action,
     done = false,
+    lockBadge = false,
     onClick,
 }: ModalCardProps) {
     const reduced = useReducedMotion();
@@ -104,7 +113,7 @@ export function ModalCard({
                         {/* Замок стоит справа от названия, а не строкой
                             ниже: так он читается как отметка на самой
                             карточке, а не как ещё одна подпись */}
-                        {state === 'closed' && (
+                        {(state === 'closed' || lockBadge) && (
                             <Lock
                                 className="ml-auto w-4 h-4 flex-shrink-0"
                                 style={{ color: 'hsl(142 18% 42%)' }}

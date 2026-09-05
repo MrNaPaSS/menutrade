@@ -10,7 +10,8 @@ import { useDailyClaim } from '@/hooks/useDailyClaim';
 import { useTelegram } from '@/hooks/useTelegram';
 import { ArrowLeft, Activity, BookOpen, Calculator, Code, GraduationCap, Brain, Lock, Newspaper, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { StatusStrip } from '@/components/trader-menu/StatusStrip';
+import { cn } from '@/lib/utils';
+import { CELL, LABEL_SLOT, StatusStrip, VALUE_SLOT } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { LearningModal } from '@/components/trader-menu/LearningModal';
 import { StrategiesModal } from '@/components/trader-menu/StrategiesModal';
@@ -129,34 +130,39 @@ const TraderMenu = () => {
               leading={
                 <motion.button
                   onClick={() => (hasFullAccess ? setProfileOpen(true) : setLocked('профиль трейдера'))}
-                  aria-label="Профиль трейдера"
+                  aria-label="Торговый профиль"
                   whileTap={{ scale: 0.97 }}
-                  className="relative w-[74px] flex-shrink-0 flex flex-col items-center justify-center gap-1.5
-                             transition-colors hover:bg-white/[0.03] active:bg-white/[0.05]
-                             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className={cn(
+                    CELL,
+                    'relative w-[86px] flex-none transition-colors',
+                    'hover:bg-white/[0.03] active:bg-white/[0.05]',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'
+                  )}
                 >
                   {/* Фото человека вместо значка: свой профиль узнают по
                       лицу быстрее, чем по подписи */}
-                  <span className="relative w-9 h-9 rounded-full overflow-hidden flex items-center justify-center
-                                   border border-primary/25 bg-primary/10">
-                    {user?.photo_url ? (
-                      <img src={user.photo_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <UserRound className="w-4 h-4" style={{ color: 'hsl(142 76% 62%)' }} />
-                    )}
+                  <span className={VALUE_SLOT}>
+                    <span className="relative w-8 h-8 rounded-full overflow-hidden flex items-center justify-center
+                                     border border-primary/25 bg-primary/10">
+                      {user?.photo_url ? (
+                        <img src={user.photo_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <UserRound className="w-4 h-4" style={{ color: 'hsl(142 76% 62%)' }} />
+                      )}
 
-                    {!hasFullAccess && (
-                      <span className="absolute inset-0 flex items-center justify-center bg-black/55">
-                        <Lock className="w-3.5 h-3.5" style={{ color: 'hsl(142 20% 62%)' }} />
-                      </span>
-                    )}
+                      {!hasFullAccess && (
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/55">
+                          <Lock className="w-3.5 h-3.5" style={{ color: 'hsl(142 20% 62%)' }} />
+                        </span>
+                      )}
+                    </span>
                   </span>
 
                   <span
-                    className="text-[10.5px] uppercase tracking-[0.08em] leading-none"
+                    className={LABEL_SLOT}
                     style={{ color: hasFullAccess ? 'hsl(142 76% 58%)' : 'hsl(var(--muted-foreground))' }}
                   >
-                    профиль
+                    торговый профиль
                   </span>
                 </motion.button>
               }
