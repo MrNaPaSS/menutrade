@@ -43,9 +43,16 @@ interface ModalWindowProps {
     children: ReactNode;
 }
 
-/** Круглая кнопка в углу шапки: назад слева, закрыть справа */
+/**
+ * Круглая кнопка в углу шапки: назад слева, закрыть справа.
+ *
+ * z-10 обязателен. Блок с названием идёт в разметке после кнопок и тоже
+ * позиционирован, поэтому без слоя он ложится поверх них: кнопки видно,
+ * а нажатие уходит в заголовок. Название занимает всю ширину шапки, так
+ * что перекрывались обе - и стрелка, и крестик.
+ */
 const CORNER_BUTTON =
-    'absolute w-8 h-8 rounded-full flex items-center justify-center ' +
+    'absolute z-10 w-8 h-8 rounded-full flex items-center justify-center ' +
     'border border-white/[0.08] bg-white/[0.04] ' +
     'transition-colors duration-200 hover:bg-white/[0.09] ' +
     'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50';
@@ -201,7 +208,10 @@ export function ModalWindow({
                                 плотным текстом он рушит читаемость */}
                             <GraffitiSpray className="-top-6 -left-4 w-52 h-32" opacity={0.07} />
 
-                            <div className={cn('relative min-w-0', onBack ? 'text-center px-10' : 'pr-12')}>
+                            <div className={cn(
+                                'relative min-w-0 pointer-events-none',
+                                onBack ? 'text-center px-10' : 'pr-12'
+                            )}>
                                 <h2
                                     className="font-display font-bold text-[18px] tracking-tight leading-tight"
                                     style={{ color: MODAL_TITLE }}
