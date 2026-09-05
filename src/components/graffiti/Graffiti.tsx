@@ -119,19 +119,33 @@ export function GraffitiMark({ className }: { className?: string }) {
 }
 
 /**
- * Верхний фон.
+ * Верхний и нижний фон с рваным краем.
  *
- * Склейка с мобильной страницы лендинга: тёмное поле с зелёным
- * свечением по краям и размытыми монетами. Растворяется книзу маской,
- * чтобы не было видно, где картинка кончается и начинается фон.
+ * Внутри - склейка с мобильной страницы лендинга: тёмное поле с
+ * зелёным свечением по краям и размытыми монетами. Обрывается не
+ * плавным градиентом, а рваной кромкой - тем же швом, которым на
+ * лендинге стыкуются секции. Градиент выглядит как размытая картинка,
+ * кромка - как оторванный кусок стены.
  *
- * Стоит только сверху и только на главной: под списками и текстом
- * такая подложка мешает читать, а внизу экрана её всё равно перекроет
- * содержимое.
+ * Кромка хранится маской: белый силуэт с альфой. Так один файл красит
+ * что угодно и весит втрое меньше цветного.
  */
-export function GraffitiBackdrop({ className }: { className?: string }) {
-    const fade = 'linear-gradient(180deg, hsl(0 0% 0%) 0%, hsl(0 0% 0% / 0.85) 52%, transparent 100%)';
 
+const TORN = {
+    WebkitMaskImage: `url(${basePath()}graffiti/torn-edge.png)`,
+    maskImage: `url(${basePath()}graffiti/torn-edge.png)`,
+    WebkitMaskSize: '100% 100%',
+    maskSize: '100% 100%',
+    WebkitMaskRepeat: 'no-repeat',
+    maskRepeat: 'no-repeat',
+} as const;
+
+const GLOW = {
+    backgroundSize: 'cover',
+    backgroundPosition: 'center top',
+} as const;
+
+export function GraffitiBackdrop({ className }: { className?: string }) {
     return (
         <div
             aria-hidden="true"
@@ -142,10 +156,34 @@ export function GraffitiBackdrop({ className }: { className?: string }) {
             )}
             style={{
                 backgroundImage: `url(${basePath()}graffiti/top-glow.jpg)`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center top',
-                WebkitMaskImage: fade,
-                maskImage: fade,
+                ...GLOW,
+                ...TORN,
+            }}
+        />
+    );
+}
+
+/**
+ * Нижняя кромка.
+ *
+ * Та же картинка и та же маска, перевёрнутые по вертикали: рваный край
+ * смотрит вверх, к содержимому. Одним преобразованием вместо второго
+ * набора файлов.
+ */
+export function GraffitiBackdropBottom({ className }: { className?: string }) {
+    return (
+        <div
+            aria-hidden="true"
+            className={cn(
+                'fixed inset-x-0 bottom-0 z-0 pointer-events-none select-none',
+                'h-[min(210px,26vh)] opacity-70',
+                className
+            )}
+            style={{
+                backgroundImage: `url(${basePath()}graffiti/top-glow.jpg)`,
+                ...GLOW,
+                ...TORN,
+                transform: 'scaleY(-1)',
             }}
         />
     );

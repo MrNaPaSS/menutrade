@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ProgressRing } from '@/components/ProgressRing';
 import { useCountUp } from '@/hooks/useCountUp';
 import { courses } from '@/data/courses';
-import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
+import { GraffitiBackdrop, GraffitiBackdropBottom } from '@/components/graffiti/Graffiti';
 import { cn } from '@/lib/utils';
 
 const basePath = () => import.meta.env.BASE_URL || '/';
@@ -58,6 +58,7 @@ const Home = () => {
     <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <GraffitiBackdrop />
+      <GraffitiBackdropBottom />
       <div className="relative z-10">
         <Header />
 
