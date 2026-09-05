@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Send, Trash2, MoreVertical, Paperclip, Zap, Menu, GraduationCap, BarChart3, ArrowLeft } from 'lucide-react';
+import { Send, Trash2, MoreVertical, Paperclip, ChevronDown, GraduationCap, BarChart3, ArrowLeft } from 'lucide-react';
 import { useChatHistory } from '@/agent/hooks/useChatHistory';
 import { sendMessage, type FileData } from '@/agent/services/aiService';
 import { ChatMessage } from './ChatMessage';
@@ -231,9 +231,62 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
 
             <div className="flex flex-col h-full max-h-screen overflow-hidden bg-background">
                 {/* Header */}
-                <header className="px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.5rem))] pb-2 border-b border-border/30 flex-shrink-0 glass-card z-20">
-                    <div className="flex items-center justify-between">
-                        {/* Левая сторона - Меню бургер + Ник */}
+                <header className="relative px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.5rem))] pb-2 border-b border-border/30 flex-shrink-0 glass-card z-20">
+                    {/* Название стоит в самой полосе кнопок Telegram - между
+                        «Закрыть» слева и «...» справа. Середина полосы всегда
+                        пустует, и подпись занимает её, не отнимая высоты у
+                        переписки. Поэтому здесь, в отличие от строки ниже,
+                        отступ --tg-content-top намеренно не применяется.
+
+                        Нажатие открывает выбор режима и рынка: отдельная
+                        кнопка с мозгами делала то же самое, но по ней было
+                        непонятно, что она меняет */}
+                    <div
+                        className="absolute inset-x-0 px-3 flex justify-center z-30"
+                        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 2px)' }}
+                    >
+                        <button
+                            onClick={() => setShowModeSelector(!showModeSelector)}
+                            className="flex flex-col items-center text-center px-3 py-0.5 rounded-lg
+                                       transition-colors hover:bg-white/[0.05]
+                                       focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        >
+                            <span className="text-sm neon-text-subtle flex items-center gap-1.5">
+                                AI {currentMode === 'teacher' ? 'Ментор' : 'Аналитик'}
+                                <ChevronDown className={cn(
+                                    'w-3.5 h-3.5 transition-transform',
+                                    showModeSelector && 'rotate-180'
+                                )} />
+                            </span>
+                            <span className="text-[9.5px] text-muted-foreground flex items-center gap-1">
+                                {currentMode === 'teacher' ? (
+                                    <><GraduationCap className="w-3 h-3" /> Обучение</>
+                                ) : (
+                                    <><BarChart3 className="w-3 h-3" /> Анализ рынка</>
+                                )}
+                                {/* Рынок видно сразу: иначе непонятно, по чьим
+                                    правилам агент посчитает сделку */}
+                                <span className="opacity-60">
+                                    · {currentMarket === 'auto'
+                                        ? 'любой рынок'
+                                        : MARKET_META[currentMarket].label.toLowerCase()}
+                                </span>
+                            </span>
+                        </button>
+
+                        <ModeSelector
+                            isOpen={showModeSelector}
+                            onClose={() => setShowModeSelector(false)}
+                            currentMode={currentMode}
+                            onSelectMode={setSessionMode}
+                            currentMarket={currentMarket}
+                            onSelectMarket={setSessionMarket}
+                        />
+                    </div>
+
+                    <div className="relative flex items-center justify-between">
+                        {/* Слева: назад в академию и фото - оно же вход в
+                            историю чатов */}
                         <div className="flex items-center gap-1.5 min-w-[80px]">
                             {onBack && (
                                 <button
@@ -244,15 +297,9 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                                     <ArrowLeft className="w-5 h-5" />
                                 </button>
                             )}
-                            <button
-                                onClick={() => setShowSidebar(true)}
-                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                <Menu className="w-5 h-5" />
-                            </button>
-                            {/* Фото открывает ту же шторку с историей чатов,
-                                что и три полоски: до него палец дотягивается
-                                легче, и в мессенджерах так и заведено */}
+                            {/* Шторку с историей чатов открывает фото: две
+                                кнопки подряд с одним и тем же действием
+                                читались как разные */}
                             <button
                                 onClick={() => setShowSidebar(true)}
                                 aria-label="История чатов"
@@ -276,58 +323,9 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                             </button>
                         </div>
 
-                        {/* Центр - Название и Текущий режим */}
-                        <div className="flex flex-col items-center text-center">
-                            <h1 className="text-sm sm:text-base neon-text-subtle flex items-center gap-1.5">
-                                AI {currentMode === 'teacher' ? 'Ментор' : 'Аналитик'}
-                                <Zap className="w-3 h-3 text-accent animate-pulse" />
-                            </h1>
-                            <p className="text-[9px] sm:text-[10px] text-muted-foreground flex items-center gap-1">
-                                {currentMode === 'teacher' ? (
-                                    <><GraduationCap className="w-3 h-3" /> Обучение</>
-                                ) : (
-                                    <><BarChart3 className="w-3 h-3" /> Анализ рынка</>
-                                )}
-                                {/* Рынок видно сразу: иначе непонятно, по чьим
-                                    правилам агент посчитает сделку */}
-                                <span className="opacity-60">
-                                    · {currentMarket === 'auto'
-                                        ? 'любой рынок'
-                                        : MARKET_META[currentMarket].label.toLowerCase()}
-                                </span>
-                            </p>
-                        </div>
 
-                        {/* Правая сторона - Выбор режима (Brain) + Меню */}
+                        {/* Справа: действия над чатом */}
                         <div className="flex items-center gap-1 min-w-[80px] justify-end">
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowModeSelector(!showModeSelector)}
-                                    className={cn(
-                                        "w-8 h-8 flex items-center justify-center rounded-lg transition-all relative overflow-hidden",
-                                        "hover:bg-white/5 border border-transparent hover:border-white/10"
-                                    )}
-                                >
-                                    <div className={cn(
-                                        "absolute inset-0 opacity-20",
-                                        currentMode === 'teacher' ? "bg-primary" : "bg-accent"
-                                    )} />
-                                    <Brain className={cn(
-                                        "w-4 h-4",
-                                        currentMode === 'teacher' ? "text-primary" : "text-accent"
-                                    )} />
-                                </button>
-
-                                <ModeSelector
-                                    isOpen={showModeSelector}
-                                    onClose={() => setShowModeSelector(false)}
-                                    currentMode={currentMode}
-                                    onSelectMode={setSessionMode} // Используем функцию из хука
-                                    currentMarket={currentMarket}
-                                    onSelectMarket={setSessionMarket}
-                                />
-                            </div>
-
                             <div className="relative">
                                 <button
                                     onClick={() => setShowMenu(!showMenu)}
