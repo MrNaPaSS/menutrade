@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { AppBackground } from '@/components/AppBackground';
 import { EconomicCalendar } from '@/components/EconomicCalendar';
 import { MARKET_URL, TICKER_URL, TIMELINE_MARKET, type NewsMarket } from '@/data/newsWidgets';
-import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { ArrowLeft, Newspaper, Calendar, TrendingUp, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -110,10 +109,6 @@ const News = () => {
                         </Button>
 
                         <h2 className="font-display font-bold text-lg sm:text-xl">Новости</h2>
-
-                        <div className="absolute right-0 -top-1">
-                            <SimpleMenu />
-                        </div>
                     </div>
                 </div>
 
@@ -136,9 +131,12 @@ const News = () => {
                                     className={cn(
                                         'h-10 rounded-xl text-[13px] font-medium border transition-colors',
                                         'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+                                        // Полупрозрачные, как виджеты под ними:
+                                        // сплошная заливка вырезала кнопки из
+                                        // страницы отдельным блоком
                                         market === id
-                                            ? 'bg-primary/12 border-primary/35 text-primary'
-                                            : 'bg-white/[0.03] border-white/[0.07] text-muted-foreground hover:bg-white/[0.06]'
+                                            ? 'bg-primary/10 border-primary/25 text-primary'
+                                            : 'bg-white/[0.025] border-white/[0.06] text-muted-foreground hover:bg-white/[0.05]'
                                     )}
                                 >
                                     {label}
@@ -160,14 +158,14 @@ const News = () => {
                             <TabsList
                                 className={cn(
                                     'grid w-full mb-3 h-auto p-1 rounded-xl',
-                                    'border border-[hsl(142_26%_15%)] bg-[hsl(140_26%_8%)]',
+                                    'border border-white/[0.06] bg-white/[0.025]',
                                     withCalendar ? 'grid-cols-3' : 'grid-cols-2'
                                 )}
                             >
                                 {withCalendar && (
                                 <TabsTrigger
                                     value="calendar"
-                                    className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary text-xs px-2 py-2 min-h-[42px] gap-1.5"
+                                    className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary text-xs px-2 py-2 min-h-[42px] gap-1.5"
                                 >
                                     <Calendar className="w-4 h-4" />
                                     Календарь
@@ -175,14 +173,14 @@ const News = () => {
                                 )}
                                 <TabsTrigger
                                     value="news"
-                                    className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary text-xs px-2 py-2 min-h-[42px] gap-1.5"
+                                    className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary text-xs px-2 py-2 min-h-[42px] gap-1.5"
                                 >
                                     <Newspaper className="w-4 h-4" />
                                     Лента
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="analytics"
-                                    className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary text-xs px-2 py-2 min-h-[42px] gap-1.5"
+                                    className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary text-xs px-2 py-2 min-h-[42px] gap-1.5"
                                 >
                                     <TrendingUp className="w-4 h-4" />
                                     Рынок
