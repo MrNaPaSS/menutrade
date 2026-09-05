@@ -250,11 +250,22 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                             >
                                 <Menu className="w-5 h-5" />
                             </button>
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 border border-primary/30 flex items-center justify-center overflow-hidden relative">
+                            {/* Фото открывает ту же шторку с историей чатов,
+                                что и три полоски: до него палец дотягивается
+                                легче, и в мессенджерах так и заведено */}
+                            <button
+                                onClick={() => setShowSidebar(true)}
+                                aria-label="История чатов"
+                                className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30
+                                           border border-primary/30 flex items-center justify-center
+                                           overflow-hidden relative transition-colors
+                                           hover:border-primary/60
+                                           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                            >
                                 {user?.photo_url ? (
                                     <img
                                         src={user.photo_url}
-                                        alt={user.first_name}
+                                        alt=""
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
@@ -262,7 +273,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                                         {user?.first_name?.[0] || 'U'}
                                     </span>
                                 )}
-                            </div>
+                            </button>
                         </div>
 
                         {/* Центр - Название и Текущий режим */}
