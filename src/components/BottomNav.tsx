@@ -7,6 +7,22 @@ import { TradeMarketDrawer } from '@/components/TradeMarketDrawer';
 import { SupportDrawer } from '@/components/SupportDrawer';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
 
+const basePath = () => import.meta.env.BASE_URL || '/';
+
+/* Верхняя граница панели - рваная кромка с лендинга вместо ровной
+   линии. Маска перевёрнута по вертикали, поэтому зубцы смотрят вверх,
+   к содержимому. Кромка выходит за панель на 56px, там и рвётся */
+const TORN_PANEL = {
+    background: 'linear-gradient(0deg, hsl(140 32% 6%) 0%, hsl(142 24% 9%) 100%)',
+    WebkitMaskImage: `url(${basePath()}graffiti/torn-edge.png)`,
+    maskImage: `url(${basePath()}graffiti/torn-edge.png)`,
+    WebkitMaskSize: '100% 100%',
+    maskSize: '100% 100%',
+    WebkitMaskRepeat: 'no-repeat',
+    maskRepeat: 'no-repeat',
+    transform: 'scaleY(-1)',
+} as const;
+
 interface BottomNavProps {
   onHomeClick?: () => void;
   platformUrl?: string;
@@ -96,13 +112,18 @@ export function BottomNav({
     <nav
       className="fixed bottom-0 left-0 right-0 z-50"
     >
-      {/* Gradient fade effect */}
-      <div className="absolute inset-x-0 -top-4 h-4 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+      {/* Фон панели: рваная кромка вместо ровной линии сверху.
+          Стоит слоем под содержимым и вылезает выше панели - там
+          кромка и обрывается */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 -top-14 pointer-events-none select-none"
+        style={TORN_PANEL}
+      />
 
-      {/* Main nav container */}
-      <div className="relative bg-background/60 backdrop-blur-2xl border-t border-border/30">
-        {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
+      <div className="relative">
+        {/* Свечение у самого края панели */}
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/[0.07] to-transparent pointer-events-none" />
 
         <div className="max-w-2xl mx-auto px-1 py-1 sm:py-2 safe-area-pb">
           {/* Expanded layout for all devices as requested */}

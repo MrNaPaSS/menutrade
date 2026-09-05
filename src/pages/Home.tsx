@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ProgressRing } from '@/components/ProgressRing';
 import { useCountUp } from '@/hooks/useCountUp';
 import { courses } from '@/data/courses';
-import { GraffitiBackdrop, GraffitiBackdropBottom } from '@/components/graffiti/Graffiti';
+import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
 import { cn } from '@/lib/utils';
 
 const basePath = () => import.meta.env.BASE_URL || '/';
@@ -58,7 +58,6 @@ const Home = () => {
     <div className="min-h-[100dvh] scanline pb-24">
       <MatrixRain />
       <GraffitiBackdrop />
-      <GraffitiBackdropBottom />
       <div className="relative z-10">
         <Header />
 
@@ -187,7 +186,7 @@ const Home = () => {
                   alt=""
                   aria-hidden="true"
                   draggable={false}
-                  className="w-11 h-11 mr-2 flex-shrink-0 object-contain select-none
+                  className="w-11 h-11 mr-5 flex-shrink-0 object-contain select-none
                              pointer-events-none opacity-90 -rotate-6"
                   initial={{ opacity: 0, scale: 0.7, rotate: -24 }}
                   animate={{ opacity: 0.9, scale: 1, rotate: -6 }}

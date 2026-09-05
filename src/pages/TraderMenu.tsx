@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
+import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
@@ -88,8 +89,11 @@ const TraderMenu = () => {
   return (
     <div className="min-h-[100dvh] scanline pb-16">
       <MatrixRain />
+      <GraffitiBackdrop />
       <div className="relative z-10">
-        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm pb-2 px-4">
+        {/* Шапка без своей заливки: под ней стоит тот же рваный фон,
+            что и на главной, и вторая подложка его перекрывала бы */}
+        <div className="sticky top-0 z-50 pb-2 px-4">
           <div className="relative flex items-center justify-center py-2 sm:py-3">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Button

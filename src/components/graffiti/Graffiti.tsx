@@ -162,29 +162,3 @@ export function GraffitiBackdrop({ className }: { className?: string }) {
         />
     );
 }
-
-/**
- * Нижняя кромка.
- *
- * Та же картинка и та же маска, перевёрнутые по вертикали: рваный край
- * смотрит вверх, к содержимому. Одним преобразованием вместо второго
- * набора файлов.
- */
-export function GraffitiBackdropBottom({ className }: { className?: string }) {
-    return (
-        <div
-            aria-hidden="true"
-            className={cn(
-                'fixed inset-x-0 bottom-0 z-0 pointer-events-none select-none',
-                'h-[min(210px,26vh)] opacity-70',
-                className
-            )}
-            style={{
-                backgroundImage: `url(${basePath()}graffiti/top-glow.jpg)`,
-                ...GLOW,
-                ...TORN,
-                transform: 'scaleY(-1)',
-            }}
-        />
-    );
-}
