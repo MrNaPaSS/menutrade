@@ -446,7 +446,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
               Доступ к академии
             </h1>
             <p className="text-[12.5px] text-muted-foreground leading-relaxed mt-1.5">
-              Зарегистрируйте торговый счёт и пополните его на любую сумму -
+              Зарегистрируйте торговый счёт и пополните его -
               этого достаточно, чтобы открыть все материалы.
             </p>
           </div>
