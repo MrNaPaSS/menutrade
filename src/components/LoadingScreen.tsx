@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useState } from 'react';
 import { Brain } from 'lucide-react';
 
@@ -22,6 +22,25 @@ const maskOf = (file: string) => ({
 } as const);
 
 /**
+ * Искры салюта. Считаются один раз: пересчёт на каждый кадр дал бы
+ * новые углы и салют распался бы на дрожь
+ */
+const SPARK_COUNT = 18;
+const SPARKS = Array.from({ length: SPARK_COUNT }, (_, i) => {
+  // Угол с небольшим разбросом: ровные лучи читаются как звёздочка
+  const jitter = ((i * 37) % 11) - 5;
+  return {
+    id: i,
+    angle: (360 / SPARK_COUNT) * i + jitter,
+    from: 100 + ((i * 13) % 25),
+    to: 210 + ((i * 29) % 70),
+    length: 20 + ((i * 17) % 22),
+    duration: 1.5 + ((i * 7) % 9) / 10,
+    delay: ((i * 23) % 20) / 10,
+  };
+});
+
+/**
  * Экран загрузки.
  *
  * Открытие показывает графити NMNH и больше ничего: это логотип
@@ -33,6 +52,8 @@ const maskOf = (file: string) => ({
  */
 export function LoadingScreen({ message = 'Загрузка...', imagePath }: LoadingScreenProps) {
   const [failed, setFailed] = useState(false);
+  // Салют - чистое украшение: тем, кто просил меньше движения, он не нужен
+  const reduced = useReducedMotion();
   const src = imagePath || `${basePath()}nmnh_logo.png`;
 
   return (
@@ -44,26 +65,39 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         >
-          {/* Рваное солнце позади графити.
-              Раньше здесь дышал размытый прямоугольник - он повторял
-              форму контейнера, и на экране двигался зелёный квадрат.
-              Солнце нарисовано тем же рваным краем, что и кромки полос,
-              и хранится маской: цвет задаётся здесь */}
-          {/* Деньги пылью: сильно размытые $ и zł на 7%. Именно
-              размытыми - читаемые значки валют превращают экран в
-              обещание лёгких денег, а у нас академия про обратное */}
-          <motion.div
-            aria-hidden="true"
-            className="absolute left-1/2 top-1/2 w-[190%] aspect-square pointer-events-none"
-            style={{
-              background: 'hsl(142 76% 52%)',
-              ...maskOf('money-dust.png'),
-            }}
-            initial={{ x: '-50%', y: '-50%', opacity: 0 }}
-            animate={{ x: '-50%', y: '-50%', opacity: [0.05, 0.09, 0.05] }}
-            transition={{ opacity: { duration: 7, repeat: Infinity, ease: 'easeInOut' } }}
-          />
+          {/* Салют позади графити.
+              Искры разлетаются из центра волнами - каждая со своей
+              задержкой, поэтому вспышка не выглядит одним хлопком.
+              Рисуем разметкой, а не картинкой: линии остаются чёткими
+              на любом экране и не тянут за собой файл */}
+          {!reduced && SPARKS.map(spark => (
+            <span
+              key={spark.id}
+              aria-hidden="true"
+              className="absolute left-1/2 top-1/2 pointer-events-none"
+              style={{ transform: `rotate(${spark.angle}deg)` }}
+            >
+              <motion.span
+                className="block h-[3px] rounded-full bg-primary origin-left"
+                style={{ boxShadow: '0 0 10px hsl(142 76% 52% / 0.8)' }}
+                initial={{ x: spark.from, width: 6, opacity: 0 }}
+                animate={{
+                  x: [spark.from, spark.to],
+                  width: [6, spark.length, 4],
+                  opacity: [0, 0.9, 0],
+                }}
+                transition={{
+                  duration: spark.duration,
+                  delay: spark.delay,
+                  repeat: Infinity,
+                  repeatDelay: 0.9,
+                  ease: 'easeOut',
+                }}
+              />
+            </span>
+          ))}
 
+          {/* Рваное солнце: тёплое ядро, из которого летят искры */}
           <motion.div
             aria-hidden="true"
             className="absolute left-1/2 top-1/2 w-[135%] aspect-square pointer-events-none"
@@ -79,7 +113,7 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
               x: '-50%',
               y: '-50%',
               scale: [1, 1.06, 1],
-              opacity: [0.2, 0.32, 0.2],
+              opacity: [0.26, 0.42, 0.26],
               rotate: [0, 360],
             }}
             transition={{
