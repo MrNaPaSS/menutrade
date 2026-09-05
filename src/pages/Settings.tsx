@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MatrixRain } from '@/components/MatrixRain';
-import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
+import { AppBackground } from '@/components/AppBackground';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
@@ -104,8 +103,7 @@ const Settings = () => {
 
   return (
     <div className="min-h-[100dvh] scanline pb-16">
-      <MatrixRain />
-      <GraffitiBackdrop />
+      <AppBackground />
       <div className="relative z-10">
         {/* Header с кнопкой назад */}
         <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm pb-2 -mx-4 px-4">

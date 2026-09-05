@@ -10,7 +10,7 @@ import { QuickTemplates } from './QuickTemplates';
 import { Sidebar } from '@/agent/components/Sidebar';
 import { ModeSelector } from '@/agent/components/ModeSelector';
 import { MARKET_META } from '@/agent/config/markets';
-import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
+import { AppBackground } from '@/components/AppBackground';
 import { cn } from '@/lib/utils';
 import type { TelegramUser } from '@/hooks/useTelegram';
 
@@ -233,7 +233,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
             <div className="relative flex flex-col h-full max-h-screen overflow-hidden bg-background">
                 {/* Тот же верхний фон, что и на остальных экранах: агент
                     открывается поверх приложения, а не вместо него */}
-                <GraffitiBackdrop />
+                <AppBackground />
 
                 {/* Шапка без своей заливки - под ней стоит этот фон */}
                 <header className="relative px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.5rem))] pb-2 border-b border-border/30 flex-shrink-0 z-20">

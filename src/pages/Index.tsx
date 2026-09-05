@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MatrixRain } from '@/components/MatrixRain';
-import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
+import { AppBackground } from '@/components/AppBackground';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { LessonContent } from '@/components/LessonContent';
@@ -204,8 +203,7 @@ const Index = () => {
   if (view === 'master-test') {
     return (
       <div className="min-h-[100dvh] scanline pb-16">
-        <MatrixRain />
-      <GraffitiBackdrop />
+        <AppBackground />
         <div className="relative z-10">
           <SimpleMenu />
           <MasterTest
@@ -230,7 +228,7 @@ const Index = () => {
 
     return (
       <div className="min-h-[100dvh] scanline pb-16">
-        <MatrixRain />
+        <AppBackground />
         <div className="relative z-10">
           <LessonContent
             lesson={currentLesson}
@@ -255,7 +253,7 @@ const Index = () => {
 
     return (
       <div className="min-h-[100dvh] scanline pb-16">
-        <MatrixRain />
+        <AppBackground />
         <div className="relative z-10">
           {/* Sticky header с кнопкой назад */}
           <motion.div
@@ -329,7 +327,7 @@ const Index = () => {
 
     return (
       <div className="min-h-[100dvh] scanline pb-16">
-        <MatrixRain />
+        <AppBackground />
         <div className="relative z-10 pt-4 sm:pt-5 md:pt-6">
           {/* Sticky header с кнопкой назад */}
           <motion.div
@@ -409,7 +407,7 @@ const Index = () => {
   if (view === 'courses') {
     return (
       <div className="min-h-screen scanline pb-16">
-        <MatrixRain />
+        <AppBackground />
         <div className="relative z-10">
           <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
             <div className="max-w-lg w-full mx-auto">
@@ -464,7 +462,7 @@ const Index = () => {
   // Render modules list
   return (
     <div className="min-h-screen scanline pb-16">
-      <MatrixRain />
+      <AppBackground />
       <div className="relative z-10">
         <main className="p-4 sm:p-5 md:p-6 pb-8 flex justify-center">
           <div className="max-w-lg lg:max-w-5xl w-full mx-auto">

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MatrixRain } from '@/components/MatrixRain';
-import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
+import { AppBackground } from '@/components/AppBackground';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { ArrowLeft, Newspaper, Calendar, TrendingUp, ExternalLink } from 'lucide-react';
@@ -151,8 +150,7 @@ const News = () => {
 
     return (
         <div className="min-h-[100dvh] scanline pb-24">
-            <MatrixRain />
-      <GraffitiBackdrop />
+            <AppBackground />
             <div className="relative z-10">
                 <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm px-4 pb-2
                                 pt-[var(--tg-content-top)]">

@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowUpCircle, ArrowDownCircle, Clock, ArrowLeft, RefreshCw, Play, XCircle, TimerOff } from 'lucide-react';
 import { GraffitiStar } from '@/components/graffiti/Graffiti';
-import { MatrixRain } from '@/components/MatrixRain';
-import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
+import { AppBackground } from '@/components/AppBackground';
 import { TradingChart } from '@/components/TradingChart';
 import { generatePattern, type GeneratedPattern, type ChartPoint } from '@/data/patternGenerator';
 import { useUserAccess } from '@/contexts/UserAccessContext';
@@ -144,8 +143,7 @@ const GuessChart = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background relative">
-      <MatrixRain />
-      <GraffitiBackdrop />
+      <AppBackground />
       <div
         className="relative z-10 w-full max-w-3xl mx-auto px-3 sm:px-5 pb-6"
         style={{

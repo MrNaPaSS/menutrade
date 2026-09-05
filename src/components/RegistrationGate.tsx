@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MatrixRain } from '@/components/MatrixRain';
+import { AppBackground } from '@/components/AppBackground';
 import { useTelegram } from '@/hooks/useTelegram';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 
@@ -609,7 +609,7 @@ function MarketCard({ icon, label, tagline, onClick }: MarketCardProps) {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
-      <MatrixRain />
+      <AppBackground />
       <div className="relative z-10 w-full max-w-md px-5 py-8">
         <div className="glass-card neon-border rounded-2xl p-6 sm:p-7">
           {children}

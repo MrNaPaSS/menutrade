@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Loader2, Shield, AlertCircle } from 'lucide-react';
 import { useTelegramContext } from '@/contexts/TelegramContext';
 import { Button } from '@/components/ui/button';
-import { MatrixRain } from './MatrixRain';
+import { AppBackground } from '@/components/AppBackground';
 
 export function TelegramAuthScreen() {
   const { isReady, isTelegram, user, webApp } = useTelegramContext();
@@ -11,7 +11,7 @@ export function TelegramAuthScreen() {
   if (isReady && !isTelegram) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-background scanline">
-        <MatrixRain />
+        <AppBackground />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -65,7 +65,7 @@ export function TelegramAuthScreen() {
   if (!isReady) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-background scanline">
-        <MatrixRain />
+        <AppBackground />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -92,7 +92,7 @@ export function TelegramAuthScreen() {
   if (isTelegram && !user) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-background scanline">
-        <MatrixRain />
+        <AppBackground />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

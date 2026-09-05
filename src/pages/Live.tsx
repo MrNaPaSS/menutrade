@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MatrixRain } from '@/components/MatrixRain';
-import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
+import { AppBackground } from '@/components/AppBackground';
 import { BottomNav } from '@/components/BottomNav';
 import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
 import { useUserAccess } from '@/contexts/UserAccessContext';
@@ -60,8 +59,7 @@ const Live = () => {
 
   return (
     <div className="min-h-[100dvh] scanline pb-24">
-      <MatrixRain />
-      <GraffitiBackdrop />
+      <AppBackground />
       <div className="relative z-10">
         <main className="p-4 sm:p-5 md:p-6 pb-24 flex justify-center">
           <div className="max-w-lg w-full mx-auto space-y-5">

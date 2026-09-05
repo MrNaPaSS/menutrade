@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Coins, Copy, Gift, Lock, Share2, Users } from 'lucide-react';
-import { MatrixRain } from '@/components/MatrixRain';
-import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
+import { AppBackground } from '@/components/AppBackground';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { useUserAccess } from '@/contexts/UserAccessContext';
@@ -172,8 +171,7 @@ const Referral = () => {
 
     return (
         <div className="min-h-[100dvh] scanline pb-24">
-            <MatrixRain />
-      <GraffitiBackdrop />
+            <AppBackground />
             <div className="relative z-10">
                 <main className="px-4 sm:px-5 md:px-6 pb-24 flex justify-center
                                pt-[calc(env(safe-area-inset-top)+3.5rem)] sm:pt-16">

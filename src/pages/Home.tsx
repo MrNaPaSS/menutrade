@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MatrixRain } from '@/components/MatrixRain';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
@@ -10,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ProgressRing } from '@/components/ProgressRing';
 import { useCountUp } from '@/hooks/useCountUp';
 import { courses } from '@/data/courses';
-import { GraffitiBackdrop } from '@/components/graffiti/Graffiti';
+import { AppBackground } from '@/components/AppBackground';
 import { cn } from '@/lib/utils';
 
 const basePath = () => import.meta.env.BASE_URL || '/';
@@ -56,8 +55,7 @@ const Home = () => {
 
   return (
     <div className="min-h-[100dvh] scanline pb-24">
-      <MatrixRain />
-      <GraffitiBackdrop />
+      <AppBackground />
       <div className="relative z-10">
         <Header />
 
