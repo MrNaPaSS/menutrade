@@ -184,8 +184,8 @@ const Home = () => {
                   alt=""
                   aria-hidden="true"
                   draggable={false}
-                  className="w-11 h-11 flex-shrink-0 object-contain select-none pointer-events-none
-                             opacity-90 -rotate-6"
+                  className="w-11 h-11 mr-2 flex-shrink-0 object-contain select-none
+                             pointer-events-none opacity-90 -rotate-6"
                   initial={{ opacity: 0, scale: 0.7, rotate: -24 }}
                   animate={{ opacity: 0.9, scale: 1, rotate: -6 }}
                   transition={{ delay: 0.34, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}

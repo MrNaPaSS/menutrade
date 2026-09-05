@@ -37,7 +37,7 @@ export function PepeIcon({ size = 56, className = '' }: PepeIconProps) {
       />
 
       <img
-        src={`${basePath}nmnh_graffiti.png`}
+        src={`${basePath}nmnh_logo.png`}
         alt="NMNH"
         width={size}
         height={size}

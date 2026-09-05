@@ -21,7 +21,7 @@ const basePath = () => import.meta.env.BASE_URL || '/';
  */
 export function LoadingScreen({ message = 'Загрузка...', imagePath }: LoadingScreenProps) {
   const [failed, setFailed] = useState(false);
-  const src = imagePath || `${basePath()}nmnh_graffiti.png`;
+  const src = imagePath || `${basePath()}nmnh_logo.png`;
 
   return (
     <div className="fixed inset-0 z-[9999] bg-background flex items-center justify-center">
