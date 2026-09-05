@@ -1,7 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MatrixRain } from '@/components/MatrixRain';
-import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
@@ -107,9 +106,6 @@ const TraderMenu = () => {
             <h1 className="font-display font-bold text-lg tracking-tight">
               Меню трейдера
             </h1>
-            <div className="absolute right-4 -top-3">
-              <SimpleMenu />
-            </div>
           </div>
         </div>
 

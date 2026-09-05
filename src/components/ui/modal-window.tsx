@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -94,7 +95,11 @@ export function ModalWindow({
         };
     }, [open, onClose]);
 
-    return (
+    // Рисуем окно в body, а не там, где стоит кнопка. Любой предок с
+    // transform, filter или backdrop-filter делает себя точкой отсчёта
+    // для fixed-потомков, и окно вместо экрана раскрывается внутри
+    // такого предка - например от кнопки в шапке вверх
+    return createPortal(
         <AnimatePresence>
             {open && (
                 <div className={cn(
@@ -200,6 +205,7 @@ export function ModalWindow({
                     </motion.div>
                 </div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }
