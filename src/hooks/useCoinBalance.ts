@@ -13,8 +13,12 @@ type Balance = Awaited<ReturnType<typeof fetchCoinBalance>>;
  * null означает «показывать нечего»: человек вне Telegram или
  * платформа не ответила. Экраны в этом случае просто не рисуют блок.
  */
-export function useCoinBalance(): { coins: Balance; reload: () => void } {
+export function useCoinBalance(): { coins: Balance; loading: boolean; reload: () => void } {
     const [coins, setCoins] = useState<Balance>(null);
+    // Пока первый запрос не вернулся, null означает «ещё не знаем», а не
+    // «показывать нечего». Без этого экран сперва рисуется без блока
+    // монет, а потом блок вклинивается и сдвигает всё под собой
+    const [loading, setLoading] = useState(true);
     const [nonce, setNonce] = useState(0);
 
     const reload = useCallback(() => setNonce(n => n + 1), []);
@@ -22,7 +26,9 @@ export function useCoinBalance(): { coins: Balance; reload: () => void } {
     useEffect(() => {
         let cancelled = false;
         fetchCoinBalance().then(data => {
-            if (!cancelled) setCoins(data);
+            if (cancelled) return;
+            setCoins(data);
+            setLoading(false);
         });
         return () => { cancelled = true; };
     }, [nonce]);
@@ -49,5 +55,5 @@ export function useCoinBalance(): { coins: Balance; reload: () => void } {
         };
     }, [reload]);
 
-    return { coins, reload };
+    return { coins, loading, reload };
 }

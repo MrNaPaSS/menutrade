@@ -29,19 +29,23 @@ function getBotApiBase(): string {
 /**
  * Приглашение, которое уйдёт другу.
  *
- * Ссылка идёт в поле url - так Telegram делает её кликабельной и
- * подтягивает карточку бота. В тексте её нет: там она печаталась бы
- * вторым адресом подряд.
+ * Ссылка стоит последней строкой текста, а поле url оставлено пустым:
+ * Telegram печатает содержимое url поверх текста, и адрес оказывался
+ * бы первой строкой, а не в конце.
  *
  * Слово-ссылку «NMNH» здесь получить нельзя: окно «поделиться»
  * принимает только простой текст. Так умеет лишь сообщение от бота, но
  * тогда нажатие перестанет сразу открывать список чатов.
  */
-const SHARE_TEXT = [
-    'NMNH - Академия здравого трейдинга',
-    '',
-    'Живые сессии, разборы рынка и закрытый форум трейдеров.',
-].join('\n');
+function shareText(link: string): string {
+    return [
+        'NMNH - Академия здравого трейдинга',
+        '',
+        'Живые сессии, разборы рынка и закрытый форум трейдеров',
+        '',
+        link,
+    ].join('\n');
+}
 
 /** Открывает внешнюю ссылку через Telegram, иначе обычной вкладкой. */
 function shareOpen(url: string): void {
@@ -56,8 +60,9 @@ function shareOpen(url: string): void {
 
 /** Открывает окно «поделиться» Telegram, иначе обычную ссылку. */
 function shareLink(link: string): void {
-    const url = `https://t.me/share/url?url=${encodeURIComponent(link)}`
-        + `&text=${encodeURIComponent(SHARE_TEXT)}`;
+    // url пустой: адрес уже стоит последней строкой текста, а Telegram
+    // печатает содержимое url поверх текста, первой строкой
+    const url = `https://t.me/share/url?url=&text=${encodeURIComponent(shareText(link))}`;
     const tg = (window as { Telegram?: { WebApp?: { openTelegramLink?: (u: string) => void } } })
         .Telegram?.WebApp;
     if (tg?.openTelegramLink) {
@@ -92,7 +97,7 @@ const Referral = () => {
     // Монеты NMNH. Хук слушает начисления, поэтому число растёт сразу
     // после того, как забрали подарок, - раньше оно ждало, пока человек
     // уйдёт с экрана и вернётся
-    const { coins } = useCoinBalance();
+    const { coins, loading: coinsLoading } = useCoinBalance();
     const shownCoins = useCountUp(coins?.balance ?? 0);
 
     useEffect(() => {
@@ -192,8 +197,13 @@ const Referral = () => {
                         </div>
 
                         {/* Баланс - валюта всего раздела, поэтому стоит первым
-                            и целиком, а не строкой в списке */}
-                        {coins && (
+                            и целиком, а не строкой в списке.
+
+                            Карточка рисуется сразу, ещё до ответа платформы:
+                            пока ответа нет, на месте числа стоит прочерк.
+                            Раньше блока не было вовсе, и он вклинивался
+                            секундой позже, сдвигая всё под собой */}
+                        {(coins || coinsLoading) && (
                             <motion.div
                                 initial={{ opacity: 0, y: 12 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -219,9 +229,9 @@ const Referral = () => {
                                             живое, а не нарисовано на картинке */}
                                         <p
                                             className="font-mono font-bold text-[26px] leading-none tabular-nums mt-1"
-                                            style={{ color: 'hsl(142 76% 58%)' }}
+                                            style={{ color: coins ? 'hsl(142 76% 58%)' : 'hsl(142 20% 30%)' }}
                                         >
-                                            {shownCoins}
+                                            {coins ? shownCoins : '--'}
                                         </p>
                                     </div>
 
@@ -232,7 +242,8 @@ const Referral = () => {
                                     variant="outline"
                                     size="sm"
                                     className="w-full justify-center mt-3"
-                                    onClick={() => shareOpen(coins.shopUrl)}
+                                    disabled={!coins}
+                                    onClick={() => coins && shareOpen(coins.shopUrl)}
                                 >
                                     Открыть магазин
                                 </Button>
