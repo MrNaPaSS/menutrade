@@ -6,13 +6,14 @@ import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
-import { ArrowLeft, Activity, BookOpen, Calculator, Code, GraduationCap, Brain, Newspaper } from 'lucide-react';
+import { ArrowLeft, Activity, BookOpen, Calculator, Code, GraduationCap, Brain, Newspaper, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { LearningModal } from '@/components/trader-menu/LearningModal';
 import { StrategiesModal } from '@/components/trader-menu/StrategiesModal';
 import { PositionCalculator } from '@/components/trader-menu/PositionCalculator';
+import { TraderProfileModal } from '@/components/trader-menu/TraderProfileModal';
 import { AccessDeniedScreen, type LockedFeature } from '@/components/AccessDeniedScreen';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { SoftwareListModal } from '@/components/trader-menu/SoftwareListModal';
@@ -60,6 +61,7 @@ const TraderMenu = () => {
   const [softwareItem, setSoftwareItem] = useState<SoftwareItem | null>(null);
   const [agentOpen, setAgentOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   // Нажатие на закрытый раздел ведёт на его витрину: сперва человек
   // видит, что внутри, и только потом - условие доступа. Шлюз с
   // выбором площадки открывается уже оттуда
@@ -117,17 +119,37 @@ const TraderMenu = () => {
 
         <main className="px-4 pb-8 flex justify-center">
           <div className="max-w-lg w-full mx-auto">
-            <StatusStrip
-              metrics={[
-                {
-                  value: coins?.balance ?? 0,
-                  label: 'монет',
-                  onClick: () => navigate('/referral'),
-                },
-                { value: streak, label: 'дней подряд' },
-                { value: overall, label: 'курса', suffix: '%' },
-              ]}
-            />
+            {/* Профиль слева от показателей: там записи самого человека,
+                а не материал академии, и строкой в списке инструментов
+                он читался бы как ещё один справочник */}
+            <div className="flex items-stretch gap-2">
+              <button
+                onClick={() => setProfileOpen(true)}
+                aria-label="Профиль трейдера"
+                className="w-[58px] flex-shrink-0 rounded-[18px] flex flex-col items-center justify-center gap-1
+                           border border-[hsl(142_26%_15%)] transition-colors
+                           hover:bg-white/[0.04]
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                style={{ background: 'hsl(140 26% 8%)' }}
+              >
+                <UserRound className="w-[18px] h-[18px]" style={{ color: 'hsl(142 76% 62%)' }} />
+                <span className="text-[9.5px] text-muted-foreground leading-none">профиль</span>
+              </button>
+
+              <div className="min-w-0 flex-1">
+                <StatusStrip
+                  metrics={[
+                    {
+                      value: coins?.balance ?? 0,
+                      label: 'монет',
+                      onClick: () => navigate('/referral'),
+                    },
+                    { value: streak, label: 'дней подряд' },
+                    { value: overall, label: 'курса', suffix: '%' },
+                  ]}
+                />
+              </div>
+            </div>
 
             <h2
               className="text-[11px] uppercase tracking-[0.1em] mt-6 mb-2 px-1"
@@ -231,6 +253,8 @@ const TraderMenu = () => {
       <SoftwareModal item={softwareItem} onClose={() => setSoftwareItem(null)} />
 
       <PositionCalculator open={calcOpen} onClose={() => setCalcOpen(false)} />
+
+      <TraderProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
 
       {/* Стратегии живут внутри обучения: это тот же материал, только
           без последовательности. Возврат ведёт обратно в направления,
