@@ -70,36 +70,38 @@ interface WidgetFrameProps {
 }
 
 /**
- * Виджет без лишних краёв: одна карточка, внутри сразу содержимое.
- * Раньше рамок было две - карточки и вложенного контейнера.
+ * Виджет без обвязки.
+ *
+ * Ни карточки, ни полосы с названием: сами виджеты рисуются на
+ * прозрачном фоне, и рамка вокруг них создавала вторую границу поверх
+ * той, что у виджета внутри. Название и так стоит на вкладке.
+ *
+ * Ссылка на полную версию ушла под виджет тихой строкой - как в
+ * календаре.
  */
 function WidgetFrame({ src, title, source, tall }: WidgetFrameProps) {
     return (
-        <div className="glass-card neon-border rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/20">
-                <span className="text-xs font-medium text-muted-foreground truncate">
-                    {title}
-                </span>
-                <button
-                    type="button"
-                    onClick={() => window.open(source, '_blank', 'noopener')}
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
-                >
-                    Открыть
-                    <ExternalLink className="w-3 h-3" />
-                </button>
-            </div>
-
+        <div className="space-y-2">
             <iframe
                 src={src}
                 title={title}
                 loading="lazy"
-                className={`w-full border-0 block ${tall
+                className={`w-full border-0 block rounded-[18px] ${tall
                     ? 'h-[440px] sm:h-[520px] md:h-[600px]'
                     : 'h-[380px] sm:h-[460px] md:h-[520px]'}`}
                 allow="clipboard-write"
                 sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms"
             />
+
+            <button
+                type="button"
+                onClick={() => window.open(source, '_blank', 'noopener')}
+                className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground
+                           hover:text-foreground transition-colors px-1"
+            >
+                Открыть на TradingView
+                <ExternalLink className="w-3 h-3" />
+            </button>
         </div>
     );
 }
@@ -175,7 +177,7 @@ const News = () => {
                         />
 
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                            <TabsList className="grid w-full grid-cols-3 glass-card mb-3 h-auto p-1">
+                            <TabsList className="grid w-full grid-cols-3 mb-3 h-auto p-1 rounded-xl border border-[hsl(142_26%_15%)] bg-[hsl(140_26%_8%)]">
                                 <TabsTrigger
                                     value="calendar"
                                     className="data-[state=active]:bg-primary/15 data-[state=active]:text-primary text-xs px-2 py-2 min-h-[42px] gap-1.5"
@@ -212,24 +214,20 @@ const News = () => {
                                 forceMount
                                 className="mt-0 data-[state=inactive]:hidden"
                             >
-                                <div className="glass-card neon-border rounded-xl overflow-hidden">
-                                    <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/20">
-                                        <span className="text-xs font-medium text-muted-foreground">
-                                            Новости рынка
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => window.open('https://ru.tradingview.com/news/', '_blank', 'noopener')}
-                                            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
-                                        >
-                                            Открыть
-                                            <ExternalLink className="w-3 h-3" />
-                                        </button>
-                                    </div>
-
+                                <div className="space-y-2">
                                     <div ref={newsRef} className="tradingview-widget-container w-full min-h-[440px]">
                                         <div className="tradingview-widget-container__widget w-full" />
                                     </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => window.open('https://ru.tradingview.com/news/', '_blank', 'noopener')}
+                                        className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground
+                                                   hover:text-foreground transition-colors px-1"
+                                    >
+                                        Открыть на TradingView
+                                        <ExternalLink className="w-3 h-3" />
+                                    </button>
                                 </div>
                             </TabsContent>
 
