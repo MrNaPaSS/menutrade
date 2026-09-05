@@ -1,10 +1,15 @@
 /**
  * Расчёт сделки от риска.
  *
- * Один расчёт на все рынки: цена входа, цена стопа и допустимый риск
- * задают объём везде одинаково - в крипте, на форексе и на акциях.
- * Разница только в том, как этот объём называют, поэтому объём выдаём
- * сразу в трёх видах: в единицах актива, в лотах и в деньгах.
+ * Считает столько, на сколько хватает введённого, а не требует всё
+ * сразу. Депозит и процент риска дают главную цифру - сколько денег
+ * теряем на стопе; она же ответ для бинарных опционов, где риск равен
+ * ставке. Расстояние до стопа добавляет объём, цена входа - количество
+ * в единицах и ликвидацию, цель - прибыль и отношение к риску.
+ *
+ * Стоп можно задать двумя способами: ценами с графика или процентом от
+ * входа. Проценты нужны тем, кто считает риск в голове, а не срисовывает
+ * уровни, и без них калькулятор бесполезен на бинарках.
  *
  * Вынесено из компонента: в разметке формулы теряются при первой же
  * правке вёрстки, а проверять их надо отдельно от неё.
@@ -13,85 +18,118 @@
 /** Стандартный лот - сто тысяч единиц базовой валюты */
 const UNITS_PER_LOT = 100_000;
 
+export type StopMode = 'prices' | 'percent';
+
 export interface TradeInput {
     deposit: number;
     riskPercent: number;
+    mode: StopMode;
+    /** Режим цен: уровни с графика */
     entry: number;
     stop: number;
-    /** Цель. Ноль - не задана, тогда прибыль и отношение не считаем */
     target: number;
+    /** Режим процентов: расстояние до стопа и до цели от входа */
+    stopPercent: number;
+    targetPercent: number;
     /** Плечо. Влияет только на залог и ликвидацию, не на риск */
     leverage: number;
 }
 
 export interface TradeResult {
-    /** Направление выводим из того, где стоит стоп */
-    isLong: boolean;
-    /** Сколько денег теряем при срабатывании стопа */
+    /** Сколько денег теряем на стопе. Есть всегда, если задан депозит */
     risk: number;
-    /** Расстояние до стопа в цене и в процентах от входа */
-    stopDistance: number;
-    stopPercent: number;
-    /** Объём: в единицах актива, в лотах и в деньгах */
-    units: number;
-    lots: number;
-    notional: number;
-    /** Залог при выбранном плече и во сколько раз объём больше депозита */
-    margin: number;
-    exposure: number;
-    /** Ориентировочная цена ликвидации. Ноль - плечо не задано */
-    liquidation: number;
-    /** Прибыль по цели и отношение к риску. Ноль - цель не задана */
-    reward: number;
-    riskReward: number;
     /** Убытков подряд до потери половины счёта при этом риске */
     lossesToHalf: number;
-    /** Сколько процентов счёта уносит одна такая сделка */
-    accountRiskPercent: number;
+
+    /** Дальше - только когда задано расстояние до стопа */
+    stopPercent: number;
+    notional: number;
+    lots: number;
+
+    /** Только когда известна цена входа */
+    units: number;
+    liquidation: number;
+    isLong: boolean;
+    hasDirection: boolean;
+
+    /** Залог. Без плеча равен объёму позиции */
+    margin: number;
+    exposure: number;
+
+    /** Только когда задана цель */
+    reward: number;
+    riskReward: number;
+
+    hasVolume: boolean;
+    hasUnits: boolean;
+    hasTarget: boolean;
 }
 
 /**
- * Считает сделку целиком. Возвращает null, пока не хватает данных для
- * главного - объёма: без депозита, риска, входа и стопа считать нечего.
+ * Считает всё, что можно посчитать из введённого.
+ *
+ * Возвращает null, только если нет депозита или риска: без них не
+ * считается даже главная цифра.
  */
 export function calcTrade(input: TradeInput): TradeResult | null {
-    const { deposit, riskPercent, entry, stop, target, leverage } = input;
+    const { deposit, riskPercent, mode, entry, stop, target, leverage } = input;
+
+    if (!(deposit > 0) || !(riskPercent > 0)) return null;
 
     const risk = (deposit * riskPercent) / 100;
-    const stopDistance = Math.abs(entry - stop);
-
-    if (!(deposit > 0) || !(riskPercent > 0) || !(entry > 0) || stopDistance <= 0) {
-        return null;
-    }
-
-    const isLong = stop < entry;
-    const units = risk / stopDistance;
-    const notional = units * entry;
-
-    // Плечо не задано - считаем как за свои: залог равен объёму,
-    // ликвидации нет
     const lev = leverage > 0 ? leverage : 1;
-    const margin = notional / lev;
 
-    const reward = target > 0 ? Math.abs(target - entry) * units : 0;
+    // Расстояние до стопа: из цен либо из процента. В режиме процентов
+    // цена входа не нужна для объёма в деньгах - только для единиц
+    const byPrices = mode === 'prices';
+    const priceDistance = Math.abs(entry - stop);
+    const stopPercent = byPrices
+        ? (entry > 0 && priceDistance > 0 ? (priceDistance / entry) * 100 : 0)
+        : input.stopPercent;
+
+    const hasVolume = stopPercent > 0;
+    // Объём в деньгах: убыток равен объёму, умноженному на долю падения
+    const notional = hasVolume ? risk / (stopPercent / 100) : 0;
+
+    const hasUnits = hasVolume && entry > 0;
+    const units = hasUnits ? notional / entry : 0;
+
+    // Направление известно только из цен: процент сам по себе его не
+    // задаёт, и гадать за человека не станем
+    const hasDirection = byPrices && entry > 0 && priceDistance > 0;
+    const isLong = hasDirection ? stop < entry : true;
+
+    const targetPercent = byPrices
+        ? (entry > 0 && target > 0 ? (Math.abs(target - entry) / entry) * 100 : 0)
+        : input.targetPercent;
+
+    const hasTarget = hasVolume && targetPercent > 0;
+    const reward = hasTarget ? notional * (targetPercent / 100) : 0;
 
     return {
-        isLong,
         risk,
-        stopDistance,
-        stopPercent: (stopDistance / entry) * 100,
-        units,
-        lots: units / UNITS_PER_LOT,
+        lossesToHalf: Math.floor(deposit / 2 / risk),
+
+        stopPercent,
         notional,
-        margin,
-        exposure: notional / deposit,
-        liquidation: lev > 1
+        lots: hasUnits ? units / UNITS_PER_LOT : 0,
+
+        units,
+        liquidation: hasUnits && lev > 1 && hasDirection
             ? (isLong ? entry * (1 - 1 / lev) : entry * (1 + 1 / lev))
             : 0,
+        isLong,
+        hasDirection,
+
+        margin: notional / lev,
+        exposure: hasVolume ? notional / deposit : 0,
+
         reward,
         riskReward: reward > 0 ? reward / risk : 0,
-        lossesToHalf: Math.floor(deposit / 2 / risk),
-        accountRiskPercent: riskPercent,
+
+        hasVolume,
+        hasUnits,
+        hasTarget,
     };
 }
 

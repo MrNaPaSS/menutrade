@@ -165,7 +165,6 @@ export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps
               tone="green"
               title={item.name}
               caption={item.tagline}
-              value={item.minDeposit}
               onClick={() => setBroker(item)}
             />
           ))}
@@ -193,7 +192,6 @@ export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps
             icon={<Icon className="w-5 h-5" />}
             title={meta.label}
             description={meta.hint}
-            footnote={`${BROKERS[key].length} ${BROKERS[key].length === 1 ? 'площадка' : 'площадки'}`}
             action="Открыть"
             onClick={() => setMarket(key)}
           />
