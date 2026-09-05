@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AppBackground } from '@/components/AppBackground';
 import { BottomNav } from '@/components/BottomNav';
-import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
+import { RegistrationGate } from '@/components/RegistrationGate';
+import { reportPaywallHit } from '@/lib/paywall';
+import { useTelegram } from '@/hooks/useTelegram';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { ArrowLeft, Radio, CandlestickChart, MessagesSquare, Users, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -45,6 +47,8 @@ const FEATURES = [
 const Live = () => {
   const navigate = useNavigate();
   const { hasFullAccess, isLoading: accessLoading } = useUserAccess();
+  const { userId } = useTelegram();
+  const locked = !accessLoading && !hasFullAccess;
 
   const handleBack = () => navigate('/home');
 
@@ -53,8 +57,17 @@ const Live = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
   }, []);
 
-  if (!accessLoading && !hasFullAccess) {
-    return <AccessDeniedScreen feature="форум и live" onBack={handleBack} />;
+  // Сигнал боту шлём и здесь: шаг с витриной раздела пропущен, а
+  // цепочка дожима на нём завязана
+  useEffect(() => {
+    if (locked) reportPaywallHit(userId, 'форум и live');
+  }, [locked, userId]);
+
+  // Форум открывает сразу выбор площадки, без промежуточной витрины:
+  // человек нажал раздел, который весь целиком за доступом, - показывать
+  // ему сперва рассказ о разделе значит добавить лишнее нажатие
+  if (locked) {
+    return <RegistrationGate onBack={handleBack} />;
   }
 
   return (
