@@ -56,15 +56,15 @@ export function Header() {
     <header
       className="max-w-lg mx-auto px-4"
       /* Полосу кнопок Telegram не обходим совсем: графити встаёт прямо
-         в её пустую середину, между «Закрыть» и «...». Ростом в 120px
-         оно проходит полосу насквозь, поэтому строка ниже всё равно
-         начинается под кнопками и ничего не перекрывает */
+         в её пустую середину, между «Закрыть» и «...». Картинка выше
+         полосы, поэтому строка под ней всё равно начинается ниже
+         кнопок и ничего не перекрывает */
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <motion.img
-        src={`${basePath()}nmnh_logo.png`}
+        src={`${basePath()}nmnh_graffiti.png`}
         alt="NO MONEY - NO HONEY"
-        className="block mx-auto -mt-3 w-[min(120px,32vw)] h-auto object-contain select-none"
+        className="block mx-auto w-[min(132px,36vw)] h-auto object-contain select-none"
         draggable={false}
         initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -72,7 +72,7 @@ export function Header() {
       />
 
       <motion.div
-        className="flex items-center justify-between gap-2 -mt-8"
+        className="flex items-center justify-between gap-2 mt-1"
         initial={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.06, ease: [0.23, 1, 0.32, 1] }}
