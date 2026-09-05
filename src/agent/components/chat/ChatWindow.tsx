@@ -323,12 +323,12 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         {/* Режим и рынок - под названием и вровень с фото:
                             в полосе кнопок Telegram помещается только само
                             название, а строкой ниже есть место */}
-                        <span className="ml-[34px] flex items-center gap-1.5 min-w-0 max-w-[58%]
-                                         text-[16px] text-muted-foreground">
+                        <span className="ml-[56px] flex items-center gap-1.5 min-w-0 max-w-[62%]
+                                         text-[19px] text-muted-foreground">
                             {currentMode === 'teacher' ? (
-                                <><GraduationCap className="w-[18px] h-[18px] flex-shrink-0" /> Обучение</>
+                                <><GraduationCap className="w-[21px] h-[21px] flex-shrink-0" /> Обучение</>
                             ) : (
-                                <><BarChart3 className="w-[18px] h-[18px] flex-shrink-0" /> Анализ рынка</>
+                                <><BarChart3 className="w-[21px] h-[21px] flex-shrink-0" /> Анализ рынка</>
                             )}
                             {/* Рынок видно сразу: иначе непонятно, по чьим
                                 правилам агент посчитает сделку */}
