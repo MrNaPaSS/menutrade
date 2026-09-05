@@ -49,40 +49,57 @@ const SPARKS = Array.from({ length: SPARK_COUNT }, (_, i) => {
 /**
  * Молнии.
  *
- * Ломаная строится от верхнего края к графити: шаг вниз, случайный
- * снос вбок, изредка - короткая ветка. Числа выведены из номера
- * разряда, а не случайны: тогда гроза одинакова при каждой загрузке и
- * её можно подбирать глазами.
+ * Бьют со всех сторон в центр графити: начало каждой лежит за краем
+ * экрана на своём угле, дальше ломаная идёт к центру со сносом поперёк
+ * хода - снос гаснет к цели, иначе разряд промахивается мимо логотипа.
+ * Изредка отходит короткая ветка.
+ *
+ * Числа выведены из номера разряда, а не случайны: гроза одинакова при
+ * каждой загрузке, и её можно подбирать глазами.
  *
  * Система координат SVG - 400x760, растягивается на экран целиком.
  */
 const BOLT_TARGET = { x: 200, y: 330 };
+const BOLT_COUNT = 12;
+const BOLT_CYCLE = 5.4;
 
-function buildBolt(seed: number) {
+function buildBolt(seed: number, angleDeg: number) {
     let rnd = seed * 9301 + 49297;
     const next = () => {
         rnd = (rnd * 9301 + 49297) % 233280;
         return rnd / 233280;
     };
 
-    const startX = 90 + next() * 220;
-    const steps = 11;
-    const main: Array<[number, number]> = [[startX, -20]];
+    const angle = (angleDeg * Math.PI) / 180;
+    // Начало за краем кадра: молния должна входить из-за экрана,
+    // а не возникать на его границе
+    const reach = 470 + next() * 90;
+    const sx = BOLT_TARGET.x + Math.cos(angle) * reach;
+    const sy = BOLT_TARGET.y + Math.sin(angle) * reach;
+
+    // Единичный вектор поперёк хода - вдоль него и уводим ломаную
+    const nx = -Math.sin(angle);
+    const ny = Math.cos(angle);
+
+    const steps = 10;
+    const main: Array<[number, number]> = [[sx, sy]];
     const branches: string[] = [];
 
     for (let i = 1; i <= steps; i += 1) {
         const t = i / steps;
-        const [px, py] = main[i - 1];
-        // Ближе к цели снос гасим, иначе разряд промахивается мимо графити
-        const drift = (next() - 0.5) * 90 * (1 - t * 0.75);
-        const x = px + (BOLT_TARGET.x - px) * (t * 0.55) + drift;
-        const y = py + (BOLT_TARGET.y + 20) / steps;
+        const baseX = sx + (BOLT_TARGET.x - sx) * t;
+        const baseY = sy + (BOLT_TARGET.y - sy) * t;
+        const drift = (next() - 0.5) * 110 * (1 - t) * (1 - t);
+        const x = baseX + nx * drift;
+        const y = baseY + ny * drift;
         main.push([x, y]);
 
-        if (i > 2 && i < steps - 1 && next() > 0.62) {
-            const bx = x + (next() - 0.5) * 150;
-            const by = y + 40 + next() * 70;
-            branches.push(`M ${x} ${y} L ${bx - 12} ${(y + by) / 2} L ${bx} ${by}`);
+        if (i > 2 && i < steps - 1 && next() > 0.7) {
+            const len = 40 + next() * 70;
+            const side = next() > 0.5 ? 1 : -1;
+            const bx = x + nx * len * side - Math.cos(angle) * len * 0.4;
+            const by = y + ny * len * side - Math.sin(angle) * len * 0.4;
+            branches.push(`M ${x.toFixed(1)} ${y.toFixed(1)} L ${((x + bx) / 2).toFixed(1)} ${((y + by) / 2 - 10).toFixed(1)} L ${bx.toFixed(1)} ${by.toFixed(1)}`);
         }
     }
     main.push([BOLT_TARGET.x, BOLT_TARGET.y]);
@@ -93,12 +110,23 @@ function buildBolt(seed: number) {
     };
 }
 
-const BOLT_CYCLE = 7.2;
-const BOLTS = [0, 1, 2].map(i => ({
-    id: i,
-    delay: i * (BOLT_CYCLE / 3),
-    ...buildBolt(i + 3),
-}));
+const BOLTS = Array.from({ length: BOLT_COUNT }, (_, i) => {
+    // Разряды идут не по кругу подряд, а вразнобой: соседние по времени
+    // молнии из соседних углов читались бы как бегущая строка
+    const order = (i * 5) % BOLT_COUNT;
+    const jitter = ((i * 37) % 19) - 9;
+    const angleDeg = (360 / BOLT_COUNT) * i + jitter;
+    const rad = (angleDeg * Math.PI) / 180;
+
+    return {
+        id: i,
+        delay: Number(((order * BOLT_CYCLE) / BOLT_COUNT).toFixed(2)),
+        // Вспышка приходит со стороны разряда, а не всегда сверху
+        flashX: Math.round(50 + Math.cos(rad) * 42),
+        flashY: Math.round(50 + Math.sin(rad) * 42),
+        ...buildBolt(i + 3, angleDeg),
+    };
+});
 
 /**
  * Экран загрузки.
@@ -170,7 +198,7 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
           aria-hidden="true"
           className="storm-flash absolute inset-0 pointer-events-none"
           style={{
-            background: 'radial-gradient(ellipse at 50% 20%, hsl(142 76% 62% / 0.55), transparent 65%)',
+            background: `radial-gradient(ellipse at ${bolt.flashX}% ${bolt.flashY}%, hsl(142 76% 62% / 0.5), transparent 62%)`,
             '--delay': `${bolt.delay}s`,
             '--cycle': `${BOLT_CYCLE}s`,
           } as CSSProperties}
