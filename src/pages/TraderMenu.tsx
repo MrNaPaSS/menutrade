@@ -12,7 +12,7 @@ import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { LearningModal } from '@/components/trader-menu/LearningModal';
 import { StrategiesModal } from '@/components/trader-menu/StrategiesModal';
-import { RegistrationGate } from '@/components/RegistrationGate';
+import { AccessDeniedScreen, type LockedFeature } from '@/components/AccessDeniedScreen';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { SoftwareListModal } from '@/components/trader-menu/SoftwareListModal';
 import { SoftwareModal } from '@/components/SoftwareModal';
@@ -63,9 +63,10 @@ const TraderMenu = () => {
   // возвращается к списку, а не на экран целиком
   const [softwareItem, setSoftwareItem] = useState<SoftwareItem | null>(null);
   const [agentOpen, setAgentOpen] = useState(false);
-  // Шлюз с выбором площадки: открывается нажатием на любой закрытый
-  // раздел, чтобы человек не искал, где вообще регистрироваться
-  const [gateOpen, setGateOpen] = useState(false);
+  // Нажатие на закрытый раздел ведёт на его витрину: сперва человек
+  // видит, что внутри, и только потом - условие доступа. Шлюз с
+  // выбором площадки открывается уже оттуда
+  const [locked, setLocked] = useState<LockedFeature | null>(null);
 
   const handleHomeClick = () => navigate('/home');
 
@@ -236,22 +237,22 @@ const TraderMenu = () => {
       <SoftwareModal item={softwareItem} onClose={() => setSoftwareItem(null)} />
 
       <StrategiesModal
-        open={strategiesOpen && !gateOpen}
+        open={strategiesOpen && !locked}
         onClose={() => setStrategiesOpen(false)}
         hasAccess={hasFullAccess}
-        onLocked={() => setGateOpen(true)}
+        onLocked={() => setLocked('стратегии')}
       />
       <LearningModal
-        open={coursesOpen && !gateOpen}
+        open={coursesOpen && !locked}
         onClose={() => setCoursesOpen(false)}
         access={courseAccess}
         completedByCourse={completedByCourse}
         modules={modules}
         onLessonComplete={completeLesson}
-        onLocked={() => setGateOpen(true)}
+        onLocked={() => setLocked('обучение')}
       />
 
-      {gateOpen && <RegistrationGate onBack={() => setGateOpen(false)} />}
+      {locked && <AccessDeniedScreen feature={locked} onBack={() => setLocked(null)} />}
       <BottomNav onHomeClick={handleHomeClick} />
     </div>
   );
