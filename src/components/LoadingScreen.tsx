@@ -1,5 +1,5 @@
-import { motion, useReducedMotion } from 'framer-motion';
-import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useState, type CSSProperties } from 'react';
 import { Brain } from 'lucide-react';
 
 interface LoadingScreenProps {
@@ -9,34 +9,28 @@ interface LoadingScreenProps {
 
 const basePath = () => import.meta.env.BASE_URL || '/';
 
-/** Силуэт из файла красим цветом здесь: один файл на любой оттенок */
-const maskOf = (file: string) => ({
-  WebkitMaskImage: `url(${basePath()}graffiti/${file})`,
-  maskImage: `url(${basePath()}graffiti/${file})`,
-  WebkitMaskSize: 'contain',
-  maskSize: 'contain',
-  WebkitMaskRepeat: 'no-repeat',
-  maskRepeat: 'no-repeat',
-  WebkitMaskPosition: 'center',
-  maskPosition: 'center',
-} as const);
-
 /**
- * Искры салюта. Считаются один раз: пересчёт на каждый кадр дал бы
- * новые углы и салют распался бы на дрожь
+ * Искры салюта.
+ *
+ * Считаются один раз на модуль: пересчёт на каждый кадр дал бы новые
+ * углы, и салют распался бы на дрожь. Числа выведены из индекса, а не
+ * случайны - тогда картинка одинакова при каждой загрузке и её можно
+ * подбирать глазами.
  */
-const SPARK_COUNT = 18;
+const SPARK_COUNT = 180;
 const SPARKS = Array.from({ length: SPARK_COUNT }, (_, i) => {
-  // Угол с небольшим разбросом: ровные лучи читаются как звёздочка
-  const jitter = ((i * 37) % 11) - 5;
+  const ring = i % 3;                       // три волны на разной глубине
+  const jitter = ((i * 37) % 23) - 11;      // ровные лучи читаются как звёздочка
+
   return {
     id: i,
-    angle: (360 / SPARK_COUNT) * i + jitter,
-    from: 100 + ((i * 13) % 25),
-    to: 210 + ((i * 29) % 70),
-    length: 20 + ((i * 17) % 22),
-    duration: 1.5 + ((i * 7) % 9) / 10,
-    delay: ((i * 23) % 20) / 10,
+    angle: (360 / SPARK_COUNT) * i * 3 + jitter,
+    from: 70 + ring * 26 + ((i * 13) % 30),
+    to: 190 + ring * 40 + ((i * 29) % 130),
+    length: 12 + ((i * 17) % 30),
+    duration: 1.3 + ((i * 7) % 14) / 10,
+    delay: ((i * 23) % 47) / 10,
+    peak: 0.55 + ((i * 11) % 40) / 100,
   };
 });
 
@@ -52,8 +46,6 @@ const SPARKS = Array.from({ length: SPARK_COUNT }, (_, i) => {
  */
 export function LoadingScreen({ message = 'Загрузка...', imagePath }: LoadingScreenProps) {
   const [failed, setFailed] = useState(false);
-  // Салют - чистое украшение: тем, кто просил меньше движения, он не нужен
-  const reduced = useReducedMotion();
   const src = imagePath || `${basePath()}nmnh_logo.png`;
 
   return (
@@ -66,63 +58,33 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         >
           {/* Салют позади графити.
-              Искры разлетаются из центра волнами - каждая со своей
-              задержкой, поэтому вспышка не выглядит одним хлопком.
-              Рисуем разметкой, а не картинкой: линии остаются чёткими
-              на любом экране и не тянут за собой файл */}
-          {!reduced && SPARKS.map(spark => (
+              Искры разлетаются из центра тремя волнами - у каждой свои
+              угол, длина, скорость и задержка, поэтому вспышка идёт
+              непрерывно, а не одним хлопком.
+
+              Движение задано в CSS, а не в framer-motion: на каждый
+              элемент там заводится свой драйвер в JS, и почти две сотни
+              драйверов на старте приложения - ровно тот случай, когда
+              загрузка начинает дёргаться */}
+          {SPARKS.map(spark => (
             <span
               key={spark.id}
               aria-hidden="true"
-              className="absolute left-1/2 top-1/2 pointer-events-none"
+              className="spark-ray"
               style={{ transform: `rotate(${spark.angle}deg)` }}
             >
-              <motion.span
-                className="block h-[3px] rounded-full bg-primary origin-left"
-                style={{ boxShadow: '0 0 10px hsl(142 76% 52% / 0.8)' }}
-                initial={{ x: spark.from, width: 6, opacity: 0 }}
-                animate={{
-                  x: [spark.from, spark.to],
-                  width: [6, spark.length, 4],
-                  opacity: [0, 0.9, 0],
-                }}
-                transition={{
-                  duration: spark.duration,
-                  delay: spark.delay,
-                  repeat: Infinity,
-                  repeatDelay: 0.9,
-                  ease: 'easeOut',
-                }}
+              <i
+                style={{
+                  width: spark.length,
+                  '--from': `${spark.from}px`,
+                  '--to': `${spark.to}px`,
+                  '--dur': `${spark.duration}s`,
+                  '--delay': `${spark.delay}s`,
+                  '--peak': spark.peak,
+                } as CSSProperties}
               />
             </span>
           ))}
-
-          {/* Рваное солнце: тёплое ядро, из которого летят искры */}
-          <motion.div
-            aria-hidden="true"
-            className="absolute left-1/2 top-1/2 w-[135%] aspect-square pointer-events-none"
-            style={{
-              background: 'hsl(142 76% 52%)',
-              ...maskOf('torn-sun.png'),
-            }}
-            /* Смещение к центру задаём через x/y самого motion, а не
-               классами -translate-*: motion собирает transform сам и
-               затирает классы - солнце уезжало вправо вниз */
-            initial={{ x: '-50%', y: '-50%' }}
-            animate={{
-              x: '-50%',
-              y: '-50%',
-              scale: [1, 1.06, 1],
-              opacity: [0.26, 0.42, 0.26],
-              rotate: [0, 360],
-            }}
-            transition={{
-              scale: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-              opacity: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-              // Оборот медленный: солнце должно теплиться, а не крутиться
-              rotate: { duration: 90, repeat: Infinity, ease: 'linear' },
-            }}
-          />
 
           {!failed ? (
             <img
