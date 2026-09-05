@@ -12,10 +12,10 @@ import { useChatHistory } from '@/hooks/useChatHistory';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-// Экраны, где плавающая кнопка мешает: на тренажёре она висит прямо
-// над графиком и разбором, на главной перекрывает статистику. Агент
-// никуда не девается - он открывается из меню трейдера
-const HIDDEN_ON = ['/home', '/guess-chart'];
+// Плавающая кнопка живёт только на главной. На остальных экранах она
+// висит поверх содержимого - над графиком в тренажёре, над списками в
+// разделах. Там агент открывается строкой в меню трейдера
+const SHOWN_ON = ['/home'];
 
 export function AIAgentButton() {
   const reducedMotion = useReducedMotion();
@@ -50,7 +50,7 @@ export function AIAgentButton() {
 
   // Скрываем только кнопку: если чат уже открыт, закрывать его на
   // переходе между экранами нельзя
-  const hidden = HIDDEN_ON.includes(pathname) && !isOpen;
+  const hidden = !SHOWN_ON.includes(pathname) && !isOpen;
 
   return (
     <>
@@ -59,7 +59,7 @@ export function AIAgentButton() {
         onClick={handleOpen}
         style={{
           position: 'fixed',
-          bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(4.25rem + env(safe-area-inset-bottom, 0px))',
           right: '1rem',
           zIndex: 60
         }}
