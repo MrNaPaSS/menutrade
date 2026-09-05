@@ -250,7 +250,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         непонятно, что она меняет */}
                     <div
                         className="absolute inset-x-0 px-3 flex justify-center z-30"
-                        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 13px)' }}
+                        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 9px)' }}
                     >
                         {/* Сдвиг вправо: «Закрыть» слева шире, чем «...»
                             справа, поэтому пустая середина полосы лежит
@@ -323,11 +323,12 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         {/* Режим и рынок - под названием и вровень с фото:
                             в полосе кнопок Telegram помещается только само
                             название, а строкой ниже есть место */}
-                        <span className="flex items-center gap-1 min-w-0 max-w-[58%] text-[11px] text-muted-foreground">
+                        <span className="ml-[34px] flex items-center gap-1.5 min-w-0 max-w-[58%]
+                                         text-[16px] text-muted-foreground">
                             {currentMode === 'teacher' ? (
-                                <><GraduationCap className="w-3.5 h-3.5 flex-shrink-0" /> Обучение</>
+                                <><GraduationCap className="w-[18px] h-[18px] flex-shrink-0" /> Обучение</>
                             ) : (
-                                <><BarChart3 className="w-3.5 h-3.5 flex-shrink-0" /> Анализ рынка</>
+                                <><BarChart3 className="w-[18px] h-[18px] flex-shrink-0" /> Анализ рынка</>
                             )}
                             {/* Рынок видно сразу: иначе непонятно, по чьим
                                 правилам агент посчитает сделку */}
