@@ -361,6 +361,25 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
 
                         {/* Справа: действия над чатом */}
                         <div className="absolute right-0 flex items-center gap-1">
+                            {/* Остаток вопросов рядом с меню: в шапке он на
+                                глазах всё время, а над полем ввода терялся
+                                за клавиатурой ровно тогда, когда человек
+                                собирался спросить */}
+                            <button
+                                onClick={limited ? () => setShowGate(true) : undefined}
+                                className={cn(
+                                    'h-7 px-2 rounded-md text-[11.5px] font-mono tabular-nums',
+                                    'border transition-colors focus:outline-none',
+                                    limited
+                                        ? (left > 0
+                                            ? 'border-white/[0.07] bg-white/[0.03] text-muted-foreground'
+                                            : 'border-primary/30 bg-primary/10 text-primary')
+                                        : 'border-white/[0.07] bg-white/[0.03] text-muted-foreground cursor-default'
+                                )}
+                            >
+                                {limited ? `${left}/${AI_FREE_QUESTIONS}` : 'анлим'}
+                            </button>
+
                             <div className="relative">
                                 <button
                                     onClick={() => setShowMenu(!showMenu)}
@@ -559,20 +578,6 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         </motion.button>
                     </div>
                 </div>
-
-                {/* Счётчик показываем только тем, у кого он есть: у
-                    участника академии ограничения нет и напоминать не о чем */}
-                {limited && (
-                    <button
-                        onClick={() => setShowGate(true)}
-                        className="w-full pb-1 text-center text-[11.5px] text-muted-foreground/70
-                                   focus:outline-none"
-                    >
-                        {left > 0
-                            ? `Осталось ${left} из ${AI_FREE_QUESTIONS} вопросов на сегодня`
-                            : 'Вопросы на сегодня закончились - открыть доступ'}
-                    </button>
-                )}
             </div>
 
             {showGate && (
