@@ -10,6 +10,7 @@ import { QuickTemplates } from './QuickTemplates';
 import { Sidebar } from '@/agent/components/Sidebar';
 import { ModeSelector } from '@/agent/components/ModeSelector';
 import { MARKET_META } from '@/agent/config/markets';
+import { GraffitiTornPanel } from '@/components/graffiti/Graffiti';
 import { cn } from '@/lib/utils';
 import type { TelegramUser } from '@/hooks/useTelegram';
 
