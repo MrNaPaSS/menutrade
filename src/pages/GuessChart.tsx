@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowUpCircle, ArrowDownCircle, Clock, ArrowLeft, RefreshCw, Trophy, Play, XCircle, TimerOff } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, Clock, ArrowLeft, RefreshCw, Play, XCircle, TimerOff } from 'lucide-react';
+import { GraffitiStar } from '@/components/graffiti/Graffiti';
 import { MatrixRain } from '@/components/MatrixRain';
 import { TradingChart } from '@/components/TradingChart';
 import { generatePattern, type GeneratedPattern, type ChartPoint } from '@/data/patternGenerator';
@@ -289,7 +290,9 @@ function ResultCard({ result, pattern }: ResultCardProps) {
       ? 'border-yellow-500/50 bg-yellow-500/10'
       : 'border-red-500/50 bg-red-500/10';
 
-  const Icon = ok ? Trophy : result === 'TIMEOUT' ? TimerOff : XCircle;
+  // Верный ответ отмечает звезда, а не кубок из общего набора: это
+  // единственное место экрана, где можно сказать, что академия наша
+  const Icon = result === 'TIMEOUT' ? TimerOff : XCircle;
   const iconColor = ok ? 'text-emerald-400' : result === 'TIMEOUT' ? 'text-yellow-400' : 'text-red-400';
   const title = ok ? 'Верно!' : result === 'TIMEOUT' ? 'Время вышло' : 'Мимо';
   const dirLabel = pattern.direction === 'UP' ? 'вверх ▲' : 'вниз ▼';
@@ -297,7 +300,9 @@ function ResultCard({ result, pattern }: ResultCardProps) {
   return (
     <div className={`rounded-xl border p-3.5 ${tone}`}>
       <div className="flex items-center gap-2.5 mb-2">
-        <Icon className={`h-7 w-7 ${iconColor}`} />
+        {ok
+          ? <GraffitiStar className="h-9 w-9 flex-shrink-0" />
+          : <Icon className={`h-7 w-7 ${iconColor}`} />}
         <div>
           <div className={`font-display font-bold text-lg ${iconColor}`}>{title}</div>
           <div className="text-xs text-muted-foreground">

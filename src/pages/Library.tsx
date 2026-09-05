@@ -7,6 +7,7 @@ import { useProgress } from '@/hooks/useProgress';
 import { ArrowLeft, BookOpen, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { GraffitiDots } from '@/components/graffiti/Graffiti';
 import { libraryCategories } from '@/data/library';
 import { Book } from '@/data/library';
 
@@ -173,6 +174,9 @@ const Library = () => {
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Книги по трейдингу, психологии и управлению капиталом
               </p>
+              {/* Точки вместо линейки: разделитель тут нужен, а лишняя
+                  черта на экране с карточками только дробит его */}
+              <GraffitiDots className="h-1.5 w-auto mt-2 opacity-70" />
             </div>
           </div>
         </div>

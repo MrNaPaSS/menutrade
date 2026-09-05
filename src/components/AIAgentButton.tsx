@@ -13,9 +13,9 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 // Экраны, где плавающая кнопка мешает: на тренажёре она висит прямо
-// над графиком и разбором. Агент никуда не девается - он открывается
-// из меню трейдера
-const HIDDEN_ON = ['/guess-chart'];
+// над графиком и разбором, на главной перекрывает статистику. Агент
+// никуда не девается - он открывается из меню трейдера
+const HIDDEN_ON = ['/home', '/guess-chart'];
 
 export function AIAgentButton() {
   const reducedMotion = useReducedMotion();

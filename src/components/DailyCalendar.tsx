@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Coins } from 'lucide-react';
+import { GraffitiStar } from '@/components/graffiti/Graffiti';
 import { sendCoinEvent } from '@/lib/coins';
 import { dateKey, todayKey, weekStart } from '@/lib/daily';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
@@ -85,7 +86,9 @@ export function DailyCalendar() {
                                         ? 'border-border/30 text-muted-foreground/40'
                                         : 'border-border/30 text-muted-foreground/60'
                         )}>
-                            {day.isTaken ? <Check className="w-3.5 h-3.5" /> : day.number}
+                            {day.isTaken
+                                ? <GraffitiStar className="w-4 h-4" />
+                                : day.number}
                         </div>
                     </div>
                 ))}

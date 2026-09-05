@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Check } from 'lucide-react';
+import { GraffitiCheck } from '@/components/graffiti/Graffiti';
 import { courses, type Course } from '@/data/courses';
 import type { AccessState, CourseId } from '@/lib/courseAccess';
 import type { Lesson, Module } from '@/types/lesson';
@@ -130,7 +130,7 @@ export function LearningModal({
                             index={index}
                             icon={
                                 item.isCompleted
-                                    ? <Check className="w-[18px] h-[18px]" />
+                                    ? <GraffitiCheck className="w-[19px] h-[19px]" delay={0.06 + index * 0.04} />
                                     : <span className="font-mono text-[13px] tabular-nums">{index + 1}</span>
                             }
                             tone="green"
@@ -174,6 +174,7 @@ export function LearningModal({
                             description={item.description}
                             state={locked ? 'closed' : 'open'}
                             value={`${percent}%`}
+                            done={percent === 100}
                             progress={percent}
                             footnote={`${closed} из ${total} уроков`}
                             action={closed > 0 ? 'Продолжить' : 'Начать'}

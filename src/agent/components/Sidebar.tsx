@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, MessageSquare } from 'lucide-react';
 import { ChatSession } from '@/agent/hooks/useChatHistory';
+import { GraffitiSpray } from '@/components/graffiti/Graffiti';
 import { cn } from '@/lib/utils';
 
 import type { TelegramUser } from '@/hooks/useTelegram';
@@ -185,9 +186,12 @@ export function Sidebar({
                                 );
                             })}
 
+                            {/* За пустотой мазок: перекрывать тут нечего,
+                                а голая строка по центру выглядит как сбой */}
                             {sessions.length === 0 && (
-                                <div className="text-center py-8 text-muted-foreground text-sm">
-                                    Нет сохранённых чатов
+                                <div className="relative text-center py-12 text-muted-foreground text-sm">
+                                    <GraffitiSpray className="inset-0" opacity={0.12} />
+                                    <span className="relative">Нет сохранённых чатов</span>
                                 </div>
                             )}
                         </div>

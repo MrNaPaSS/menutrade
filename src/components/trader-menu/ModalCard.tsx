@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { ChevronRight, Clock, Lock, type LucideIcon } from 'lucide-react';
 import { MODAL_CAPTION, MODAL_EASE, MODAL_TITLE } from '@/components/ui/modal-window';
+import { GraffitiStar } from '@/components/graffiti/Graffiti';
 import { cn } from '@/lib/utils';
 
 export type CardState = 'open' | 'pending' | 'closed';
@@ -22,6 +23,8 @@ interface ModalCardProps {
     lockedNote?: string;
     /** Подпись действия справа внизу */
     action?: string;
+    /** Всё пройдено: вместо процента ставим звезду */
+    done?: boolean;
     onClick?: () => void;
 }
 
@@ -42,6 +45,7 @@ export function ModalCard({
     progress,
     lockedNote,
     action,
+    done = false,
     onClick,
 }: ModalCardProps) {
     const reduced = useReducedMotion();
@@ -93,12 +97,19 @@ export function ModalCard({
                         >
                             {title}
                         </span>
-                        {value && isOpen && (
+                        {/* Пройденное отмечает звезда, а не «100%»: цифру
+                            надо прочитать, звезду видно сразу */}
+                        {done && isOpen ? (
+                            <GraffitiStar
+                                className="ml-auto w-7 h-7 flex-shrink-0"
+                                delay={reduced ? 0 : 0.24 + index * 0.07}
+                            />
+                        ) : value && isOpen ? (
                             <span className="ml-auto font-mono font-bold text-[13px]
                                              tabular-nums text-primary flex-shrink-0">
                                 {value}
                             </span>
-                        )}
+                        ) : null}
                     </span>
 
                     <span className="text-[12px] mt-1 line-clamp-2" style={{ color: MODAL_CAPTION }}>

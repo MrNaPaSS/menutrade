@@ -7,6 +7,7 @@ import {
     MODAL_TITLE,
     ModalWindow,
 } from '@/components/ui/modal-window';
+import { GraffitiMark } from '@/components/graffiti/Graffiti';
 import { BADGE_LABEL, type SoftwareItem } from '@/data/software';
 import { cn } from '@/lib/utils';
 
@@ -46,7 +47,11 @@ export function SoftwareModal({ item, onClose }: SoftwareModalProps) {
         >
             {item && (
                 <>
-                    <div className="flex items-center justify-between gap-3 -mt-1">
+                    {/* Водяной знак: софт написан нами, и на карточке это
+                        видно без отдельной подписи */}
+                    <GraffitiMark className="absolute right-3 bottom-2 w-16 h-auto opacity-[0.07]" />
+
+                    <div className="relative flex items-center justify-between gap-3 -mt-1">
                         <p className="text-[13px] leading-snug" style={{ color: MODAL_TITLE }}>
                             {item.summary}
                         </p>

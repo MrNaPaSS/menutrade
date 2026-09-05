@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
+import { GraffitiSpray } from '@/components/graffiti/Graffiti';
 import { cn } from '@/lib/utils';
 import { useBackAction } from '@/contexts/BackNavigationContext';
 
@@ -179,7 +180,11 @@ export function ModalWindow({
                                 </button>
                             )}
 
-                            <div className={cn('min-w-0', onBack ? 'text-center px-10' : 'pr-12')}>
+                            {/* Мазок за названием, а не за списком: под
+                                плотным текстом он рушит читаемость */}
+                            <GraffitiSpray className="-top-6 -left-4 w-52 h-32" opacity={0.07} />
+
+                            <div className={cn('relative min-w-0', onBack ? 'text-center px-10' : 'pr-12')}>
                                 <h2
                                     className="font-display font-bold text-[18px] tracking-tight leading-tight"
                                     style={{ color: MODAL_TITLE }}
