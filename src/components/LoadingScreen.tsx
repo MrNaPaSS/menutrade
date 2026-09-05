@@ -240,7 +240,10 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
               источник света - иначе она спорит со вспышками грозы */}
           <span
             aria-hidden="true"
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+            /* Плита стоит чуть левее центра: у самого графити рисунок
+               смещён вправо, и подложка по центру контейнера выглядела
+               сдвинутой */
+            className="absolute left-1/2 top-1/2 -ml-[18px] -translate-x-1/2 -translate-y-1/2
                        w-[128%] aspect-square pointer-events-none"
             style={{
               background: 'hsl(150 34% 7%)',
