@@ -9,6 +9,10 @@ import { LessonContent } from '@/components/LessonContent';
 interface StrategiesModalProps {
     open: boolean;
     onClose: () => void;
+    /** Полный доступ подтверждён счётом на площадке */
+    hasAccess: boolean;
+    /** Нажали на закрытый разбор - предлагаем выбрать площадку */
+    onLocked: () => void;
 }
 
 const TOTAL = strategyModules.reduce((sum, m) => sum + m.lessons.length, 0);
@@ -31,8 +35,11 @@ function plural(n: number, one: string, few: string, many: string): string {
  *
  * Прогресса здесь нет намеренно: это справочник, а не последовательный
  * курс, читать можно в любом порядке.
+ *
+ * Без подтверждённого счёта блоки видны, но закрыты: человек должен
+ * знать, что внутри, - иначе непонятно, ради чего открывать доступ.
  */
-export function StrategiesModal({ open, onClose }: StrategiesModalProps) {
+export function StrategiesModal({ open, onClose, hasAccess, onLocked }: StrategiesModalProps) {
     const [module, setModule] = useState<Module | null>(null);
     const [lesson, setLesson] = useState<Lesson | null>(null);
 
@@ -105,7 +112,9 @@ export function StrategiesModal({ open, onClose }: StrategiesModalProps) {
             open={open}
             onClose={close}
             title="Стратегии"
-            subtitle={`${TOTAL} ${plural(TOTAL, 'разбор', 'разбора', 'разборов')} в ${strategyModules.length} блоках. Читать можно в любом порядке`}
+            subtitle={hasAccess
+                ? `${TOTAL} ${plural(TOTAL, 'разбор', 'разбора', 'разборов')} в ${strategyModules.length} блоках. Читать можно в любом порядке`
+                : `${TOTAL} ${plural(TOTAL, 'разбор', 'разбора', 'разборов')} в ${strategyModules.length} блоках. Откроются вместе с полным доступом`}
         >
             {strategyModules.map((item, index) => (
                 <ModalCard
@@ -114,9 +123,10 @@ export function StrategiesModal({ open, onClose }: StrategiesModalProps) {
                     icon={item.icon}
                     title={item.title}
                     description={item.description}
+                    state={hasAccess ? 'open' : 'closed'}
                     footnote={`${item.lessons.length} ${plural(item.lessons.length, 'разбор', 'разбора', 'разборов')}`}
                     action="Открыть"
-                    onClick={() => setModule(item)}
+                    onClick={hasAccess ? () => setModule(item) : onLocked}
                 />
             ))}
         </ModalWindow>

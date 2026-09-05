@@ -12,6 +12,8 @@ import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { LearningModal } from '@/components/trader-menu/LearningModal';
 import { StrategiesModal } from '@/components/trader-menu/StrategiesModal';
+import { RegistrationGate } from '@/components/RegistrationGate';
+import { useUserAccess } from '@/contexts/UserAccessContext';
 import { SoftwareListModal } from '@/components/trader-menu/SoftwareListModal';
 import { SoftwareModal } from '@/components/SoftwareModal';
 // Агент со своим чатом и историей нужен не каждому заходу -
@@ -49,8 +51,9 @@ const PANEL_CLASS =
 const TraderMenu = () => {
   const navigate = useNavigate();
   const { completedByCourse, modules, completeLesson } = useProgress();
-  const { courses: courseAccess, partners } = useCourseAccess();
+  const { courses: courseAccess } = useCourseAccess();
   const { coins } = useCoinBalance();
+  const { hasFullAccess } = useUserAccess();
   const { streak } = useDailyClaim();
 
   const [coursesOpen, setCoursesOpen] = useState(false);
@@ -60,6 +63,9 @@ const TraderMenu = () => {
   // возвращается к списку, а не на экран целиком
   const [softwareItem, setSoftwareItem] = useState<SoftwareItem | null>(null);
   const [agentOpen, setAgentOpen] = useState(false);
+  // Шлюз с выбором площадки: открывается нажатием на любой закрытый
+  // раздел, чтобы человек не искал, где вообще регистрироваться
+  const [gateOpen, setGateOpen] = useState(false);
 
   const handleHomeClick = () => navigate('/home');
 
@@ -230,18 +236,22 @@ const TraderMenu = () => {
       <SoftwareModal item={softwareItem} onClose={() => setSoftwareItem(null)} />
 
       <StrategiesModal
-        open={strategiesOpen}
+        open={strategiesOpen && !gateOpen}
         onClose={() => setStrategiesOpen(false)}
+        hasAccess={hasFullAccess}
+        onLocked={() => setGateOpen(true)}
       />
       <LearningModal
-        open={coursesOpen}
+        open={coursesOpen && !gateOpen}
         onClose={() => setCoursesOpen(false)}
         access={courseAccess}
-        partners={partners}
         completedByCourse={completedByCourse}
         modules={modules}
         onLessonComplete={completeLesson}
+        onLocked={() => setGateOpen(true)}
       />
+
+      {gateOpen && <RegistrationGate onBack={() => setGateOpen(false)} />}
       <BottomNav onHomeClick={handleHomeClick} />
     </div>
   );

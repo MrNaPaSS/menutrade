@@ -12,11 +12,12 @@ interface LearningModalProps {
     open: boolean;
     onClose: () => void;
     access: Record<CourseId, AccessState>;
-    partners: Record<CourseId, string>;
     completedByCourse: Record<string, number>;
     /** Модули с проставленным прогрессом - из useProgress */
     modules: Module[];
     onLessonComplete: (moduleId: string, lessonId: string) => void;
+    /** Нажали на закрытый курс - предлагаем выбрать площадку */
+    onLocked: () => void;
 }
 
 const STRATEGY_MODULES = new Set(['module-3', 'module-4', 'module-5']);
@@ -41,10 +42,10 @@ export function LearningModal({
     open,
     onClose,
     access,
-    partners,
     completedByCourse,
     modules,
     onLessonComplete,
+    onLocked,
 }: LearningModalProps) {
     const [course, setCourse] = useState<Course | null>(null);
     const [module, setModule] = useState<Module | null>(null);
@@ -193,7 +194,7 @@ export function LearningModal({
             open={open}
             onClose={close}
             title="Направления"
-            subtitle="Курс открывает счёт на площадке, подтверждённый в боте"
+            subtitle="Закрытые направления открываются счётом на площадке"
         >
             {courses.map((item, index) => {
                 const state = access[item.id] ?? 'closed';
@@ -213,14 +214,8 @@ export function LearningModal({
                         progress={percent}
                         footnote={`${done} из ${total} уроков`}
                         action={done > 0 ? 'Продолжить' : 'Начать'}
-                        lockedNote={
-                            state === 'pending'
-                                ? 'ID отправлен, ждём подтверждения'
-                                : partners[item.id]
-                                    ? `Откроет счёт на ${partners[item.id]}`
-                                    : `${total} уроков, курс закрыт`
-                        }
-                        onClick={state === 'open' ? () => setCourse(item) : undefined}
+                        lockedNote={state === 'pending' ? 'ID отправлен, ждём подтверждения' : undefined}
+                        onClick={state === 'open' ? () => setCourse(item) : onLocked}
                     />
                 );
             })}

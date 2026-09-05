@@ -50,11 +50,14 @@ export function ModalCard({
 }: ModalCardProps) {
     const reduced = useReducedMotion();
     const isOpen = state === 'open';
+    // Закрытую тоже можно нажать - она ведёт на выбор площадки. Не
+    // нажимается только та, что ждёт подтверждения: там уже всё сделано
+    const clickable = Boolean(onClick) && state !== 'pending';
 
     return (
         <motion.button
-            onClick={() => isOpen && onClick?.()}
-            disabled={!isOpen || !onClick}
+            onClick={() => clickable && onClick?.()}
+            disabled={!clickable}
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{
@@ -62,13 +65,14 @@ export function ModalCard({
                 duration: 0.3,
                 ease: MODAL_EASE,
             }}
-            whileTap={isOpen && onClick ? { scale: 0.985 } : undefined}
+            whileTap={clickable ? { scale: 0.985 } : undefined}
             className={cn(
                 'w-full text-left rounded-[18px] p-4 border transition-colors duration-200',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
                 isOpen
                     ? 'border-[hsl(142_38%_24%)] bg-[hsl(142_30%_10%)] hover:bg-[hsl(142_32%_12%)]'
-                    : 'border-[hsl(142_18%_14%)] bg-[hsl(140_24%_7%)] cursor-default'
+                    : 'border-[hsl(142_18%_14%)] bg-[hsl(140_24%_7%)]',
+                !isOpen && (clickable ? 'hover:bg-[hsl(140_26%_9%)]' : 'cursor-default')
             )}
         >
             <div className="flex items-start gap-3">
@@ -169,12 +173,11 @@ export function ModalCard({
                             </span>
                         </>
                     ) : (
-                        <>
-                            <Lock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'hsl(142 15% 38%)' }} />
-                            <span className="text-[12px]" style={{ color: MODAL_CAPTION }}>
-                                {lockedNote ?? 'Закрыто'}
-                            </span>
-                        </>
+                        /* У закрытого только замок. Подпись вида «откроет
+                           счёт на X» объясняла условие раньше, чем человек
+                           успел заинтересоваться курсом - условие он узнает,
+                           когда нажмёт */
+                        <Lock className="w-4 h-4 flex-shrink-0" style={{ color: 'hsl(142 18% 42%)' }} />
                     )}
                 </div>
             )}
