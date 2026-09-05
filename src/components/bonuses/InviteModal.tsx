@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Copy, Gift, Lock, Share2, Users } from 'lucide-react';
 import { ModalWindow } from '@/components/ui/modal-window';
+import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { ProgressRing } from '@/components/ProgressRing';
 import { GraffitiStar } from '@/components/graffiti/Graffiti';
 import { Button } from '@/components/ui/button';
@@ -54,12 +55,11 @@ const PANEL_BG = { background: 'hsl(140 26% 8%)' } as const;
 export function InviteModal({
     open, onClose, data, loading, error, hasUser, onShare, onClaim,
 }: InviteModalProps) {
+    // Награды - отдельный шаг: вместе со ссылкой и счётчиками окно
+    // приходилось листать, а лестница из четырёх уровней с формой
+    // заявки сама по себе занимает экран
+    const [showRewards, setShowRewards] = useState(false);
     const [copied, setCopied] = useState(false);
-    const [claimingId, setClaimingId] = useState<string | null>(null);
-    const [tradingview, setTradingview] = useState('');
-    const [sending, setSending] = useState(false);
-    const [claimError, setClaimError] = useState<string | null>(null);
-
     const copyLink = useCallback(async () => {
         if (!data?.link) return;
         try {
@@ -71,21 +71,21 @@ export function InviteModal({
         }
     }, [data?.link]);
 
-    const submitClaim = async (bonusId: string) => {
-        setSending(true);
-        const message = await onClaim(bonusId, tradingview.trim());
-        setSending(false);
-        if (message) {
-            setClaimError(message);
-        } else {
-            setClaimingId(null);
-            setTradingview('');
-        }
-    };
-
     const target = data?.levels[data.levels.length - 1]?.friends ?? 10;
     const balance = data?.balance ?? data?.activated ?? 0;
     const progress = data ? Math.min(100, Math.round((balance / target) * 100)) : 0;
+
+    if (showRewards && data) {
+        return (
+            <RewardsStep
+                open={open}
+                onClose={onClose}
+                onBack={() => setShowRewards(false)}
+                data={data}
+                onClaim={onClaim}
+            />
+        );
+    }
 
     return (
         <ModalWindow
@@ -173,8 +173,58 @@ export function InviteModal({
                         ))}
                     </div>
 
-                    <p className="text-[12px] text-muted-foreground px-1 pt-1">Награды</p>
+                    <TerminalRow
+                        index={0}
+                        icon={<Gift className="w-[18px] h-[18px]" />}
+                        tone="green"
+                        title="Награды"
+                        caption={`${data.levels.filter(l => l.reached).length} из ${data.levels.length} открыто`}
+                        value={data.levels.some(l => l.reached && !l.claimed) ? 'можно забрать' : undefined}
+                        valueLive={data.levels.some(l => l.reached && !l.claimed)}
+                        onClick={() => setShowRewards(true)}
+                    />
+                </>
+            )}
+        </ModalWindow>
+    );
+}
 
+interface RewardsStepProps {
+    open: boolean;
+    onClose: () => void;
+    onBack: () => void;
+    data: ReferralData;
+    onClaim: (bonusId: string, tradingview: string) => Promise<string | null>;
+}
+
+/** Лестница наград - вторым шагом того же окна */
+function RewardsStep({ open, onClose, onBack, data, onClaim }: RewardsStepProps) {
+    const [claimingId, setClaimingId] = useState<string | null>(null);
+    const [tradingview, setTradingview] = useState('');
+    const [sending, setSending] = useState(false);
+    const [claimError, setClaimError] = useState<string | null>(null);
+
+    const submitClaim = async (bonusId: string) => {
+        setSending(true);
+        const message = await onClaim(bonusId, tradingview.trim());
+        setSending(false);
+        if (message) {
+            setClaimError(message);
+        } else {
+            setClaimingId(null);
+            setTradingview('');
+        }
+    };
+
+    return (
+        <ModalWindow
+            open={open}
+            onClose={onClose}
+            onBack={onBack}
+            title="Награды"
+            subtitle={`${data.levels.filter(l => l.reached).length} из ${data.levels.length} открыто`}
+        >
+            <>
                     {data.levels.map((level, index) => (
                         <motion.div
                             key={level.id}
@@ -273,8 +323,7 @@ export function InviteModal({
                             Заявка на награду отправлена - ждём подтверждения
                         </p>
                     )}
-                </>
-            )}
+            </>
         </ModalWindow>
     );
 }

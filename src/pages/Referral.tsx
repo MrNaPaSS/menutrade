@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CalendarDays, Coins, Target, UserPlus } from 'lucide-react';
+import { Coins, Target, UserPlus } from 'lucide-react';
 import { AppBackground } from '@/components/AppBackground';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,6 @@ import { ModalWindow } from '@/components/ui/modal-window';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
-import { useDailyClaim } from '@/hooks/useDailyClaim';
 import { useCountUp } from '@/hooks/useCountUp';
 import { DailyCalendar } from '@/components/DailyCalendar';
 import { PartnerQuests } from '@/components/PartnerQuests';
@@ -64,7 +63,7 @@ function shareLink(link: string): void {
     }
 }
 
-type Section = 'invite' | 'daily' | 'quests';
+type Section = 'invite' | 'quests';
 
 /**
  * Бонусы.
@@ -90,7 +89,6 @@ const Referral = () => {
     // после того, как забрали подарок, - раньше оно ждало, пока человек
     // уйдёт с экрана и вернётся
     const { coins } = useCoinBalance();
-    const { streak, takenToday } = useDailyClaim();
     const shownCoins = useCountUp(coins?.balance ?? 0);
 
     useEffect(() => {
@@ -166,14 +164,27 @@ const Referral = () => {
                     style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 3.5rem)' }}
                 >
                     <div className="max-w-lg w-full mx-auto">
-                        <div className="relative mb-5">
-                            <GraffitiSpray className="-top-10 -left-8 w-56 h-36" opacity={0.08} />
-                            <div className="relative">
-                                <h1 className="font-display font-bold text-[22px] tracking-tight">Бонусы</h1>
-                                <p className="text-[12.5px] text-muted-foreground mt-1.5">
-                                    Монеты за учёбу, серию дней, задания и друзей
-                                </p>
-                            </div>
+                        {/* Название в полосе кнопок Telegram, как в чате
+                            агента: середина полосы пустует, и подпись
+                            занимает её, не отнимая высоты у содержимого.
+                            Отступ --tg-content-top здесь намеренно не
+                            применяется - иначе название опустится под
+                            кнопки */}
+                        <div
+                            className="fixed inset-x-0 px-3 flex justify-center z-30 pointer-events-none"
+                            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 9px)' }}
+                        >
+                            <span className="ml-[34px] font-display font-bold text-[19px] tracking-tight
+                                             neon-text-subtle">
+                                Бонусы
+                            </span>
+                        </div>
+
+                        <div className="relative mb-4 text-center">
+                            <GraffitiSpray className="-top-10 left-1/2 -translate-x-1/2 w-56 h-32" opacity={0.08} />
+                            <p className="relative text-[12.5px] text-muted-foreground">
+                                Монеты за учёбу, серию дней, задания и друзей
+                            </p>
                         </div>
 
                         {/* Баланс - валюта всего раздела, поэтому стоит первым
@@ -224,19 +235,16 @@ const Referral = () => {
                             </motion.div>
                         )}
 
+                        {/* Календарь стоит на самой странице, а не за
+                            строкой: подарок забирают каждый день, и прятать
+                            за нажатием то, ради чего сюда заходят, незачем */}
+                        <div className="mb-3">
+                            <DailyCalendar />
+                        </div>
+
                         <div className={PANEL_CLASS} style={PANEL_BG}>
                             <TerminalRow
                                 index={0}
-                                icon={<CalendarDays className="w-[18px] h-[18px]" />}
-                                tone={takenToday ? 'muted' : 'green'}
-                                title="Ежедневный подарок"
-                                caption={takenToday ? 'Сегодня забран, приходите завтра' : 'Монеты за заход - можно забрать'}
-                                value={streak > 0 ? `${streak} дн.` : undefined}
-                                valueLive={!takenToday}
-                                onClick={() => setSection('daily')}
-                            />
-                            <TerminalRow
-                                index={1}
                                 icon={<Target className="w-[18px] h-[18px]" />}
                                 tone="violet"
                                 title="Задания"
@@ -248,7 +256,7 @@ const Referral = () => {
                                 onClick={() => setSection('quests')}
                             />
                             <TerminalRow
-                                index={2}
+                                index={1}
                                 icon={<UserPlus className="w-[18px] h-[18px]" />}
                                 tone="cyan"
                                 title="Пригласить друга"
@@ -263,15 +271,6 @@ const Referral = () => {
                     </div>
                 </main>
             </div>
-
-            <ModalWindow
-                open={section === 'daily'}
-                onClose={() => setSection(null)}
-                title="Ежедневный подарок"
-                subtitle="Монеты за каждый заход - серия не прерывается, пока заходите"
-            >
-                <DailyCalendar />
-            </ModalWindow>
 
             <ModalWindow
                 open={section === 'quests'}
