@@ -6,23 +6,8 @@ import { cn } from '@/lib/utils';
 import { TradeMarketDrawer } from '@/components/TradeMarketDrawer';
 import { SupportDrawer } from '@/components/SupportDrawer';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
+import { GraffitiTornPanel } from '@/components/graffiti/Graffiti';
 
-const basePath = () => import.meta.env.BASE_URL || '/';
-
-/* Верхняя граница панели - рваная кромка с лендинга вместо ровной
-   линии. Маска перевёрнута по вертикали, поэтому зубцы смотрят вверх.
-   Наклон шва с лендинга снят: там край поднимался слева направо на
-   381px, и на горизонтальной панели это читалось как перекос */
-const TORN_PANEL = {
-    background: 'hsl(0 0% 2%)',
-    WebkitMaskImage: `url(${basePath()}graffiti/torn-edge.png)`,
-    maskImage: `url(${basePath()}graffiti/torn-edge.png)`,
-    WebkitMaskSize: '100% 100%',
-    maskSize: '100% 100%',
-    WebkitMaskRepeat: 'no-repeat',
-    maskRepeat: 'no-repeat',
-    transform: 'scaleY(-1)',
-} as const;
 
 interface BottomNavProps {
   onHomeClick?: () => void;
@@ -116,11 +101,7 @@ export function BottomNav({
       {/* Фон панели: рваная кромка вместо ровной линии сверху.
           Выступает всего на 18px - настолько, чтобы край был рваным, и
           не настолько, чтобы залезать на содержимое экрана */}
-      <span
-        aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 -top-[18px] pointer-events-none select-none"
-        style={TORN_PANEL}
-      />
+      <GraffitiTornPanel className="-top-[18px]" />
 
       <div className="relative">
         {/* Свечение у самого края панели */}

@@ -162,3 +162,34 @@ export function GraffitiBackdrop({ className }: { className?: string }) {
         />
     );
 }
+
+/**
+ * Нижняя панель с рваным верхним краем.
+ *
+ * Тот же шов с лендинга, что и сверху, только маска перевёрнута -
+ * зубцы смотрят вверх, к содержимому. Наклон исходника снят: на
+ * лендинге край поднимается слева направо на 381px по ширине, и на
+ * горизонтальной панели это читается как перекос.
+ *
+ * Ставится слоем под содержимым панели. Выступать выше панели должна
+ * чуть-чуть: иначе рваная кромка залезает на экран и режет то, что под
+ * ней прокручивается.
+ */
+export function GraffitiTornPanel({ className }: { className?: string }) {
+    return (
+        <span
+            aria-hidden="true"
+            className={cn('absolute inset-x-0 bottom-0 pointer-events-none select-none', className)}
+            style={{
+                background: 'hsl(0 0% 2%)',
+                WebkitMaskImage: `url(${basePath()}graffiti/torn-edge.png)`,
+                maskImage: `url(${basePath()}graffiti/torn-edge.png)`,
+                WebkitMaskSize: '100% 100%',
+                maskSize: '100% 100%',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                transform: 'scaleY(-1)',
+            }}
+        />
+    );
+}

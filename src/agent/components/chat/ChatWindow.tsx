@@ -10,7 +10,6 @@ import { QuickTemplates } from './QuickTemplates';
 import { Sidebar } from '@/agent/components/Sidebar';
 import { ModeSelector } from '@/agent/components/ModeSelector';
 import { MARKET_META } from '@/agent/config/markets';
-import { AppBackground } from '@/components/AppBackground';
 import { cn } from '@/lib/utils';
 import type { TelegramUser } from '@/hooks/useTelegram';
 
@@ -231,12 +230,10 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
             />
 
             <div className="relative flex flex-col h-full max-h-screen overflow-hidden bg-background">
-                {/* Тот же верхний фон, что и на остальных экранах: агент
-                    открывается поверх приложения, а не вместо него */}
-                <AppBackground />
-
-                {/* Шапка без своей заливки - под ней стоит этот фон */}
-                <header className="relative px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.5rem))] pb-2 border-b border-border/30 flex-shrink-0 z-20">
+                {/* Шапка без разделительной черты: переписка и так
+                    отделена от неё воздухом, а линия под названием резала
+                    экран пополам */}
+                <header className="relative px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.5rem))] pb-2 flex-shrink-0 z-20">
                     {/* Название стоит в самой полосе кнопок Telegram - между
                         «Закрыть» слева и «...» справа. Середина полосы всегда
                         пустует, и подпись занимает её, не отнимая высоты у
@@ -437,15 +434,20 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                     ChatGPT: вложение внутри слева, отправка кружком справа.
                     Рамка во всю ширину и три отдельные кнопки в ряд
                     выглядели как форма, а не как строка переписки */}
-                <div className="px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 flex-shrink-0">
+                <div className="relative px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 flex-shrink-0">
+                    {/* Та же рваная кромка, что у нижней панели приложения:
+                        поле ввода стоит на оторванной полосе стены, а не
+                        висит в пустоте */}
+                    <GraffitiTornPanel className="-top-[18px]" />
+
                     {/* File thumbnails */}
                     {files.length > 0 && (
-                        <div className="mb-1.5">
+                        <div className="relative mb-1.5">
                             <FileUpload files={files} onFilesChange={setFiles} compact />
                         </div>
                     )}
 
-                    <div className="flex items-end gap-1.5 rounded-[22px] border border-white/[0.09]
+                    <div className="relative flex items-end gap-1.5 rounded-[22px] border border-white/[0.09]
                                     bg-white/[0.04] px-1.5 py-1.5 max-w-2xl mx-auto
                                     focus-within:border-primary/40 transition-colors">
                         <button

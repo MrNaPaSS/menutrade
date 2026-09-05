@@ -1,8 +1,8 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, BarChart3, Check, Wand2 } from 'lucide-react';
+import { BarChart3, Bitcoin, CandlestickChart, GraduationCap, LineChart, Wand2 } from 'lucide-react';
 import { AIMode } from '@/agent/config/prompts';
 import { MARKETS, MARKET_META, type MarketChoice } from '@/agent/config/markets';
-import { cn } from '@/lib/utils';
+import { ModalWindow } from '@/components/ui/modal-window';
+import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 
 interface ModeSelectorProps {
     isOpen: boolean;
@@ -13,7 +13,7 @@ interface ModeSelectorProps {
     onSelectMarket: (market: MarketChoice) => void;
 }
 
-/** Порядок в меню: сперва «определи сам», дальше рынки как в академии. */
+/** Порядок в списке: сперва «определи сам», дальше рынки как в академии */
 const MARKET_CHOICES: { value: MarketChoice; label: string; hint: string }[] = [
     { value: 'auto', label: 'Определить сам', hint: 'По вопросу и графику' },
     ...MARKETS.map(market => ({
@@ -23,6 +23,26 @@ const MARKET_CHOICES: { value: MarketChoice; label: string; hint: string }[] = [
     })),
 ];
 
+/* Значок рынка - из набора: в данных о рынках его нет, а заводить
+   ради двух мест отдельное поле незачем */
+const MARKET_ICON: Record<string, JSX.Element> = {
+    auto: <Wand2 className="w-[18px] h-[18px]" />,
+    binary: <CandlestickChart className="w-[18px] h-[18px]" />,
+    forex: <LineChart className="w-[18px] h-[18px]" />,
+    crypto: <Bitcoin className="w-[18px] h-[18px]" />,
+};
+
+const PANEL = 'rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden divide-y divide-[hsl(142_22%_13%)]';
+const PANEL_BG = { background: 'hsl(140 26% 8%)' } as const;
+
+/**
+ * Выбор режима и рынка.
+ *
+ * Окно посреди экрана, как обучение и стратегии, а не выпадающий
+ * список от кнопки. Список цеплялся к краю шапки и на телефоне
+ * упирался в границу экрана; окно ведёт себя одинаково везде, и человек
+ * узнаёт движение, а не разгадывает его заново.
+ */
 export function ModeSelector({
     isOpen,
     onClose,
@@ -31,164 +51,59 @@ export function ModeSelector({
     currentMarket,
     onSelectMarket,
 }: ModeSelectorProps) {
-    const handleSelect = (mode: AIMode) => {
+    const choose = (mode: AIMode) => {
         onSelectMode(mode);
         onClose();
     };
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Invisible Backdrop for click-outside */}
-                    <div
-                        className="fixed inset-0 z-40"
-                        onClick={onClose}
+        <ModalWindow
+            open={isOpen}
+            onClose={onClose}
+            title="Режим и рынок"
+            subtitle="От рынка зависит вердикт и расчёт риска: сигнал один, а сделка разная"
+        >
+            <div className={PANEL} style={PANEL_BG}>
+                <TerminalRow
+                    index={0}
+                    icon={<GraduationCap className="w-[18px] h-[18px]" />}
+                    tone={currentMode === 'teacher' ? 'green' : 'muted'}
+                    title="AI Ментор"
+                    caption="Обучение, уроки и проверка заданий"
+                    value={currentMode === 'teacher' ? 'сейчас' : undefined}
+                    valueLive={currentMode === 'teacher'}
+                    onClick={() => choose('teacher')}
+                />
+                <TerminalRow
+                    index={1}
+                    icon={<BarChart3 className="w-[18px] h-[18px]" />}
+                    tone={currentMode === 'analyst' ? 'cyan' : 'muted'}
+                    title="AI Аналитик"
+                    caption="Сигналы, разбор графиков и трендов"
+                    value={currentMode === 'analyst' ? 'сейчас' : undefined}
+                    valueLive={currentMode === 'analyst'}
+                    onClick={() => choose('analyst')}
+                />
+            </div>
+
+            <div className={PANEL} style={PANEL_BG}>
+                {MARKET_CHOICES.map((choice, index) => (
+                    <TerminalRow
+                        key={choice.value}
+                        index={index + 2}
+                        icon={MARKET_ICON[choice.value]}
+                        tone={currentMarket === choice.value ? 'violet' : 'muted'}
+                        title={choice.label}
+                        caption={choice.hint}
+                        value={currentMarket === choice.value ? 'сейчас' : undefined}
+                        valueLive={currentMarket === choice.value}
+                        onClick={() => {
+                            onSelectMarket(choice.value);
+                            onClose();
+                        }}
                     />
-
-                    {/* Dropdown Menu */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute right-0 top-full mt-2 w-[280px] max-h-[70vh] overflow-y-auto z-50"
-                    >
-                        <div className="glass-card neon-border rounded-xl p-2 shadow-xl bg-background/95 backdrop-blur-xl">
-                            <div className="px-2 py-1.5 mb-1 border-b border-border/30">
-                                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Выберите режим
-                                </h3>
-                            </div>
-
-                            <div className="space-y-1">
-                                {/* Mentor Option */}
-                                <button
-                                    onClick={() => handleSelect('teacher')}
-                                    className={cn(
-                                        'w-full p-2 rounded-lg transition-all text-left flex items-start gap-3 relative group',
-                                        currentMode === 'teacher'
-                                            ? 'bg-primary/10'
-                                            : 'hover:bg-white/5'
-                                    )}
-                                >
-                                    <div className={cn(
-                                        'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors',
-                                        currentMode === 'teacher'
-                                            ? 'bg-primary/20 text-primary'
-                                            : 'bg-muted/30 text-muted-foreground group-hover:text-foreground'
-                                    )}>
-                                        <GraduationCap className="w-4 h-4" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between">
-                                            <span className={cn(
-                                                "text-sm font-medium",
-                                                currentMode === 'teacher' ? "text-primary" : "text-foreground"
-                                            )}>
-                                                AI Ментор
-                                            </span>
-                                            {currentMode === 'teacher' && (
-                                                <Check className="w-3.5 h-3.5 text-primary" />
-                                            )}
-                                        </div>
-                                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-                                            Обучение, уроки и проверка заданий
-                                        </p>
-                                    </div>
-                                </button>
-
-                                {/* Analyst Option */}
-                                <button
-                                    onClick={() => handleSelect('analyst')}
-                                    className={cn(
-                                        'w-full p-2 rounded-lg transition-all text-left flex items-start gap-3 relative group',
-                                        currentMode === 'analyst'
-                                            ? 'bg-accent/10'
-                                            : 'hover:bg-white/5'
-                                    )}
-                                >
-                                    <div className={cn(
-                                        'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors',
-                                        currentMode === 'analyst'
-                                            ? 'bg-accent/20 text-accent'
-                                            : 'bg-muted/30 text-muted-foreground group-hover:text-foreground'
-                                    )}>
-                                        <BarChart3 className="w-4 h-4" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between">
-                                            <span className={cn(
-                                                "text-sm font-medium",
-                                                currentMode === 'analyst' ? "text-accent" : "text-foreground"
-                                            )}>
-                                                AI Аналитик
-                                            </span>
-                                            {currentMode === 'analyst' && (
-                                                <Check className="w-3.5 h-3.5 text-accent" />
-                                            )}
-                                        </div>
-                                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-                                            Сигналы, анализ графиков и трендов
-                                        </p>
-                                    </div>
-                                </button>
-                            </div>
-
-                            {/* Рынок: от него зависит вердикт и расчёт риска.
-                                Сигнал индикатора один, а сделка разная */}
-                            <div className="px-2 py-1.5 mt-2 mb-1 border-t border-b border-border/30">
-                                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Рынок
-                                </h3>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-1">
-                                {MARKET_CHOICES.map(choice => (
-                                    <button
-                                        key={choice.value}
-                                        onClick={() => {
-                                            onSelectMarket(choice.value);
-                                            onClose();
-                                        }}
-                                        className={cn(
-                                            'p-2 rounded-lg transition-all text-left group border',
-                                            currentMarket === choice.value
-                                                ? 'bg-primary/10 border-primary/30'
-                                                : 'border-transparent hover:bg-white/5'
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-1.5">
-                                            {choice.value === 'auto' && (
-                                                <Wand2 className={cn(
-                                                    'w-3 h-3 flex-shrink-0',
-                                                    currentMarket === choice.value
-                                                        ? 'text-primary'
-                                                        : 'text-muted-foreground'
-                                                )} />
-                                            )}
-                                            <span className={cn(
-                                                'text-xs font-medium leading-tight',
-                                                currentMarket === choice.value
-                                                    ? 'text-primary'
-                                                    : 'text-foreground'
-                                            )}>
-                                                {choice.label}
-                                            </span>
-                                            {currentMarket === choice.value && (
-                                                <Check className="w-3 h-3 text-primary flex-shrink-0 ml-auto" />
-                                            )}
-                                        </div>
-                                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-                                            {choice.hint}
-                                        </p>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
+                ))}
+            </div>
+        </ModalWindow>
     );
 }
