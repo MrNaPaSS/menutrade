@@ -671,6 +671,52 @@
   }
 }
 
+/* Гроза на экране загрузки.
+
+   Молния бьёт сверху в графити, экран коротко вспыхивает. Ритм задан
+   в CSS, а не в JS: вспышка должна попадать кадр в кадр с разрядом, а
+   таймеры в JS на старте приложения плывут - там как раз грузится всё
+   остальное.
+
+   Двойное мерцание внутри одного удара - не украшение: настоящий
+   разряд почти всегда идёт несколькими импульсами, и без этого молния
+   читается как включённая лампочка. */
+.bolt {
+  opacity: 0;
+  animation: nmnh-bolt var(--cycle, 7.2s) var(--delay, 0s) infinite;
+  will-change: opacity;
+}
+
+@keyframes nmnh-bolt {
+  0%, 100% { opacity: 0; }
+  0.6%     { opacity: 1; }
+  2.2%     { opacity: 0.2; }
+  3.4%     { opacity: 0.95; }
+  5.2%     { opacity: 0.35; }
+  8%       { opacity: 0; }
+}
+
+.storm-flash {
+  opacity: 0;
+  animation: nmnh-flash var(--cycle, 7.2s) var(--delay, 0s) infinite;
+  will-change: opacity;
+}
+
+@keyframes nmnh-flash {
+  0%, 100% { opacity: 0; }
+  0.6%     { opacity: 0.26; }
+  2.2%     { opacity: 0.04; }
+  3.4%     { opacity: 0.18; }
+  8%       { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bolt,
+  .storm-flash {
+    display: none;
+  }
+}
+
 /* Салют на экране загрузки.
 
    Искр под две сотни, поэтому анимация чисто на CSS, а не на
