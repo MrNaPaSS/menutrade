@@ -48,12 +48,15 @@ export function AIAgentButton() {
     setUnreadCount(0);
   };
 
-  // Скрываем только кнопку: если чат уже открыт, закрывать его на
-  // переходе между экранами нельзя
-  const hidden = !SHOWN_ON.includes(pathname) && !isOpen;
+  // Кнопку на чужих экранах не рисуем вовсе. Раньше она пряталась
+  // анимацией opacity, и при переходе на другой экран была видна доля
+  // секунды - это и читалось как мерцание. Сам чат остаётся в дереве:
+  // если он открыт, переход между экранами его не закрывает
+  const showButton = SHOWN_ON.includes(pathname) && !isOpen;
 
   return (
     <>
+      {showButton && (
       <motion.button
         id="ai-agent-trigger"
         onClick={handleOpen}
@@ -74,11 +77,7 @@ export function AIAgentButton() {
           "touch-manipulation"
         )}
         initial={{ scale: 0, opacity: 0 }}
-        animate={{
-          scale: isOpen || hidden ? 0.9 : 1,
-          opacity: isOpen || hidden ? 0 : 1,
-          pointerEvents: isOpen || hidden ? 'none' : 'auto'
-        }}
+        animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', duration: 0.5, bounce: 0.2 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -120,6 +119,7 @@ export function AIAgentButton() {
           </motion.div>
         )}
       </motion.button>
+      )}
 
       {isOpen && (
         <Suspense fallback={null}>

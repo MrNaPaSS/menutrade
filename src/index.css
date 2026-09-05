@@ -261,6 +261,22 @@
     overflow-x: hidden;
   }
 
+  /* Текстура с лендинга плиткой под всем приложением: тёмное плетение
+     на 3.5% - его не видно как рисунок, но фон перестаёт быть плоской
+     заливкой. Отдельным слоем, а не в background-image у body, чтобы
+     не смешиваться с градиентами выше */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url('/graffiti/texture.jpg');
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
   /* Скрытие скроллбара везде */
   * {
     scrollbar-width: none;

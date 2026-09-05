@@ -117,3 +117,36 @@ export function GraffitiMark({ className }: { className?: string }) {
         />
     );
 }
+
+/**
+ * Верхний фон.
+ *
+ * Склейка с мобильной страницы лендинга: тёмное поле с зелёным
+ * свечением по краям и размытыми монетами. Растворяется книзу маской,
+ * чтобы не было видно, где картинка кончается и начинается фон.
+ *
+ * Стоит только сверху и только на главной: под списками и текстом
+ * такая подложка мешает читать, а внизу экрана её всё равно перекроет
+ * содержимое.
+ */
+export function GraffitiBackdrop({ className }: { className?: string }) {
+    const fade = 'linear-gradient(180deg, hsl(0 0% 0%) 0%, hsl(0 0% 0% / 0.85) 52%, transparent 100%)';
+
+    return (
+        <div
+            aria-hidden="true"
+            className={cn(
+                'absolute inset-x-0 top-0 z-0 pointer-events-none select-none',
+                'h-[min(300px,38vh)]',
+                className
+            )}
+            style={{
+                backgroundImage: `url(${basePath()}graffiti/top-glow.jpg)`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center top',
+                WebkitMaskImage: fade,
+                maskImage: fade,
+            }}
+        />
+    );
+}

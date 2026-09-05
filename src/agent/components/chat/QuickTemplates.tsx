@@ -68,11 +68,21 @@ export function QuickTemplates({ onSelect, mode, market }: QuickTemplatesProps) 
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
                             onClick={() => onSelect(template.message)}
-                            className="group relative overflow-hidden rounded-xl p-2.5 sm:p-3 text-left transition-all duration-300 glass-card hover:bg-white/10 border border-white/10 hover:border-primary/30 touch-feedback"
+                            /* Сплошная подложка, а не glass-card: у того
+                               backdrop-filter, и шесть таких кнопок внутри
+                               окна, которое въезжает с масштабированием,
+                               перерисовываются рывками - это и мерцало */
+                            className="group relative overflow-hidden rounded-xl p-2.5 sm:p-3 text-left
+                                       border border-[hsl(142_26%_16%)] bg-[hsl(140_26%_9%)]
+                                       transition-colors duration-200
+                                       hover:bg-[hsl(142_28%_12%)] hover:border-primary/30
+                                       focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
+                                       touch-feedback"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="relative flex items-center gap-2">
-                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center flex-shrink-0 group-hover:from-primary/30 group-hover:to-secondary/30 transition-all">
+                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center
+                                                flex-shrink-0 border border-white/[0.07]"
+                                    style={{ background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 13%))' }}>
                                     <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
                                 </div>
                                 <span className="text-[10px] sm:text-xs font-medium text-foreground/90 group-hover:text-foreground leading-tight">
