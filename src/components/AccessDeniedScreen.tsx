@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, ArrowLeft, ExternalLink, Radio, GraduationCap, Bot } from 'lucide-react';
+import { ArrowLeft, Bot, GraduationCap, Lock, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AppBackground } from '@/components/AppBackground';
+import { GraffitiSpray } from '@/components/graffiti/Graffiti';
 import { RegistrationGate } from './RegistrationGate';
 import { useTelegram } from '@/hooks/useTelegram';
 
@@ -9,6 +11,27 @@ interface AccessDeniedScreenProps {
     feature: 'обучение' | 'стратегии' | 'форум и live';
     onBack?: () => void;
 }
+
+const PERKS = [
+    {
+        icon: Radio,
+        tone: 'hsl(0 72% 62%)',
+        title: 'Форум с live-торговлей',
+        caption: 'Разборы рынка и сделки вместе с автором',
+    },
+    {
+        icon: GraduationCap,
+        tone: 'hsl(142 76% 62%)',
+        title: '48 уроков и все стратегии',
+        caption: 'От свечей до готовых торговых систем',
+    },
+    {
+        icon: Bot,
+        tone: 'hsl(178 70% 62%)',
+        title: 'Безлимитный AI-наставник',
+        caption: 'Ответы на вопросы круглые сутки',
+    },
+];
 
 function getBotApiBase(): string {
     return import.meta.env.DEV
@@ -30,6 +53,17 @@ function reportPaywallHit(userId: string | null, feature: string): void {
     }).catch(() => { /* аналитика не критична */ });
 }
 
+/**
+ * Экран закрытого раздела.
+ *
+ * Та же поверхность, что у окон приложения: тёмный градиент, мягкая
+ * рамка, спрей за заголовком. Раньше здесь были матовое стекло со
+ * свечением по контуру, оранжевый замок в кружке и синяя плашка с
+ * подсказкой - три чужих цвета на одном экране.
+ *
+ * Подсказка убрана: она повторяла строку про регистрацию и депозит,
+ * стоявшую двумя абзацами выше.
+ */
 export function AccessDeniedScreen({ feature, onBack }: AccessDeniedScreenProps) {
     const [showGate, setShowGate] = useState(false);
     const { userId } = useTelegram();
@@ -44,111 +78,122 @@ export function AccessDeniedScreen({ feature, onBack }: AccessDeniedScreenProps)
         return <RegistrationGate onBack={() => setShowGate(false)} />;
     }
 
-    const handleGetAccess = () => {
-        setShowGate(true);
-    };
-
     return (
-        <div className="min-h-[100dvh] flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="max-w-md w-full"
+        <div className="fixed inset-0 overflow-y-auto">
+            <AppBackground />
+
+            <div
+                className="relative z-10 w-full max-w-md mx-auto px-4 pb-10"
+                /* Верхний отступ считает полосу кнопок Telegram: экран
+                   открывается во весь рост, и без этого замок уезжал
+                   под «Закрыть» */
+                style={{
+                    paddingTop: 'calc(env(safe-area-inset-top, 0px) + var(--tg-content-top, 0px) + 24px)',
+                }}
             >
-                <div className="glass-card rounded-2xl p-6 sm:p-8 neon-border text-center">
-                    {/* Lock Icon */}
-                    <motion.div
-                        className="mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-orange-500/10 border-2 border-orange-500/30 flex items-center justify-center mb-6"
-                        animate={{
-                            scale: [1, 1.05, 1],
-                            rotate: [0, -5, 5, 0]
-                        }}
-                        transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            repeatDelay: 1
-                        }}
-                    >
-                        <Lock className="w-10 h-10 sm:w-12 sm:h-12 text-orange-500" />
-                    </motion.div>
+                <motion.div
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.32, ease: [0.23, 1, 0.32, 1] }}
+                    className="relative overflow-hidden rounded-[26px] border border-[hsl(142_30%_20%)] p-5 sm:p-6"
+                    style={{
+                        background: 'linear-gradient(180deg, hsl(142 22% 12%) 0%, hsl(140 28% 6.5%) 100%)',
+                        boxShadow: '0 30px 70px -30px hsl(0 0% 0%), inset 0 1px 0 hsl(142 50% 45% / 0.16)',
+                    }}
+                >
+                    <GraffitiSpray className="-top-8 -left-6 w-56 h-36" opacity={0.07} />
 
-                    {/* Title */}
-                    <h2 className="text-2xl sm:text-3xl font-display font-bold mb-3">
-                        🔒 Доступ ограничен
-                    </h2>
-
-                    {/* Description */}
-                    <p className="text-muted-foreground mb-5">
-                        Раздел <span className="text-primary font-semibold">"{feature}"</span> открывается
-                        вместе с полным доступом к Академии.
-                    </p>
-
-                    {/* Что открывает полный доступ */}
-                    <div className="bg-white/5 rounded-lg p-4 mb-4 text-left space-y-3">
-                        <p className="text-xs font-mono font-bold text-primary tracking-widest uppercase">
-                            Полный доступ открывает
-                        </p>
-                        <div className="flex items-start gap-3 text-sm">
-                            <Radio className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                            <span>
-                                <span className="text-foreground font-semibold">Форум с live-торговлей</span>
-                                <span className="text-muted-foreground"> - разборы рынка и сделки вместе с автором</span>
-                            </span>
-                        </div>
-                        <div className="flex items-start gap-3 text-sm">
-                            <GraduationCap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                            <span>
-                                <span className="text-foreground font-semibold">48 уроков и все стратегии</span>
-                                <span className="text-muted-foreground"> - от свечей до готовых торговых систем</span>
-                            </span>
-                        </div>
-                        <div className="flex items-start gap-3 text-sm">
-                            <Bot className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                            <span>
-                                <span className="text-foreground font-semibold">Безлимитный AI-наставник</span>
-                                <span className="text-muted-foreground"> - ответы на вопросы 24/7</span>
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Как получить */}
-                    <p className="text-xs text-muted-foreground mb-6">
-                        Регистрация аккаунта + депозит от $20 - весь путь займёт около 5 минут.
-                    </p>
-
-                    {/* Buttons */}
-                    <div className="space-y-3">
-                        <Button
-                            onClick={handleGetAccess}
-                            className="w-full bg-primary hover:bg-primary/90 text-base py-6"
-                            size="lg"
+                    <div className="relative">
+                        <span
+                            className="w-14 h-14 rounded-[18px] flex items-center justify-center
+                                       border border-white/[0.07]"
+                            style={{
+                                background: 'hsl(142 20% 12%)',
+                                color: 'hsl(142 18% 52%)',
+                            }}
                         >
-                            <ExternalLink className="w-5 h-5 mr-2" />
-                            Получить полный доступ
-                        </Button>
+                            <Lock className="w-6 h-6" />
+                        </span>
 
-                        {onBack && (
-                            <Button
-                                onClick={onBack}
-                                variant="outline"
-                                className="w-full"
-                                size="lg"
-                            >
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Назад
-                            </Button>
-                        )}
-                    </div>
-
-                    {/* Info Box */}
-                    <div className="mt-6 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                        <p className="text-xs text-blue-300">
-                            💡 <span className="font-semibold">Подсказка:</span> После регистрации и депозита вы получите безлимитный доступ ко всем функциям приложения!
+                        <h2 className="font-display font-bold text-[22px] tracking-tight mt-4 text-foreground">
+                            Доступ ограничен
+                        </h2>
+                        <p className="text-[13px] text-muted-foreground leading-relaxed mt-2">
+                            Раздел <span className="text-foreground font-semibold">«{feature}»</span> открывается
+                            вместе с полным доступом к академии.
                         </p>
+
+                        <div
+                            className="rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden mt-5
+                                       divide-y divide-[hsl(142_22%_13%)]"
+                            style={{ background: 'hsl(140 26% 8%)' }}
+                        >
+                            {PERKS.map((perk, index) => {
+                                const Icon = perk.icon;
+
+                                return (
+                                    <motion.div
+                                        key={perk.title}
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{
+                                            delay: 0.1 + index * 0.06,
+                                            duration: 0.24,
+                                            ease: [0.23, 1, 0.32, 1],
+                                        }}
+                                        className="flex items-center gap-3 px-3.5 py-3"
+                                    >
+                                        <span
+                                            className="w-9 h-9 rounded-[11px] flex items-center justify-center
+                                                       flex-shrink-0 border border-white/[0.07]"
+                                            style={{
+                                                background: 'linear-gradient(160deg, hsl(142 40% 16%), hsl(142 38% 11%))',
+                                                color: perk.tone,
+                                            }}
+                                        >
+                                            <Icon className="w-[18px] h-[18px]" />
+                                        </span>
+
+                                        <span className="min-w-0">
+                                            <span className="block font-semibold text-[14.5px] tracking-[-0.01em] text-foreground">
+                                                {perk.title}
+                                            </span>
+                                            <span className="block text-[11.5px] text-muted-foreground mt-0.5">
+                                                {perk.caption}
+                                            </span>
+                                        </span>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+
+                        <p className="text-[11.5px] text-muted-foreground leading-relaxed mt-4">
+                            Регистрация счёта и депозит от $20 - весь путь занимает около пяти минут.
+                            Деньги остаются вашими: академия с депозита ничего не удерживает.
+                        </p>
+
+                        <div className="space-y-2 mt-5">
+                            <Button
+                                onClick={() => setShowGate(true)}
+                                className="w-full h-12 font-semibold"
+                            >
+                                Получить полный доступ
+                            </Button>
+
+                            {onBack && (
+                                <Button
+                                    onClick={onBack}
+                                    variant="outline"
+                                    className="w-full h-11"
+                                >
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    Назад
+                                </Button>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
+            </div>
         </div>
     );
 }
