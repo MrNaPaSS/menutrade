@@ -38,7 +38,7 @@ const Home = () => {
       id: 'live',
       icon: Radio,
       title: 'Форум и Live-торговля',
-      description: 'Живые разборы рынка и сделки вместе с автором',
+      description: 'Живые разборы рынка и сделки вместе с трейдером',
       action: 'Открыть форум',
       badge: 'LIVE',
       onClick: () => navigate('/live'),

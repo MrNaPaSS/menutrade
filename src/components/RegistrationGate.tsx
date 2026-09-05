@@ -466,7 +466,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
         <div className={`${PANEL} p-4 space-y-2.5`} style={PANEL_BG}>
           <div className="flex items-start gap-2.5 text-sm">
             <Radio className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-            <span className="text-muted-foreground"><span className="text-foreground font-semibold">Форум с live-торговлей</span> - сделки и разборы вместе с автором</span>
+            <span className="text-muted-foreground"><span className="text-foreground font-semibold">Форум с live-торговлей</span> - сделки и разборы вместе с трейдером</span>
           </div>
           <div className="flex items-start gap-2.5 text-sm">
             <GraduationCap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
@@ -742,7 +742,7 @@ function MarketCard({ icon, label, tagline, onClick }: MarketCardProps) {
  */
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-[96] overflow-y-auto">
       <AppBackground />
 
       <div
