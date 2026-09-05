@@ -29,19 +29,19 @@ function getBotApiBase(): string {
 /**
  * Приглашение, которое уйдёт другу.
  *
- * Ссылки в тексте нет намеренно: Telegram сам ставит её первой строкой
- * и подтягивает карточку бота. Раньше она дублировалась в конце текста,
- * и сообщение выглядело как два адреса подряд.
- *
- * Сделать словом-ссылкой «NMNH» нельзя: окно «поделиться» принимает
- * только простой текст, разметка в нём не работает.
+ * Ссылка стоит внутри текста, рядом с NMNH, а поле url оставлено
+ * пустым. Если положить её в url, Telegram печатает адрес отдельной
+ * первой строкой, и он дублирует тот, что в тексте.
  */
-const SHARE_TEXT = [
-    'NMNH - Академия здравого трейдинга',
-    '',
-    '73 урока, тренажёр графиков и AI-наставник бесплатно.',
-    'После верификации - живые сессии, разборы рынка и закрытый форум трейдеров.',
-].join('\n');
+function shareText(link: string): string {
+    return [
+        `NMNH (${link})`,
+        'Академия здравого трейдинга',
+        '',
+        '73 урока, тренажёр графиков и AI-наставник бесплатно.',
+        'После верификации - живые сессии, разборы рынка и закрытый форум трейдеров.',
+    ].join('\n');
+}
 
 /** Открывает внешнюю ссылку через Telegram, иначе обычной вкладкой. */
 function shareOpen(url: string): void {
@@ -56,8 +56,9 @@ function shareOpen(url: string): void {
 
 /** Открывает окно «поделиться» Telegram, иначе обычную ссылку. */
 function shareLink(link: string): void {
-    const url = `https://t.me/share/url?url=${encodeURIComponent(link)}`
-        + `&text=${encodeURIComponent(SHARE_TEXT)}`;
+    // url пустой: адрес уже стоит в тексте, а Telegram печатает
+    // содержимое url отдельной строкой поверх текста
+    const url = `https://t.me/share/url?url=&text=${encodeURIComponent(shareText(link))}`;
     const tg = (window as { Telegram?: { WebApp?: { openTelegramLink?: (u: string) => void } } })
         .Telegram?.WebApp;
     if (tg?.openTelegramLink) {
