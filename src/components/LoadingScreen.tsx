@@ -32,11 +32,33 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         >
-          {/* Свечение */}
+          {/* Рваное солнце позади графити.
+              Раньше здесь дышал размытый прямоугольник - он повторял
+              форму контейнера, и на экране двигался зелёный квадрат.
+              Солнце нарисовано тем же рваным краем, что и кромки полос,
+              и хранится маской: цвет задаётся здесь */}
           <motion.div
-            className="absolute inset-0 rounded-2xl bg-primary/30 blur-xl"
-            animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            aria-hidden="true"
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+                       w-[135%] aspect-square pointer-events-none"
+            style={{
+              background: 'hsl(142 76% 52%)',
+              WebkitMaskImage: `url(${basePath()}graffiti/torn-sun.png)`,
+              maskImage: `url(${basePath()}graffiti/torn-sun.png)`,
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center',
+            }}
+            animate={{ scale: [1, 1.06, 1], opacity: [0.26, 0.4, 0.26], rotate: [0, 360] }}
+            transition={{
+              scale: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+              opacity: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+              // Оборот медленный: солнце должно теплиться, а не крутиться
+              rotate: { duration: 90, repeat: Infinity, ease: 'linear' },
+            }}
           />
 
           {!failed ? (
