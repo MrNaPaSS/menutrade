@@ -165,12 +165,12 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
                             border border-[hsl(142_30%_20%)]"
               style={PANEL_BG}
             >
-              <CheckCircle2 className="w-11 h-11 text-primary" />
+              <CheckCircle2 className="w-11 h-11" style={{ color: 'hsl(142 76% 58%)' }} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <h2 className="font-display font-bold text-2xl text-foreground neon-text-subtle">
+            <h2 className="font-display font-bold text-[22px] tracking-tight text-foreground">
               Заявка отправлена
             </h2>
             <p className="text-muted-foreground leading-relaxed text-sm">
@@ -180,18 +180,18 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
             </p>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-xs text-primary/80 font-mono">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            ОЖИДАЕМ ПОДТВЕРЖДЕНИЯ…
+          <StepStrip current={3} />
+
+          <div className="flex items-center justify-center gap-2 text-[11.5px] text-muted-foreground font-mono">
+            <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'hsl(142 76% 58%)' }} />
+            ждём подтверждения
           </div>
 
           {onBack && (
-            <button
-              onClick={onBack}
-              className="mx-auto flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" /> Вернуться в приложение
-            </button>
+            <Button variant="outline" className="w-full h-11" onClick={onBack}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Вернуться в приложение
+            </Button>
           )}
         </motion.div>
       </Shell>
@@ -211,22 +211,19 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-5"
         >
-          <button
-            onClick={() => setStep('welcome')}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> Назад
-          </button>
-
-          <div className="text-center space-y-2">
-            <h1 className="font-display font-bold text-xl text-foreground neon-text-subtle">
-              Выберите брокера
-            </h1>
-            <p className="text-muted-foreground text-sm px-1">
-              Оба варианта открывают полный доступ к Академии.
-              Выбирайте тот, что ближе по стилю торговли.
-            </p>
+          <div className="flex items-start gap-3">
+            <BackButton onClick={() => setStep('welcome')} />
+            <div className="min-w-0 flex-1">
+              <h1 className="font-display font-bold text-[19px] tracking-tight text-foreground">
+                Выберите брокера
+              </h1>
+              <p className="text-[12.5px] text-muted-foreground leading-relaxed mt-1">
+                Оба открывают полный доступ. Выбирайте тот, что ближе по стилю торговли.
+              </p>
+            </div>
           </div>
+
+          <StepStrip current={1} />
 
           <div className="space-y-3">
             <MarketCard
@@ -260,22 +257,27 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-5"
           >
-            <button
-              onClick={backFromInfo}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" /> Назад
-            </button>
-
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/25 to-accent/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <div className="font-display font-bold text-lg leading-none text-foreground">{meta.label}</div>
-                <div className="text-xs text-muted-foreground mt-1">{meta.tagline}</div>
+              <BackButton onClick={backFromInfo} />
+              <span
+                className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0
+                           border border-white/[0.07]"
+                style={{
+                  background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
+                  color: 'hsl(142 76% 62%)',
+                }}
+              >
+                <Icon className="w-5 h-5" />
+              </span>
+              <div className="min-w-0">
+                <div className="font-display font-bold text-[17px] tracking-tight leading-none text-foreground">
+                  {meta.label}
+                </div>
+                <div className="text-[12px] text-muted-foreground mt-1.5">{meta.tagline}</div>
               </div>
             </div>
+
+            <StepStrip current={1} />
 
             {market === 'forex' && <ForexInfo />}
             {market === 'fxpro' && <FxProInfo />}
@@ -302,30 +304,39 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-5"
         >
-          <button
-            onClick={() => setStep('info')}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> Назад
-          </button>
-
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/25 to-accent/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-              <Icon className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <div className="font-display font-bold text-lg leading-none text-foreground">{meta.label}</div>
-              <div className="text-xs text-muted-foreground mt-1">Введите ID аккаунта после пополнения</div>
+            <BackButton onClick={() => setStep('info')} />
+            <span
+              className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0
+                         border border-white/[0.07]"
+              style={{
+                background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
+                color: 'hsl(142 76% 62%)',
+              }}
+            >
+              <Icon className="w-5 h-5" />
+            </span>
+            <div className="min-w-0">
+              <div className="font-display font-bold text-[17px] tracking-tight leading-none text-foreground">
+                {meta.label}
+              </div>
+              <div className="text-[12px] text-muted-foreground mt-1.5">ID счёта после пополнения</div>
             </div>
           </div>
+
+          <StepStrip current={2} />
 
           {/* Таймер */}
           <div className={`${PANEL} p-4`} style={PANEL_BG}>
             <div className="flex items-center justify-between mb-2">
-              <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-                <Clock className="w-3.5 h-3.5" /> Время на регистрацию
+              <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.09em] text-muted-foreground">
+                <Clock className="w-3.5 h-3.5" />
+                {secondsLeft === 0 ? 'Время вышло' : 'Время на регистрацию'}
               </span>
-              <span className={`font-mono font-bold text-2xl ${secondsLeft === 0 ? 'text-muted-foreground' : 'text-primary neon-text-subtle'}`}>
+              <span
+                className="font-mono font-bold text-2xl tabular-nums"
+                style={{ color: secondsLeft === 0 ? 'hsl(var(--muted-foreground))' : 'hsl(142 76% 58%)' }}
+              >
                 {formatTime(secondsLeft)}
               </span>
             </div>
@@ -337,6 +348,14 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
                 transition={{ ease: 'linear', duration: 0.9 }}
               />
             </div>
+
+            {/* Ноль на таймере не должен читаться как отказ: заявку
+                принимают и после него */}
+            {secondsLeft === 0 && (
+              <p className="text-[11.5px] text-muted-foreground leading-relaxed mt-2.5">
+                Ничего не потеряно - ID можно отправить и сейчас, заявку примут.
+              </p>
+            )}
           </div>
 
           <button
@@ -347,19 +366,39 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           </button>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">ID зарегистрированного аккаунта</label>
+            <label className="text-[13px] font-medium text-foreground" htmlFor="account-id">
+              ID зарегистрированного счёта
+            </label>
             <Input
+              id="account-id"
               value={accountId}
-              onChange={(e) => setAccountId(e.target.value)}
+              onChange={(e) => {
+                setAccountId(e.target.value);
+                // Ошибку гасим на первом же исправлении, а не после
+                // повторной отправки
+                if (error) setError(null);
+              }}
+              // Цифровая клавиатура: ID у всех трёх площадок числовой,
+              // а буквенная раскладка на телефоне добавляет лишний шаг
+              inputMode="numeric"
+              autoComplete="off"
               placeholder="Например: 122004705"
-              className="h-12 bg-muted/40 border-border/60 text-foreground font-mono focus-visible:ring-primary"
+              className="h-12 bg-[hsl(140_26%_8%)] border-[hsl(142_26%_15%)] text-foreground
+                         font-mono text-[15px] focus-visible:ring-primary"
             />
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && (
+              <p className="flex items-start gap-1.5 text-[12.5px] text-destructive">
+                <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                {error}
+              </p>
+            )}
           </div>
 
           <Button
             className="w-full h-12 font-semibold"
-            disabled={submitting}
+            // Пустое поле гасит кнопку, а не отвечает ошибкой после
+            // нажатия: человек видит условие до действия
+            disabled={submitting || !accountId.trim()}
             onClick={handleSubmit}
           >
             {submitting ? (
@@ -382,40 +421,46 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="space-y-6"
+        className="space-y-5"
       >
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        {/* Шапка как в окнах разделов: значок и текст в строку, слева.
+            Крупный значок по центру со свечением занимал треть экрана и
+            отодвигал вниз всё, ради чего человек сюда пришёл */}
+        <div className="flex items-start gap-3.5">
+          <span
+            className="w-12 h-12 rounded-[15px] flex items-center justify-center flex-shrink-0
+                       border border-white/[0.07]"
+            style={{
+              background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
+              boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.1)',
+              color: 'hsl(142 76% 62%)',
+            }}
           >
-            <ArrowLeft className="w-4 h-4" /> Назад
-          </button>
-        )}
+            <GraduationCap className="w-6 h-6" />
+          </span>
 
-        <div className="text-center space-y-4">
-          <div className="relative mx-auto w-20 h-20">
-            <div className="absolute inset-0 rounded-2xl bg-primary/20 blur-xl" />
-            <div className="relative w-20 h-20 rounded-[20px] flex items-center justify-center
-                            border border-white/[0.07]"
-              style={{
-                background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
-                boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.1)',
-              }}
-            >
-              <GraduationCap className="w-10 h-10 text-primary" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="font-display font-bold text-2xl text-foreground neon-text-subtle">
-              Доступ к Академии
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display font-bold text-[20px] tracking-tight text-foreground">
+              Доступ к академии
             </h1>
-            <p className="text-muted-foreground leading-relaxed text-sm px-1">
-              Зарегистрируйте торговый аккаунт и пополните его на любую сумму,
+            <p className="text-[12.5px] text-muted-foreground leading-relaxed mt-1.5">
+              Зарегистрируйте торговый счёт и пополните его на любую сумму -
               этого достаточно, чтобы открыть все материалы.
             </p>
           </div>
+
+          {onBack && (
+            <button
+              onClick={onBack}
+              aria-label="Назад"
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                         border border-white/[0.08] bg-white/[0.04] text-muted-foreground
+                         transition-colors hover:bg-white/[0.09] hover:text-foreground
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className={`${PANEL} p-4 space-y-2.5`} style={PANEL_BG}>
@@ -591,6 +636,60 @@ function CryptoInfo() {
         </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * Полоса пути.
+ *
+ * Через шлюз идут лиды, и главный вопрос у них - «сколько ещё шагов».
+ * Полоса отвечает на него сразу: три шага, видно, где человек сейчас.
+ */
+function StepStrip({ current }: { current: 1 | 2 | 3 }) {
+  const steps = ['Площадка', 'Регистрация', 'Проверка'];
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {steps.map((label, i) => {
+        const index = i + 1;
+        const done = index < current;
+        const active = index === current;
+
+        return (
+          <div key={label} className="flex-1 min-w-0">
+            <div
+              className="h-[3px] rounded-full transition-colors duration-300"
+              style={{
+                background: done || active ? 'hsl(142 76% 52%)' : 'hsl(142 24% 16%)',
+                boxShadow: active ? '0 0 8px hsl(142 76% 52% / 0.55)' : undefined,
+              }}
+            />
+            <span
+              className="block text-[10px] mt-1.5 truncate"
+              style={{ color: active ? 'hsl(142 76% 58%)' : 'hsl(var(--muted-foreground))' }}
+            >
+              {label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Шаг назад: та же круглая стрелка, что в шапке окон */
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Назад"
+      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                 border border-white/[0.08] bg-white/[0.04] text-muted-foreground
+                 transition-colors hover:bg-white/[0.09] hover:text-foreground
+                 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    >
+      <ArrowLeft className="w-4 h-4" />
+    </button>
   );
 }
 
