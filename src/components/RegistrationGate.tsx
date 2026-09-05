@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AppBackground } from '@/components/AppBackground';
+import { GraffitiSpray } from '@/components/graffiti/Graffiti';
 import { useTelegram } from '@/hooks/useTelegram';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 
@@ -30,6 +31,10 @@ const MARKET_META: Record<Market, { label: string; tagline: string }> = {
 };
 
 const TIMER_SECONDS = 15 * 60;
+
+// Те же поверхности, что во всех окнах приложения
+const PANEL = 'rounded-[18px] border border-[hsl(142_26%_15%)]';
+const PANEL_BG = { background: 'hsl(140 26% 8%)' } as const;
 
 function getBotApiBase(): string {
   return import.meta.env.DEV
@@ -156,7 +161,10 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
               animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0.85, 0.5] }}
               transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
             />
-            <div className="relative w-24 h-24 rounded-full glass-card neon-border flex items-center justify-center">
+            <div className="relative w-24 h-24 rounded-full flex items-center justify-center
+                            border border-[hsl(142_30%_20%)]"
+              style={PANEL_BG}
+            >
               <CheckCircle2 className="w-11 h-11 text-primary" />
             </div>
           </div>
@@ -273,7 +281,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
             {market === 'fxpro' && <FxProInfo />}
             {market === 'crypto' && <CryptoInfo />}
 
-            <Button className="w-full h-12 font-display font-bold neon-glow" onClick={goRegister}>
+            <Button className="w-full h-12 font-semibold" onClick={goRegister}>
               Зарегистрироваться
             </Button>
           </motion.div>
@@ -312,7 +320,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           </div>
 
           {/* Таймер */}
-          <div className="glass-card rounded-xl p-4 neon-border">
+          <div className={`${PANEL} p-4`} style={PANEL_BG}>
             <div className="flex items-center justify-between mb-2">
               <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
                 <Clock className="w-3.5 h-3.5" /> Время на регистрацию
@@ -350,7 +358,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           </div>
 
           <Button
-            className="w-full h-12 font-bold neon-glow"
+            className="w-full h-12 font-semibold"
             disabled={submitting}
             onClick={handleSubmit}
           >
@@ -388,7 +396,13 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
         <div className="text-center space-y-4">
           <div className="relative mx-auto w-20 h-20">
             <div className="absolute inset-0 rounded-2xl bg-primary/20 blur-xl" />
-            <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/30 to-accent/20 border border-primary/40 flex items-center justify-center neon-border">
+            <div className="relative w-20 h-20 rounded-[20px] flex items-center justify-center
+                            border border-white/[0.07]"
+              style={{
+                background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
+                boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.1)',
+              }}
+            >
               <GraduationCap className="w-10 h-10 text-primary" />
             </div>
           </div>
@@ -404,7 +418,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           </div>
         </div>
 
-        <div className="glass-card rounded-xl p-4 neon-border space-y-2.5">
+        <div className={`${PANEL} p-4 space-y-2.5`} style={PANEL_BG}>
           <div className="flex items-start gap-2.5 text-sm">
             <Radio className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
             <span className="text-muted-foreground"><span className="text-foreground font-semibold">Форум с live-торговлей</span> - сделки и разборы вместе с автором</span>
@@ -587,32 +601,66 @@ interface MarketCardProps {
   onClick: () => void;
 }
 
+/** Та же карточка, что в окнах разделов: значок, название, подпись */
 function MarketCard({ icon, label, tagline, onClick }: MarketCardProps) {
   return (
     <motion.button
-      whileTap={{ scale: 0.98 }}
+      whileTap={{ scale: 0.985 }}
       onClick={onClick}
-      className="w-full glass-card glass-card-hover rounded-xl p-4 flex items-center gap-3.5 text-left"
+      className="w-full rounded-[18px] p-4 flex items-center gap-3.5 text-left
+                 border border-[hsl(142_38%_24%)] bg-[hsl(142_30%_10%)]
+                 transition-colors duration-200 hover:bg-[hsl(142_32%_12%)]
+                 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
     >
-      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+      <span
+        className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0
+                   border border-white/[0.07]"
+        style={{
+          background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
+          boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.1)',
+        }}
+      >
         {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-bold text-base text-foreground">{label}</div>
-        <div className="text-xs text-muted-foreground mt-0.5">{tagline}</div>
-      </div>
-      <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+      </span>
+      <span className="flex-1 min-w-0">
+        <span className="block font-semibold text-[15px] tracking-[-0.01em] text-foreground">{label}</span>
+        <span className="block text-[12px] text-muted-foreground mt-0.5">{tagline}</span>
+      </span>
+      <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: 'hsl(142 20% 42%)' }} />
     </motion.button>
   );
 }
 
+/**
+ * Оболочка шлюза.
+ *
+ * Та же поверхность, что у окон приложения: тёмный градиент, мягкая
+ * рамка, спрей за содержимым. Раньше здесь было матовое стекло со
+ * свечением по контуру - экран выбивался из остального приложения.
+ *
+ * Верхний отступ считает полосу кнопок Telegram: шлюз открывается на
+ * весь экран, и без этого кнопка «Назад» уезжала под «Закрыть».
+ */
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       <AppBackground />
-      <div className="relative z-10 w-full max-w-md px-5 py-8">
-        <div className="glass-card neon-border rounded-2xl p-6 sm:p-7">
-          {children}
+
+      <div
+        className="relative z-10 w-full max-w-md mx-auto px-4 pb-10"
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + var(--tg-content-top, 0px) + 16px)',
+        }}
+      >
+        <div
+          className="relative overflow-hidden rounded-[26px] border border-[hsl(142_30%_20%)] p-5 sm:p-6"
+          style={{
+            background: 'linear-gradient(180deg, hsl(142 22% 12%) 0%, hsl(140 28% 6.5%) 100%)',
+            boxShadow: '0 30px 70px -30px hsl(0 0% 0%), inset 0 1px 0 hsl(142 50% 45% / 0.16)',
+          }}
+        >
+          <GraffitiSpray className="-top-8 -left-6 w-56 h-36" opacity={0.07} />
+          <div className="relative">{children}</div>
         </div>
       </div>
     </div>
