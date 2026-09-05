@@ -24,7 +24,6 @@ import type { SoftwareItem } from '@/data/software';
 import { courses } from '@/data/courses';
 import { strategyModules } from '@/data/strategies';
 import { libraryCategories } from '@/data/library';
-import { softwareItems } from '@/data/software';
 
 // Модули стратегий лежат в файле курса по бинаркам, но частью обучения
 // не являются - у них свой раздел
@@ -33,10 +32,6 @@ const STRATEGY_MODULES = new Set(['module-3', 'module-4', 'module-5']);
 // Цифры считаем из данных: вписанное число молча устаревает, так уже
 // было с «48 уроков»
 const STRATEGY_LESSONS = strategyModules.reduce((sum, m) => sum + m.lessons.length, 0);
-const LIBRARY_BOOKS = libraryCategories.reduce(
-  (sum, c: { books?: unknown[] }) => sum + (c.books?.length ?? 0),
-  0
-);
 
 const SECTION_LABEL = 'hsl(var(--muted-foreground))';
 
@@ -191,7 +186,6 @@ const TraderMenu = () => {
                 tone="amber"
                 title="Библиотека"
                 caption={`Книги по трейдингу в ${libraryCategories.length} разделах`}
-                value={String(LIBRARY_BOOKS)}
                 onClick={() => navigate('/library')}
               />
               <TerminalRow
@@ -208,7 +202,6 @@ const TraderMenu = () => {
                 tone="violet"
                 title="Наш софт"
                 caption="Индикатор, расширение, платформа"
-                value={String(softwareItems.length)}
                 onClick={() => setSoftwareOpen(true)}
               />
               <TerminalRow
