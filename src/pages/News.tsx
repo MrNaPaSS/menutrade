@@ -87,8 +87,8 @@ function WidgetFrame({ src, title, source, tall }: WidgetFrameProps) {
                 title={title}
                 loading="lazy"
                 className={`w-full border-0 block rounded-[18px] ${tall
-                    ? 'h-[440px] sm:h-[520px] md:h-[600px]'
-                    : 'h-[380px] sm:h-[460px] md:h-[520px]'}`}
+                    ? 'h-[560px] sm:h-[640px] md:h-[720px]'
+                    : 'h-[500px] sm:h-[580px] md:h-[640px]'}`}
                 allow="clipboard-write"
                 sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms"
             />
@@ -206,7 +206,7 @@ const News = () => {
                                 className="mt-0 data-[state=inactive]:hidden"
                             >
                                 <div className="space-y-2">
-                                    <div ref={newsRef} className="tradingview-widget-container w-full min-h-[440px]">
+                                    <div ref={newsRef} className="tradingview-widget-container w-full min-h-[560px] sm:min-h-[640px]">
                                         <div className="tradingview-widget-container__widget w-full" />
                                     </div>
                                 </div>

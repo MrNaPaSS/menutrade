@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, ExternalLink } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import {
     fetchCalendar, formatCountdown, formatTime, groupByDay, minutesUntil, nextImportant,
     type CalendarEvent, type Impact,
@@ -93,23 +93,14 @@ export function EconomicCalendar() {
     // работать, даже если своих данных нет
     if (error) {
         return (
-            <div className="space-y-2">
-                <iframe
-                    src={FALLBACK_WIDGET}
-                    title="Экономический календарь"
-                    loading="lazy"
-                    className="w-full h-[520px] border-0 block rounded-[18px] overflow-hidden"
-                    sandbox="allow-scripts allow-same-origin allow-popups"
-                />
-                <button
-                    onClick={() => window.open('https://ru.tradingview.com/economic-calendar/', '_blank', 'noopener')}
-                    className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground
-                               hover:text-foreground transition-colors px-1"
-                >
-                    Открыть на TradingView
-                    <ExternalLink className="w-3 h-3" />
-                </button>
-            </div>
+            <iframe
+                src={FALLBACK_WIDGET}
+                title="Экономический календарь"
+                loading="lazy"
+                className="w-full h-[560px] sm:h-[640px] md:h-[720px] border-0 block
+                           rounded-[18px] overflow-hidden"
+                sandbox="allow-scripts allow-same-origin allow-popups"
+            />
         );
     }
 
@@ -237,11 +228,6 @@ export function EconomicCalendar() {
                     </div>
                 ))
             )}
-
-            <p className="text-[11px] text-muted-foreground leading-relaxed px-1">
-                Время указано по часам вашего телефона. Предупреждение приходит, пока приложение
-                открыто.
-            </p>
         </div>
     );
 }
