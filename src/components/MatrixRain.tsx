@@ -51,7 +51,7 @@ export function MatrixRain() {
           y: Math.random() * canvas.height * -1,
           speed: 1 + Math.random() * 3,
           char: charArray[Math.floor(Math.random() * charArray.length)],
-          opacity: 0.1 + Math.random() * 0.5,
+          opacity: 0.25 + Math.random() * 0.6,
           size: 12 + Math.floor(Math.random() * 7)
         });
       }
@@ -82,7 +82,7 @@ export function MatrixRain() {
       const step = Math.round(opacity * 20); // шаг прозрачности незаметен глазу
       let fill = fillCache.get(step);
       if (!fill) {
-        fill = `rgba(74, 222, 128, ${(step / 20).toFixed(2)})`;
+        fill = `rgba(154, 255, 190, ${(step / 20).toFixed(2)})`;
         fillCache.set(step, fill);
       }
       return fill;
@@ -100,6 +100,12 @@ export function MatrixRain() {
       // который не исчезал, а холст постепенно затягивало тёмной
       // плёнкой и она глушила фон под ним
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Свечение задаём один раз на кадр, а не на каждый символ: цвет
+      // и радиус у всех одинаковые, а смена состояния контекста сотню
+      // раз в кадр стоит дороже самой отрисовки
+      ctx.shadowColor = 'rgba(74, 222, 128, 0.9)';
+      ctx.shadowBlur = 7;
 
       particles.forEach((particle, index) => {
         // Символ рисуется сплошным цветом. Прежде под каждый создавался
@@ -131,7 +137,7 @@ export function MatrixRain() {
             y: -20,
             speed: 1 + Math.random() * 3,
             char: charArray[Math.floor(Math.random() * charArray.length)],
-            opacity: 0.1 + Math.random() * 0.5,
+            opacity: 0.25 + Math.random() * 0.6,
             size: 12 + Math.floor(Math.random() * 7)
           };
         }
@@ -162,7 +168,7 @@ export function MatrixRain() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.4 }}
+      style={{ opacity: 0.55 }}
     />
   );
 }

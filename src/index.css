@@ -256,7 +256,7 @@
     background-image:
       var(--gradient-radial),
       radial-gradient(ellipse at 80% 80%, hsl(165, 70%, 38%, 0.05) 0%, transparent 50%),
-      linear-gradient(180deg, hsl(140, 35%, 4%) 0%, hsl(140, 40%, 6%) 100%);
+      linear-gradient(180deg, hsl(148, 32%, 2.5%) 0%, hsl(146, 36%, 4%) 100%);
     min-height: 100vh;
     overflow-x: hidden;
   }
