@@ -17,10 +17,17 @@ const PANEL = 'rounded-[18px] border border-[hsl(142_26%_15%)]';
  * без предупреждений лучше, чем пустой раздел.
  */
 const FALLBACK_WIDGET =
-    'https://s.tradingview.com/embed-widget/events/?locale=ru' +
-    '#%7B%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Atrue%2C' +
-    '%22width%22%3A%22100%25%22%2C%22height%22%3A%22520%22%2C' +
-    '%22importanceFilter%22%3A%22-1%2C0%2C1%22%7D';
+    'https://s.tradingview.com/embed-widget/events/?locale=ru#' +
+    encodeURIComponent(JSON.stringify({
+        colorTheme: 'dark',
+        isTransparent: true,
+        width: '100%',
+        // Виджет рисует свою высоту сам и стоял на 520px: рамку мы
+        // растягивали, а внутри оставалась прежняя коробка с пустотой
+        height: '100%',
+        importanceFilter: '-1,0,1',
+    }));
+
 const PANEL_BG = { background: 'hsl(140 26% 8%)' } as const;
 
 /** За сколько минут до важного события зажигаем предупреждение */
@@ -97,7 +104,7 @@ export function EconomicCalendar() {
                 src={FALLBACK_WIDGET}
                 title="Экономический календарь"
                 loading="lazy"
-                className="w-full h-[560px] sm:h-[640px] md:h-[720px] border-0 block
+                className="w-full h-[640px] sm:h-[720px] md:h-[800px] border-0 block
                            rounded-[18px] overflow-hidden"
                 sandbox="allow-scripts allow-same-origin allow-popups"
             />
