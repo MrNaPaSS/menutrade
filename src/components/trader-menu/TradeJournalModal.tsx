@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 interface TradeJournalModalProps {
     open: boolean;
     onClose: () => void;
+    /** Возврат в профиль трейдера: дневник открывается оттуда */
+    onBack: () => void;
 }
 
 const PANEL = 'rounded-[18px] border border-[hsl(142_26%_15%)]';
@@ -54,7 +56,7 @@ function parseNumber(raw: string): number {
  * Записи лежат в облаке Telegram: дневник без сохранности бессмыслен,
  * а память телефона чистится вместе с кэшем.
  */
-export function TradeJournalModal({ open, onClose }: TradeJournalModalProps) {
+export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalProps) {
     const [view, setView] = useState<View>('list');
     const [trades, setTrades] = useState<Trade[] | null>(null);
 
@@ -237,11 +239,6 @@ export function TradeJournalModal({ open, onClose }: TradeJournalModalProps) {
                 <Button className="w-full h-12 font-semibold" disabled={saving} onClick={submit}>
                     {saving ? 'Сохраняем...' : 'Записать сделку'}
                 </Button>
-
-                <p className="text-[11.5px] text-muted-foreground leading-relaxed px-1 pb-1">
-                    Строка «почему вошли» важнее цифр: через месяц по ней видно, повторяете вы
-                    решение или случайность.
-                </p>
             </ModalWindow>
         );
     }
@@ -298,8 +295,9 @@ export function TradeJournalModal({ open, onClose }: TradeJournalModalProps) {
         <ModalWindow
             open={open}
             onClose={onClose}
+            onBack={onBack}
             title="Дневник сделок"
-            subtitle="Записи хранятся в облаке Telegram"
+            subtitle="Итог, доля прибыльных и все записи"
         >
             <div
                 className="rounded-[20px] border border-[hsl(142_34%_22%)] p-4"

@@ -30,6 +30,7 @@ export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
         return (
             <TradeJournalModal
                 open={open}
+                onBack={() => setJournalOpen(false)}
                 onClose={() => {
                     onClose();
                     // Шаг сбрасываем после закрытия: иначе следующий заход
@@ -79,11 +80,6 @@ export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
                     caption="Скоро"
                 />
             </div>
-
-            <p className="text-[11.5px] text-muted-foreground leading-relaxed px-1 pb-1">
-                Записи дневника хранятся в облаке Telegram: они переживут переустановку и будут
-                видны с любого устройства, где вы вошли в тот же аккаунт.
-            </p>
         </ModalWindow>
     );
 }
