@@ -472,7 +472,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           </div>
           <div className="flex items-start gap-2.5 text-sm">
             <LineChart className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'hsl(265 75% 74%)' }} />
-            <span className="text-muted-foreground"><span className="text-foreground font-semibold">Авторский софт</span> - индикатор, расширение и платформа</span>
+            <span className="text-foreground font-semibold">Авторский софт от NMNH</span>
           </div>
           <div className="flex items-start gap-2.5 text-sm">
             <GraduationCap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
