@@ -1,19 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Globe, Home, Menu, Settings, User } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+import { Menu } from 'lucide-react';
 import { useTelegram } from '@/hooks/useTelegram';
+import { MenuModal } from '@/components/MenuModal';
 import { ProfileModal } from '@/components/ProfileModal';
 import { cn } from '@/lib/utils';
 
@@ -35,20 +24,10 @@ const PANEL = 'bg-background/60 backdrop-blur-2xl border border-border/30';
  * (--tg-content-top) - иначе логотип уезжает под «Закрыть» и «...».
  */
 export function Header() {
-  const navigate = useNavigate();
   const { user } = useTelegram();
   const reduced = useReducedMotion();
-  const [language, setLanguage] = useState('ru');
   const [profileOpen, setProfileOpen] = useState(false);
-
-  useEffect(() => {
-    setLanguage(localStorage.getItem('app_language') || 'ru');
-  }, []);
-
-  const handleLanguageChange = (lang: string) => {
-    setLanguage(lang);
-    localStorage.setItem('app_language', lang);
-  };
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const initial = user?.first_name?.[0]?.toUpperCase() ?? 'Т';
 
@@ -111,52 +90,27 @@ export function Header() {
           </p>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              id="header-menu-button"
-              variant="ghost"
-              size="icon"
-              className={cn('h-10 w-10 flex-shrink-0 rounded-full hover:border-border/60', PANEL)}
-            >
-              <Menu className="h-[18px] w-[18px]" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 glass-card neon-border">
-            <DropdownMenuLabel>Меню</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem onClick={() => navigate('/home')} className="cursor-pointer">
-              <Home className="mr-2 h-4 w-4" />
-              На главную
-            </DropdownMenuItem>
-
-            <DropdownMenuItem onClick={() => setProfileOpen(true)} className="cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              Профиль пользователя
-            </DropdownMenuItem>
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuLabel className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
-              Язык интерфейса
-            </DropdownMenuLabel>
-            <DropdownMenuRadioGroup value={language} onValueChange={handleLanguageChange}>
-              <DropdownMenuRadioItem value="ru">Русский</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
-              <Settings className="mr-2 h-4 w-4" />
-              Настройки
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <button
+          id="header-menu-button"
+          onClick={() => setMenuOpen(true)}
+          aria-label="Меню"
+          className={cn(
+            'h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center',
+            'text-muted-foreground transition-colors duration-200',
+            'hover:text-foreground hover:border-border/60',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+            PANEL
+          )}
+        >
+          <Menu className="h-[18px] w-[18px]" />
+        </button>
       </motion.div>
 
+      <MenuModal
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onOpenProfile={() => setProfileOpen(true)}
+      />
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </header>
   );
