@@ -54,12 +54,6 @@ const Live = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
   }, []);
 
-  // Закрытый раздел выглядит одинаково везде: то же окно «упс» с
-  // кнопкой. Оно же шлёт боту сигнал о том, что человек упёрся в замок
-  if (locked) {
-    return <AccessDeniedScreen feature="форум и live" onBack={handleBack} />;
-  }
-
   return (
     <div className="min-h-[100dvh] scanline pb-24">
       <AppBackground />
@@ -142,6 +136,12 @@ const Live = () => {
 
         <BottomNav />
       </div>
+
+      {/* Окно поверх самого раздела, а не вместо него: тогда за
+          затемнением видно, что именно закрыто, - как в обучении и
+          стратегиях. Раньше страница не рисовалась вовсе, и за
+          подложкой оставался голый фон */}
+      {locked && <AccessDeniedScreen feature="форум и live" onBack={handleBack} />}
     </div>
   );
 };
