@@ -11,6 +11,9 @@ import { Sidebar } from '@/agent/components/Sidebar';
 import { ModeSelector } from '@/agent/components/ModeSelector';
 import { MARKET_META } from '@/agent/config/markets';
 import { GraffitiTornPanel } from '@/components/graffiti/Graffiti';
+import { AccessDeniedScreen } from '@/components/AccessDeniedScreen';
+import { useUserAccess } from '@/contexts/UserAccessContext';
+import { AI_FREE_QUESTIONS, countQuestion, questionsLeft } from '@/lib/aiQuota';
 import { cn } from '@/lib/utils';
 import type { TelegramUser } from '@/hooks/useTelegram';
 
@@ -28,6 +31,14 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
     const [showMenu, setShowMenu] = useState(false);
     const [showSidebar, setShowSidebar] = useState(false);
     const [showModeSelector, setShowModeSelector] = useState(false);
+
+    // Без доступа ментор отвечает на три вопроса в сутки: показать, как
+    // он работает, но не заменять им академию
+    const { hasFullAccess } = useUserAccess();
+    const [showGate, setShowGate] = useState(false);
+    const [left, setLeft] = useState(() => questionsLeft());
+    const limited = !hasFullAccess;
+    const outOfQuestions = limited && left <= 0;
 
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -90,6 +101,14 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
         if (!input.trim() && files.length === 0) return;
         if (isLoading) return;
 
+        // Вопросы кончились - вместо ответа показываем, что даёт доступ.
+        // Текст остаётся в поле: человек вернётся к нему после проверки
+        if (limited && questionsLeft() <= 0) {
+            setLeft(0);
+            setShowGate(true);
+            return;
+        }
+
         const userMessage = input.trim();
         const userFiles = [...files];
 
@@ -108,6 +127,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
         setFiles([]);
         setShowTemplates(false);
         setIsLoading(true);
+        if (limited) setLeft(countQuestion());
 
         try {
             const apiMessages = history.map((msg) => ({
@@ -144,7 +164,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
         } finally {
             setIsLoading(false);
         }
-    }, [input, files, history, isLoading, addMessage, currentMode, currentMarket]);
+    }, [input, files, history, isLoading, addMessage, currentMode, currentMarket, limited]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -524,8 +544,8 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
 
                         {/* Send */}
                         <motion.button
-                            onClick={handleSend}
-                            disabled={(!input.trim() && files.length === 0) || isLoading}
+                            onClick={outOfQuestions ? () => setShowGate(true) : handleSend}
+                            disabled={!outOfQuestions && ((!input.trim() && files.length === 0) || isLoading)}
                             className={cn(
                                 'h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0',
                                 'transition-colors',
@@ -539,7 +559,25 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         </motion.button>
                     </div>
                 </div>
+
+                {/* Счётчик показываем только тем, у кого он есть: у
+                    участника академии ограничения нет и напоминать не о чем */}
+                {limited && (
+                    <button
+                        onClick={() => setShowGate(true)}
+                        className="w-full pb-1 text-center text-[11.5px] text-muted-foreground/70
+                                   focus:outline-none"
+                    >
+                        {left > 0
+                            ? `Осталось ${left} из ${AI_FREE_QUESTIONS} вопросов на сегодня`
+                            : 'Вопросы на сегодня закончились - открыть доступ'}
+                    </button>
+                )}
             </div>
+
+            {showGate && (
+                <AccessDeniedScreen feature="AI-ментор" onBack={() => setShowGate(false)} />
+            )}
         </>
     );
 }

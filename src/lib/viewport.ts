@@ -10,9 +10,10 @@
  * страницы, которую человек сейчас видит. Пишем её в переменные, и
  * разметка опирается на них, а не на высоту окна.
  *
- *   --app-vh    высота видимой области
- *   --app-vtop  насколько она смещена сверху
- *   --app-kb    высота клавиатуры, ноль когда её нет
+ *   --app-vh      высота видимой области
+ *   --app-vtop    насколько она смещена сверху
+ *   --app-vbottom сколько закрыто снизу
+ *   --app-kb      высота клавиатуры, ноль когда её нет
  */
 
 export function installViewportVars(): () => void {
@@ -28,14 +29,37 @@ export function installViewportVars(): () => void {
 
         root.style.setProperty('--app-vh', `${Math.round(height)}px`);
         root.style.setProperty('--app-vtop', `${Math.round(offset)}px`);
+        root.style.setProperty('--app-vbottom', `${Math.round(Math.max(0, keyboard))}px`);
         root.style.setProperty('--app-kb', `${keyboard > 100 ? Math.round(keyboard) : 0}px`);
     };
 
     apply();
 
+    /**
+     * Клавиатура уходит раньше, чем браузер сообщает новый размер: между
+     * снятием фокуса и событием resize проходит до трети секунды, и всё
+     * это время разметка считает, что видно только половину экрана.
+     *
+     * Поэтому на снятии фокуса сразу считаем экран целым. Если окажется,
+     * что клавиатура осталась (человек перешёл в соседнее поле), resize
+     * тут же поправит - лишний кадр во всю высоту незаметен, а
+     * подпрыгивающая разметка заметна очень.
+     */
+    const onBlur = () => {
+        root.style.setProperty('--app-vh', `${Math.round(window.innerHeight)}px`);
+        root.style.setProperty('--app-vtop', '0px');
+        root.style.setProperty('--app-vbottom', '0px');
+        root.style.setProperty('--app-kb', '0px');
+    };
+
+    document.addEventListener('focusout', onBlur);
+
     if (!vv) {
         window.addEventListener('resize', apply);
-        return () => window.removeEventListener('resize', apply);
+        return () => {
+            window.removeEventListener('resize', apply);
+            document.removeEventListener('focusout', onBlur);
+        };
     }
 
     vv.addEventListener('resize', apply);
@@ -46,6 +70,7 @@ export function installViewportVars(): () => void {
         vv.removeEventListener('resize', apply);
         vv.removeEventListener('scroll', apply);
         window.removeEventListener('orientationchange', apply);
+        document.removeEventListener('focusout', onBlur);
     };
 }
 

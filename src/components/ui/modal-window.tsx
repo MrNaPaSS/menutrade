@@ -126,15 +126,22 @@ export function ModalWindow({
             {open && (
                 <div
                     className={cn(
-                        "fixed inset-x-0 z-[90] flex items-center justify-center",
-                        fullscreen ? "p-0" : "p-4"
+                        "fixed inset-0 z-[90] flex items-center justify-center",
+                        fullscreen ? "px-0" : "px-4"
                     )}
-                    /* Держимся видимой части экрана, а не всего окна: при
-                       открытой клавиатуре окно центрировалось по области,
-                       половина которой уже под клавиатурой, и уезжало вниз */
+                    /* Само окно занимает экран целиком, а видимой области
+                       держится за счёт отступов. Раньше высота задавалась
+                       напрямую, и при закрытии клавиатуры на те доли
+                       секунды, пока браузер не сообщил новый размер, окно
+                       оставалось коротким - и снизу проглядывала страница
+                       под ним */
                     style={{
-                        top: 'var(--app-vtop, 0px)',
-                        height: 'var(--app-vh, 100dvh)',
+                        /* Отступ, а не высота: подложка внутри всё равно
+                           кроет экран целиком, поэтому под окном никогда
+                           не видно страницу - даже пока браузер не успел
+                           сообщить, что клавиатура убралась */
+                        paddingTop: `calc(${fullscreen ? '0px' : '1rem'} + var(--app-vtop, 0px))`,
+                        paddingBottom: `calc(${fullscreen ? '0px' : '1rem'} + var(--app-vbottom, 0px))`,
                     }}
                 >
                     <motion.div
@@ -162,6 +169,7 @@ export function ModalWindow({
                         style={{
                             background: 'linear-gradient(180deg, hsl(142 22% 12%) 0%, hsl(140 28% 6.5%) 100%)',
                             boxShadow: '0 30px 70px -30px hsl(0 0% 0%), inset 0 1px 0 hsl(142 50% 45% / 0.16)',
+                            maxHeight: 'var(--app-vh, 100dvh)',
                         }}
                         initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: 16 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}

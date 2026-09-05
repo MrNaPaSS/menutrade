@@ -6,7 +6,7 @@ import { GraffitiSpray } from '@/components/graffiti/Graffiti';
 import { RegistrationGate } from './RegistrationGate';
 import { useTelegram } from '@/hooks/useTelegram';
 
-export type LockedFeature = 'обучение' | 'стратегии' | 'форум и live' | 'профиль трейдера';
+export type LockedFeature = 'обучение' | 'стратегии' | 'форум и live' | 'профиль трейдера' | 'AI-ментор';
 
 interface AccessDeniedScreenProps {
     feature: LockedFeature;
@@ -19,6 +19,7 @@ const PITCH: Record<LockedFeature, { subject: string; stat: string; statLabel: s
     'стратегии': { subject: 'Стратегии', stat: '4', statLabel: 'блока готовых систем' },
     'форум и live': { subject: 'Форум и live', stat: 'LIVE', statLabel: 'сессии с трейдером' },
     'профиль трейдера': { subject: 'Профиль', stat: '3', statLabel: 'дневник, календарь и статистика' },
+    'AI-ментор': { subject: 'AI-ментор', stat: '∞', statLabel: 'вопросов без ограничений' },
 };
 
 function getBotApiBase(): string {
