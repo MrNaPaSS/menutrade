@@ -276,10 +276,12 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         />
                     </div>
 
-                    <div className="relative flex items-center justify-between">
+                    <div className="relative flex items-center justify-center min-h-8">
                         {/* Слева: назад в академию и фото - оно же вход в
-                            историю чатов */}
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                            историю чатов. Края стоят absolute, чтобы подпись
+                            между ними была по центру экрана, а не по центру
+                            остатка ширины */}
+                        <div className="absolute left-0 flex items-center gap-1.5">
                             {onBack && (
                                 <button
                                     onClick={onBack}
@@ -313,29 +315,28 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                                     </span>
                                 )}
                             </button>
-
-                            {/* Режим и рынок - вровень с фото и стрелкой:
-                                в полосе кнопок Telegram помещается только
-                                название, а строкой ниже есть место */}
-                            <span className="flex items-center gap-1 min-w-0 text-[11px] text-muted-foreground">
-                                {currentMode === 'teacher' ? (
-                                    <><GraduationCap className="w-3.5 h-3.5 flex-shrink-0" /> Обучение</>
-                                ) : (
-                                    <><BarChart3 className="w-3.5 h-3.5 flex-shrink-0" /> Анализ рынка</>
-                                )}
-                                {/* Рынок видно сразу: иначе непонятно, по чьим
-                                    правилам агент посчитает сделку */}
-                                <span className="opacity-60 truncate">
-                                    · {currentMarket === 'auto'
-                                        ? 'любой рынок'
-                                        : MARKET_META[currentMarket].label.toLowerCase()}
-                                </span>
-                            </span>
                         </div>
 
+                        {/* Режим и рынок - под названием и вровень с фото:
+                            в полосе кнопок Telegram помещается только само
+                            название, а строкой ниже есть место */}
+                        <span className="flex items-center gap-1 min-w-0 max-w-[58%] text-[11px] text-muted-foreground">
+                            {currentMode === 'teacher' ? (
+                                <><GraduationCap className="w-3.5 h-3.5 flex-shrink-0" /> Обучение</>
+                            ) : (
+                                <><BarChart3 className="w-3.5 h-3.5 flex-shrink-0" /> Анализ рынка</>
+                            )}
+                            {/* Рынок видно сразу: иначе непонятно, по чьим
+                                правилам агент посчитает сделку */}
+                            <span className="opacity-60 truncate">
+                                · {currentMarket === 'auto'
+                                    ? 'любой рынок'
+                                    : MARKET_META[currentMarket].label.toLowerCase()}
+                            </span>
+                        </span>
 
                         {/* Справа: действия над чатом */}
-                        <div className="flex items-center gap-1 min-w-[80px] justify-end">
+                        <div className="absolute right-0 flex items-center gap-1">
                             <div className="relative">
                                 <button
                                     onClick={() => setShowMenu(!showMenu)}
