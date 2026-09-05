@@ -157,6 +157,11 @@ export function LearningModal({
     // Модули курса
     if (course) {
         const done = completedByCourse[course.id] ?? 0;
+        const courseState = access[course.id] ?? 'closed';
+        // Направление без доступа тоже открывается: человек видит, из чего
+        // оно состоит, и решает, стоит ли оно счёта. Закрыт материал, а
+        // не витрина
+        const courseOpen = courseState === 'open';
 
         return (
             <ModalWindow
@@ -164,13 +169,16 @@ export function LearningModal({
                 onClose={close}
                 onBack={back}
                 title={course.title}
-                subtitle={`${done} из ${courseLessons(course)} уроков пройдено`}
+                subtitle={courseOpen
+                    ? `${done} из ${courseLessons(course)} уроков пройдено`
+                    : `${courseModules.length} модулей, ${courseLessons(course)} уроков`}
             >
                 {courseModules.map((item, index) => {
                     const total = item.lessons.length;
                     const closed = item.lessons.filter(l => l.isCompleted).length;
                     const percent = total > 0 ? Math.round((closed / total) * 100) : 0;
-                    const locked = item.lessons[0]?.isLocked ?? false;
+                    const lockedByOrder = item.lessons[0]?.isLocked ?? false;
+                    const locked = !courseOpen || lockedByOrder;
 
                     return (
                         <ModalCard
@@ -179,14 +187,20 @@ export function LearningModal({
                             icon={item.icon}
                             title={item.title}
                             description={item.description}
-                            state={locked ? 'closed' : 'open'}
-                            value={`${percent}%`}
-                            done={percent === 100}
-                            progress={percent}
-                            footnote={`${closed} из ${total} уроков`}
+                            state={locked ? (courseState === 'pending' ? 'pending' : 'closed') : 'open'}
+                            value={courseOpen ? `${percent}%` : undefined}
+                            done={courseOpen && percent === 100}
+                            progress={courseOpen ? percent : undefined}
+                            footnote={courseOpen
+                                ? `${closed} из ${total} уроков`
+                                : `${total} ${total === 1 ? 'урок' : total < 5 ? 'урока' : 'уроков'}`}
                             action={closed > 0 ? 'Продолжить' : 'Начать'}
-                            lockedNote="Откроется после предыдущего модуля"
-                            onClick={() => setModule(item)}
+                            lockedNote={courseState === 'pending'
+                                ? 'ID отправлен, ждём подтверждения'
+                                : 'Откроется после предыдущего модуля'}
+                            onClick={courseOpen
+                                ? () => setModule(item)
+                                : (courseState === 'pending' ? undefined : onLocked)}
                         />
                     );
                 })}
@@ -200,7 +214,7 @@ export function LearningModal({
             open={open}
             onClose={close}
             title="Направления"
-            subtitle="Закрытые направления открываются счётом на площадке"
+            subtitle="Загляните в любое: закрыт материал, а не список"
         >
             {courses.map((item, index) => {
                 const state = access[item.id] ?? 'closed';
@@ -221,7 +235,7 @@ export function LearningModal({
                         footnote={`${done} из ${total} уроков`}
                         action={done > 0 ? 'Продолжить' : 'Начать'}
                         lockedNote={state === 'pending' ? 'ID отправлен, ждём подтверждения' : undefined}
-                        onClick={state === 'open' ? () => setCourse(item) : onLocked}
+                        onClick={state === 'pending' ? undefined : () => setCourse(item)}
                     />
                 );
             })}
