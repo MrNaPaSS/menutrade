@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Lock, Target } from 'lucide-react';
+import { Lock, Play, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { GraffitiCheck } from '@/components/graffiti/Graffiti';
@@ -173,10 +173,14 @@ export function LearningModal({
                             >
                                 <TerminalRow
                                     index={index}
+                                    /* Значок воспроизведения вместо номера:
+                                       номер ничего не сообщает, порядок и
+                                       так виден по месту строки, а значок
+                                       говорит, что урок смотрят */
                                     icon={
                                         item.isCompleted
                                             ? <GraffitiCheck className="w-[19px] h-[19px]" delay={0.06 + index * 0.04} />
-                                            : <span className="font-mono text-[13px] tabular-nums">{index + 1}</span>
+                                            : <Play className="w-[15px] h-[15px]" fill="currentColor" />
                                     }
                                     tone="green"
                                     title={item.title}

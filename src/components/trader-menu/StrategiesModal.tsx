@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { strategyModules } from '@/data/strategies';
 import type { Lesson, Module } from '@/types/lesson';
 import { motion } from 'framer-motion';
-import { Lock } from 'lucide-react';
+import { Lock, Play } from 'lucide-react';
 import { ModalWindow } from '@/components/ui/modal-window';
 import { ModalCard } from '@/components/trader-menu/ModalCard';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
@@ -116,7 +116,7 @@ export function StrategiesModal({ open, onClose, hasAccess, onLocked, onBackToLe
                             >
                                 <TerminalRow
                                     index={index}
-                                    icon={<span className="font-mono text-[13px] tabular-nums">{index + 1}</span>}
+                                    icon={<Play className="w-[15px] h-[15px]" fill="currentColor" />}
                                     tone="cyan"
                                     title={item.title}
                                     caption={item.duration ?? 'Разбор'}
