@@ -250,18 +250,21 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         непонятно, что она меняет */}
                     <div
                         className="absolute inset-x-0 px-3 flex justify-center z-30"
-                        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 2px)' }}
+                        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 7px)' }}
                     >
+                        {/* Сдвиг вправо: «Закрыть» слева шире, чем «...»
+                            справа, поэтому пустая середина полосы лежит
+                            правее середины экрана */}
                         <button
                             onClick={() => setShowModeSelector(!showModeSelector)}
-                            className="flex items-center gap-1.5 px-3 py-0.5 rounded-lg
-                                       font-display font-bold text-[17px] tracking-tight
+                            className="ml-[18px] flex items-center gap-1.5 px-3 py-0.5 rounded-lg
+                                       font-display font-bold text-[19px] tracking-tight
                                        neon-text-subtle transition-colors hover:bg-white/[0.05]
                                        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                         >
                             AI {currentMode === 'teacher' ? 'Ментор' : 'Аналитик'}
                             <ChevronDown className={cn(
-                                'w-4 h-4 transition-transform',
+                                'w-[18px] h-[18px] transition-transform',
                                 showModeSelector && 'rotate-180'
                             )} />
                         </button>
