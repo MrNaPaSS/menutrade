@@ -60,6 +60,14 @@ export function InviteModal({
     // заявки сама по себе занимает экран
     const [showRewards, setShowRewards] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    // Шаг сбрасываем после закрытия, а не в момент нажатия: иначе
+    // окно на выезде успевало показать первый шаг. Без сброса следующий
+    // заход открывался сразу на наградах - шаг оставался включённым
+    const close = useCallback(() => {
+        onClose();
+        setTimeout(() => setShowRewards(false), 300);
+    }, [onClose]);
     const copyLink = useCallback(async () => {
         if (!data?.link) return;
         try {
@@ -79,7 +87,7 @@ export function InviteModal({
         return (
             <RewardsStep
                 open={open}
-                onClose={onClose}
+                onClose={close}
                 onBack={() => setShowRewards(false)}
                 data={data}
                 onClaim={onClaim}
@@ -90,7 +98,7 @@ export function InviteModal({
     return (
         <ModalWindow
             open={open}
-            onClose={onClose}
+            onClose={close}
             title="Пригласить друга"
             subtitle="Друг засчитывается после регистрации и депозита"
         >
