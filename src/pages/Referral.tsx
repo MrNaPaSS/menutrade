@@ -29,17 +29,19 @@ function getBotApiBase(): string {
 /**
  * Приглашение, которое уйдёт другу.
  *
- * Ссылка стоит внутри текста, рядом с NMNH, а поле url оставлено
- * пустым. Если положить её в url, Telegram печатает адрес отдельной
- * первой строкой, и он дублирует тот, что в тексте.
+ * Ссылка идёт в поле url - так Telegram делает её кликабельной и
+ * подтягивает карточку бота. В тексте её нет: там она печаталась бы
+ * вторым адресом подряд.
+ *
+ * Слово-ссылку «NMNH» здесь получить нельзя: окно «поделиться»
+ * принимает только простой текст. Так умеет лишь сообщение от бота, но
+ * тогда нажатие перестанет сразу открывать список чатов.
  */
-function shareText(link: string): string {
-    return [
-        `NMNH (${link}) - Академия здравого трейдинга`,
-        '',
-        'Живые сессии, разборы рынка и закрытый форум трейдеров.',
-    ].join('\n');
-}
+const SHARE_TEXT = [
+    'NMNH - Академия здравого трейдинга',
+    '',
+    'Живые сессии, разборы рынка и закрытый форум трейдеров.',
+].join('\n');
 
 /** Открывает внешнюю ссылку через Telegram, иначе обычной вкладкой. */
 function shareOpen(url: string): void {
@@ -54,9 +56,8 @@ function shareOpen(url: string): void {
 
 /** Открывает окно «поделиться» Telegram, иначе обычную ссылку. */
 function shareLink(link: string): void {
-    // url пустой: адрес уже стоит в тексте, а Telegram печатает
-    // содержимое url отдельной строкой поверх текста
-    const url = `https://t.me/share/url?url=&text=${encodeURIComponent(shareText(link))}`;
+    const url = `https://t.me/share/url?url=${encodeURIComponent(link)}`
+        + `&text=${encodeURIComponent(SHARE_TEXT)}`;
     const tg = (window as { Telegram?: { WebApp?: { openTelegramLink?: (u: string) => void } } })
         .Telegram?.WebApp;
     if (tg?.openTelegramLink) {
