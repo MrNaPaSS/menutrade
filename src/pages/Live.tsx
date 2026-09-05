@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AppBackground } from '@/components/AppBackground';
@@ -46,6 +46,10 @@ const Live = () => {
   const navigate = useNavigate();
   const { hasFullAccess, isLoading: accessLoading } = useUserAccess();
   const locked = !accessLoading && !hasFullAccess;
+  // Окно доступа открывается по кнопке, а не при входе в раздел:
+  // сперва человек читает, что такое форум, и только потом упирается
+  // в замок - иначе он не успевает захотеть туда попасть
+  const [showLock, setShowLock] = useState(false);
 
   const handleBack = () => navigate('/home');
 
@@ -121,14 +125,16 @@ const Live = () => {
               transition={{ delay: 0.35 }}
             >
               <Button
-                className="w-full h-12 font-display font-bold neon-glow"
-                onClick={() => openTelegramLink(FORUM_URL)}
+                className="w-full h-12 font-semibold"
+                onClick={() => (locked ? setShowLock(true) : openTelegramLink(FORUM_URL))}
               >
                 <ExternalLink className="w-5 h-5 mr-2" />
                 Войти в форум
               </Button>
               <p className="text-center text-[11px] text-muted-foreground mt-3">
-                Форум откроется в Telegram. Доступ уже активирован для твоего аккаунта.
+                {locked
+                  ? 'Форум открывается вместе с полным доступом к академии.'
+                  : 'Форум откроется в Telegram. Доступ уже активирован для твоего аккаунта.'}
               </p>
             </motion.div>
           </div>
@@ -139,9 +145,10 @@ const Live = () => {
 
       {/* Окно поверх самого раздела, а не вместо него: тогда за
           затемнением видно, что именно закрыто, - как в обучении и
-          стратегиях. Раньше страница не рисовалась вовсе, и за
-          подложкой оставался голый фон */}
-      {locked && <AccessDeniedScreen feature="форум и live" onBack={handleBack} />}
+          стратегиях */}
+      {showLock && (
+        <AccessDeniedScreen feature="форум и live" onBack={() => setShowLock(false)} />
+      )}
     </div>
   );
 };

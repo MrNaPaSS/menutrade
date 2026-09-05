@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import Home from "./pages/Home";
 import { RouteFallback } from "./components/RouteFallback";
 import { AIAgentButton } from "./components/AIAgentButton";
@@ -18,6 +18,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { usePrefetchRoutes } from "./hooks/usePrefetchRoutes";
 import { BackNavigationProvider } from "./contexts/BackNavigationContext";
 import { SwipeBackGesture } from "./components/SwipeBackGesture";
+import { installTapHaptics } from "./lib/haptics";
 
 // Экраны грузятся по требованию. Раньше приложение одним куском
 // тянуло все страницы разом - вместе с данными курса, стратегиями и
@@ -45,6 +46,10 @@ const queryClient = new QueryClient();
 const RoutedContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Вибро-отклик на нажатия по всему приложению: один обработчик на
+  // документе вместо вызова в каждой кнопке
+  useEffect(installTapHaptics, []);
 
   const goBack = () => {
     if (location.pathname === '/home' || location.pathname === '/') return;
