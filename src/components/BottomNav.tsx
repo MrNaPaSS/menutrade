@@ -10,10 +10,11 @@ import { useDailyClaim } from '@/hooks/useDailyClaim';
 const basePath = () => import.meta.env.BASE_URL || '/';
 
 /* Верхняя граница панели - рваная кромка с лендинга вместо ровной
-   линии. Маска перевёрнута по вертикали, поэтому зубцы смотрят вверх,
-   к содержимому. Кромка выходит за панель на 56px, там и рвётся */
+   линии. Маска перевёрнута по вертикали, поэтому зубцы смотрят вверх.
+   Наклон шва с лендинга снят: там край поднимался слева направо на
+   381px, и на горизонтальной панели это читалось как перекос */
 const TORN_PANEL = {
-    background: 'linear-gradient(0deg, hsl(140 32% 6%) 0%, hsl(142 24% 9%) 100%)',
+    background: 'hsl(0 0% 2%)',
     WebkitMaskImage: `url(${basePath()}graffiti/torn-edge.png)`,
     maskImage: `url(${basePath()}graffiti/torn-edge.png)`,
     WebkitMaskSize: '100% 100%',
@@ -113,11 +114,11 @@ export function BottomNav({
       className="fixed bottom-0 left-0 right-0 z-50"
     >
       {/* Фон панели: рваная кромка вместо ровной линии сверху.
-          Стоит слоем под содержимым и вылезает выше панели - там
-          кромка и обрывается */}
+          Выступает всего на 18px - настолько, чтобы край был рваным, и
+          не настолько, чтобы залезать на содержимое экрана */}
       <span
         aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 -top-14 pointer-events-none select-none"
+        className="absolute inset-x-0 bottom-0 -top-[18px] pointer-events-none select-none"
         style={TORN_PANEL}
       />
 
