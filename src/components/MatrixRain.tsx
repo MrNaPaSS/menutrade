@@ -95,9 +95,11 @@ export function MatrixRain() {
       if (now - lastFrame < FRAME_MS) return;
       lastFrame = now;
 
-      // Fade effect
-      ctx.fillStyle = 'rgba(8, 15, 10, 0.08)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Кадр стираем начисто. Раньше сверху заливался полупрозрачный
+      // тёмный прямоугольник - от него у символов оставался шлейф,
+      // который не исчезал, а холст постепенно затягивало тёмной
+      // плёнкой и она глушила фон под ним
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((particle, index) => {
         // Символ рисуется сплошным цветом. Прежде под каждый создавался
