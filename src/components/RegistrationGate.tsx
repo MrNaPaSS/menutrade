@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { GraffitiSpray } from '@/components/graffiti/Graffiti';
+import { GraffitiSpray, GraffitiStar } from '@/components/graffiti/Graffiti';
 import { useTelegram } from '@/hooks/useTelegram';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 
@@ -448,21 +448,16 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-5"
       >
-        {/* Шапка как в окнах разделов: значок и текст в строку, слева.
+        {/* Шапка как в окнах разделов: знак и текст в строку, слева.
             Крупный значок по центру со свечением занимал треть экрана и
-            отодвигал вниз всё, ради чего человек сюда пришёл */}
-        <div className="flex items-start gap-3.5">
-          <span
-            className="w-12 h-12 rounded-[15px] flex items-center justify-center flex-shrink-0
-                       border border-white/[0.07]"
-            style={{
-              background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
-              boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.1)',
-              color: 'hsl(142 76% 62%)',
-            }}
-          >
-            <GraduationCap className="w-6 h-6" />
-          </span>
+            отодвигал вниз всё, ради чего человек сюда пришёл.
+
+            Вместо шляпы - наша звезда, и без плитки под ней: плитка
+            превращала её в очередную иконку из набора, а звезда должна
+            читаться как росчерк. Стоит по центру между заголовком и
+            подписью */}
+        <div className="flex items-center gap-3">
+          <GraffitiStar className="w-12 h-12 flex-shrink-0" />
 
           <div className="min-w-0 flex-1">
             <h1 className="font-display font-bold text-[20px] tracking-tight text-foreground">
