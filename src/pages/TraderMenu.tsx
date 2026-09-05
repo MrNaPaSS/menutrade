@@ -122,60 +122,54 @@ const TraderMenu = () => {
 
         <main className="px-4 pb-8 flex justify-center">
           <div className="max-w-lg w-full mx-auto">
-            {/* Профиль слева от показателей: там записи самого человека,
-                а не материал академии, и строкой в списке инструментов
-                он читался бы как ещё один справочник */}
-            <div className="flex items-stretch gap-2">
-              <motion.button
-                onClick={() => (hasFullAccess ? setProfileOpen(true) : setLocked('профиль трейдера'))}
-                aria-label="Профиль трейдера"
-                whileTap={{ scale: 0.97 }}
-                className="relative w-[62px] flex-shrink-0 rounded-[18px] overflow-hidden
-                           flex flex-col items-center justify-center gap-1.5
-                           border border-[hsl(142_38%_24%)] transition-colors
-                           hover:border-[hsl(142_46%_30%)]
-                           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                style={{ background: 'linear-gradient(168deg, hsl(142 30% 13%), hsl(140 28% 8%))' }}
-              >
-                {/* Фото человека вместо значка: свой профиль узнают по
-                    лицу быстрее, чем по подписи */}
-                <span className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center
-                                 border border-primary/25 bg-primary/10">
-                  {user?.photo_url ? (
-                    <img src={user.photo_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <UserRound className="w-4 h-4" style={{ color: 'hsl(142 76% 62%)' }} />
-                  )}
-                </span>
+            {/* Профиль в одной панели с показателями: это один блок
+                «кто я и как иду», а двумя плитками рядом он читался как
+                два разных элемента */}
+            <StatusStrip
+              leading={
+                <motion.button
+                  onClick={() => (hasFullAccess ? setProfileOpen(true) : setLocked('профиль трейдера'))}
+                  aria-label="Профиль трейдера"
+                  whileTap={{ scale: 0.97 }}
+                  className="relative w-[74px] flex-shrink-0 flex flex-col items-center justify-center gap-1.5
+                             transition-colors hover:bg-white/[0.03] active:bg-white/[0.05]
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                >
+                  {/* Фото человека вместо значка: свой профиль узнают по
+                      лицу быстрее, чем по подписи */}
+                  <span className="relative w-9 h-9 rounded-full overflow-hidden flex items-center justify-center
+                                   border border-primary/25 bg-primary/10">
+                    {user?.photo_url ? (
+                      <img src={user.photo_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <UserRound className="w-4 h-4" style={{ color: 'hsl(142 76% 62%)' }} />
+                    )}
 
-                <span className="text-[9px] uppercase tracking-[0.06em] leading-none"
-                  style={{ color: hasFullAccess ? 'hsl(142 76% 58%)' : 'hsl(142 18% 45%)' }}>
-                  профиль
-                </span>
-
-                {/* Замок поверх фото: сразу видно, что раздел закрыт */}
-                {!hasFullAccess && (
-                  <span className="absolute inset-0 flex items-start justify-end p-1.5
-                                   bg-black/35 pointer-events-none">
-                    <Lock className="w-3.5 h-3.5" style={{ color: 'hsl(142 20% 60%)' }} />
+                    {!hasFullAccess && (
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/55">
+                        <Lock className="w-3.5 h-3.5" style={{ color: 'hsl(142 20% 62%)' }} />
+                      </span>
+                    )}
                   </span>
-                )}
-              </motion.button>
 
-              <div className="min-w-0 flex-1">
-                <StatusStrip
-                  metrics={[
-                    {
-                      value: coins?.balance ?? 0,
-                      label: 'монет',
-                      onClick: () => navigate('/referral'),
-                    },
-                    { value: streak, label: 'дней подряд' },
-                    { value: overall, label: 'курса', suffix: '%' },
-                  ]}
-                />
-              </div>
-            </div>
+                  <span
+                    className="text-[10.5px] uppercase tracking-[0.08em] leading-none"
+                    style={{ color: hasFullAccess ? 'hsl(142 76% 58%)' : 'hsl(var(--muted-foreground))' }}
+                  >
+                    профиль
+                  </span>
+                </motion.button>
+              }
+              metrics={[
+                {
+                  value: coins?.balance ?? 0,
+                  label: 'монет',
+                  onClick: () => navigate('/referral'),
+                },
+                { value: streak, label: 'дней подряд' },
+                { value: overall, label: 'курса', suffix: '%' },
+              ]}
+            />
 
             <h2
               className="text-[11px] uppercase tracking-[0.1em] mt-6 mb-2 px-1"

@@ -13,6 +13,14 @@ interface Metric {
 
 interface StatusStripProps {
     metrics: Metric[];
+    /**
+     * Ячейка перед цифрами: профиль трейдера.
+     *
+     * Внутри той же панели, а не отдельной кнопкой рядом: это один
+     * блок «кто я и как иду», и двумя плитками он читался как два
+     * разных элемента.
+     */
+    leading?: React.ReactNode;
 }
 
 const VALUE_COLOR = 'hsl(var(--foreground))';
@@ -61,7 +69,7 @@ function Figure({ metric }: { metric: Metric }) {
  * точкой внутри. Для главных чисел экрана нужен шрифт, в котором
  * цифру видно с одного взгляда.
  */
-export const StatusStrip = memo(function StatusStrip({ metrics }: StatusStripProps) {
+export const StatusStrip = memo(function StatusStrip({ metrics, leading }: StatusStripProps) {
     const reduced = useReducedMotion();
 
     return (
@@ -75,9 +83,11 @@ export const StatusStrip = memo(function StatusStrip({ metrics }: StatusStripPro
                 boxShadow: '0 10px 30px -20px hsl(0 0% 0%), inset 0 1px 0 hsl(142 45% 42% / 0.14)',
             }}
         >
+            {leading}
+
             {metrics.map((metric, index) => (
                 <span key={metric.label} className="flex flex-1 min-w-0">
-                    {index > 0 && (
+                    {(index > 0 || leading) && (
                         <span
                             aria-hidden="true"
                             className="w-px my-3"
