@@ -8,6 +8,19 @@ import {
 import { cn } from '@/lib/utils';
 
 const PANEL = 'rounded-[18px] border border-[hsl(142_26%_15%)]';
+
+/**
+ * Запасной виджет.
+ *
+ * Свой источник закрыт заголовками для чтения из браузера, и запрос
+ * может не пройти. Тогда показываем то, что работало раньше: календарь
+ * без предупреждений лучше, чем пустой раздел.
+ */
+const FALLBACK_WIDGET =
+    'https://s.tradingview.com/embed-widget/events/?locale=ru' +
+    '#%7B%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Atrue%2C' +
+    '%22width%22%3A%22100%25%22%2C%22height%22%3A%22520%22%2C' +
+    '%22importanceFilter%22%3A%22-1%2C0%2C1%22%7D';
 const PANEL_BG = { background: 'hsl(140 26% 8%)' } as const;
 
 /** За сколько минут до важного события зажигаем предупреждение */
@@ -75,16 +88,26 @@ export function EconomicCalendar() {
 
     const days = useMemo(() => groupByDay(shown), [shown]);
 
+    // Источник закрыт для чтения из браузера, поэтому запрос может не
+    // пройти. В этом случае показываем прежний виджет: раздел должен
+    // работать, даже если своих данных нет
     if (error) {
         return (
-            <div className={cn(PANEL, 'p-5 text-center')} style={PANEL_BG}>
-                <p className="text-[13px] text-muted-foreground">{error}</p>
+            <div className="space-y-2">
+                <iframe
+                    src={FALLBACK_WIDGET}
+                    title="Экономический календарь"
+                    loading="lazy"
+                    className="w-full h-[520px] border-0 block rounded-[18px] overflow-hidden"
+                    sandbox="allow-scripts allow-same-origin allow-popups"
+                />
                 <button
                     onClick={() => window.open('https://ru.tradingview.com/economic-calendar/', '_blank', 'noopener')}
-                    className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] text-primary"
+                    className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground
+                               hover:text-foreground transition-colors px-1"
                 >
-                    Открыть календарь на TradingView
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    Открыть на TradingView
+                    <ExternalLink className="w-3 h-3" />
                 </button>
             </div>
         );
@@ -129,13 +152,6 @@ export function EconomicCalendar() {
                             </p>
                         </div>
                     </div>
-
-                    {warnNow && (
-                        <p className="text-[12px] text-amber-100/85 leading-relaxed mt-3">
-                            На выходе таких данных спред расширяется, а цена ходит рывками.
-                            Открытые позиции стоит прикрыть или сдвинуть стоп заранее.
-                        </p>
-                    )}
                 </motion.div>
             )}
 
