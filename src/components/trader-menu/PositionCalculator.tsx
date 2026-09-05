@@ -153,35 +153,37 @@ export function PositionCalculator({ open, onClose }: PositionCalculatorProps) {
             open={open}
             onClose={onClose}
             title="Калькулятор сделки"
-            subtitle="Вход и стоп - на выходе уровни и деньги на каждом"
+            subtitle="Уровни и деньги на каждом"
         >
-            {/* Направление первым: от него зависит, куда лягут уровни */}
-            <div className="grid grid-cols-2 gap-2">
-                {([['long', 'Покупка', ArrowUpRight, LONG], ['short', 'Продажа', ArrowDownRight, SHORT]] as const)
-                    .map(([id, label, Icon, tone]) => {
-                        const active = direction === id;
-                        return (
-                            <button
-                                key={id}
-                                onClick={() => setDirection(id)}
-                                className={cn(
-                                    'h-11 rounded-xl flex items-center justify-center gap-2',
-                                    'text-[13.5px] font-medium border transition-colors',
-                                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
-                                    active
-                                        ? 'bg-white/[0.06] border-white/[0.14]'
-                                        : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:bg-white/[0.05]'
-                                )}
-                                style={active ? { color: tone, borderColor: `${tone.slice(0, -1)} / 0.4)` } : undefined}
-                            >
-                                <Icon className="w-4 h-4" />
-                                {label}
-                            </button>
-                        );
-                    })}
-            </div>
+            <div className={cn(PANEL, 'p-3.5 space-y-3')} style={PANEL_BG}>
+                {/* Направление внутри панели, а не над ней: отдельной
+                    полосой оно упиралось в крестик окна и отнимало
+                    высоту у уровней, ради которых сюда заходят */}
+                <div className="grid grid-cols-2 gap-2">
+                    {([['long', 'Покупка', ArrowUpRight, LONG], ['short', 'Продажа', ArrowDownRight, SHORT]] as const)
+                        .map(([id, label, Icon, tone]) => {
+                            const active = direction === id;
+                            return (
+                                <button
+                                    key={id}
+                                    onClick={() => setDirection(id)}
+                                    className={cn(
+                                        'h-10 rounded-xl flex items-center justify-center gap-2',
+                                        'text-[13px] font-medium border transition-colors',
+                                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+                                        active
+                                            ? 'bg-white/[0.06] border-white/[0.14]'
+                                            : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:bg-white/[0.05]'
+                                    )}
+                                    style={active ? { color: tone } : undefined}
+                                >
+                                    <Icon className="w-4 h-4" />
+                                    {label}
+                                </button>
+                            );
+                        })}
+                </div>
 
-            <div className={cn(PANEL, 'p-4 space-y-3.5')} style={PANEL_BG}>
                 <div className="grid grid-cols-2 gap-3">
                     <div>
                         <Label>Сумма сделки</Label>
@@ -261,9 +263,26 @@ export function PositionCalculator({ open, onClose }: PositionCalculatorProps) {
                                 <Money value={deposit} onChange={setDeposit} unit="$" ariaLabel="Депозит" />
                             </div>
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-2">
-                            Депозит нужен, чтобы показать убыток в долях счёта
-                        </p>
+                        {plan ? (
+                            <div className="mt-3 pt-1 divide-y divide-[hsl(142_22%_13%)]">
+                                <Row label="Количество" value={formatNumber(plan.units, 6)} />
+                                {plan.lossOfDeposit > 0 && (
+                                    <Row
+                                        label="Убыток от депозита"
+                                        value={`${formatNumber(plan.lossOfDeposit)} %`}
+                                        tone={plan.lossOfDeposit > 5 ? 'hsl(38 92% 62%)' : undefined}
+                                    />
+                                )}
+                                {lev > 1 && <Row label="Залог при плече" value={`${formatNumber(plan.margin)} $`} />}
+                                {plan.liquidation > 0 && (
+                                    <Row label="Ликвидация, ориентир" value={formatPrice(plan.liquidation)} />
+                                )}
+                            </div>
+                        ) : (
+                            <p className="text-[11px] text-muted-foreground mt-2">
+                                Депозит нужен, чтобы показать убыток в долях счёта
+                            </p>
+                        )}
                     </motion.div>
                 )}
             </div>
@@ -279,10 +298,10 @@ export function PositionCalculator({ open, onClose }: PositionCalculatorProps) {
                         style={PANEL_BG}
                     >
                         {[...plan.levels].reverse().map(level => (
-                            <div key={level.r} className="flex items-center gap-3 px-4 py-3">
+                            <div key={level.r} className="flex items-center gap-3 px-3.5 py-2.5">
                                 <span
-                                    className="w-11 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0
-                                               font-mono font-bold text-[13px] border border-white/[0.07]"
+                                    className="w-10 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0
+                                               font-mono font-bold text-[12.5px] border border-white/[0.07]"
                                     style={{
                                         background: 'linear-gradient(160deg, hsl(142 45% 17%), hsl(142 42% 11%))',
                                         color: LONG,
@@ -309,8 +328,8 @@ export function PositionCalculator({ open, onClose }: PositionCalculatorProps) {
 
                         <div className="flex items-center gap-3 px-4 py-3" style={{ background: 'hsl(0 40% 10% / 0.35)' }}>
                             <span
-                                className="w-11 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0
-                                           font-mono font-bold text-[12px] border border-white/[0.07]"
+                                className="w-10 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0
+                                           font-mono font-bold text-[11px] border border-white/[0.07]"
                                 style={{ background: 'hsl(0 40% 16%)', color: SHORT }}
                             >
                                 стоп
@@ -332,20 +351,6 @@ export function PositionCalculator({ open, onClose }: PositionCalculatorProps) {
                         </div>
                     </motion.div>
 
-                    <div className={cn(PANEL, 'px-4 py-2 divide-y divide-[hsl(142_22%_13%)]')} style={PANEL_BG}>
-                        <Row label="Количество" value={formatNumber(plan.units, 6)} />
-                        {plan.lossOfDeposit > 0 && (
-                            <Row
-                                label="Убыток от депозита"
-                                value={`${formatNumber(plan.lossOfDeposit)} %`}
-                                tone={plan.lossOfDeposit > 5 ? 'hsl(38 92% 62%)' : undefined}
-                            />
-                        )}
-                        {lev > 1 && <Row label="Залог при плече" value={`${formatNumber(plan.margin)} $`} />}
-                        {plan.liquidation > 0 && (
-                            <Row label="Ликвидация, ориентир" value={formatPrice(plan.liquidation)} />
-                        )}
-                    </div>
                 </>
             ) : (
                 <div className={cn(PANEL, 'p-5 text-center text-[13px] text-muted-foreground')} style={PANEL_BG}>

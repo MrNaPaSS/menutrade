@@ -43,6 +43,13 @@ interface ModalWindowProps {
     children: ReactNode;
 }
 
+/** Круглая кнопка в углу шапки: назад слева, закрыть справа */
+const CORNER_BUTTON =
+    'absolute w-8 h-8 rounded-full flex items-center justify-center ' +
+    'border border-white/[0.08] bg-white/[0.04] ' +
+    'transition-colors duration-200 hover:bg-white/[0.09] ' +
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50';
+
 export const MODAL_EASE = [0.23, 1, 0.32, 1] as const;
 export const MODAL_TITLE = 'hsl(var(--foreground))';
 export const MODAL_CAPTION = 'hsl(var(--muted-foreground))';
@@ -72,6 +79,13 @@ export function ModalWindow({
     children,
 }: ModalWindowProps) {
     const reduced = useReducedMotion();
+
+    // Полосу кнопок Telegram обходит только окно во весь экран. Окно
+    // посреди экрана и так ниже них, а с этими отступами кнопка съезжала
+    // вниз, на содержимое, - ниже собственной шапки
+    const cornerTop = fullscreen
+        ? 'top-[calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+12px)]'
+        : 'top-5';
 
     // Пока окно открыто, «назад» - и жестом от края, и кнопкой -
     // делает шаг внутри окна или закрывает его, а не уводит со
@@ -158,10 +172,7 @@ export function ModalWindow({
                                 <button
                                     onClick={onBack}
                                     aria-label="Назад"
-                                    className="absolute left-4 top-[calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+12px)] w-8 h-8 rounded-full flex items-center
-                                               justify-center border border-white/[0.08] bg-white/[0.04]
-                                               transition-colors duration-200 hover:bg-white/[0.09]
-                                               focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                    className={cn(CORNER_BUTTON, 'left-4', cornerTop)}
                                 >
                                     <ArrowLeft className="w-4 h-4" style={{ color: MODAL_CAPTION }} />
                                 </button>
@@ -171,10 +182,7 @@ export function ModalWindow({
                                 <button
                                     onClick={onClose}
                                     aria-label="Закрыть"
-                                    className="absolute right-4 top-[calc(env(safe-area-inset-top)+var(--tg-content-top,0px)+12px)] w-8 h-8 rounded-full flex items-center
-                                               justify-center border border-white/[0.08] bg-white/[0.04]
-                                               transition-colors duration-200 hover:bg-white/[0.09]
-                                               focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                    className={cn(CORNER_BUTTON, 'right-4', cornerTop)}
                                 >
                                     <X className="w-4 h-4" style={{ color: MODAL_CAPTION }} />
                                 </button>
