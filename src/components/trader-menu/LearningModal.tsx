@@ -67,6 +67,12 @@ export function LearningModal({
     // должен показывать галочку сразу, а не после переоткрытия
     const currentModule = module ? courseModules.find(m => m.id === module.id) ?? module : null;
 
+    // Доступ к выбранному направлению. Без него человек всё равно
+    // проходит вглубь до списка уроков - закрыт материал, а не витрина
+    const courseState = course ? access[course.id] ?? 'closed' : 'closed';
+    const courseOpen = courseState === 'open';
+    const awaiting = courseState === 'pending';
+
     const close = useCallback(() => {
         onClose();
         // Сбрасываем шаги после закрытия: следующий заход начинается
@@ -125,30 +131,42 @@ export function LearningModal({
                 onClose={close}
                 onBack={back}
                 title={currentModule.title}
-                subtitle={`${done} из ${currentModule.lessons.length} уроков пройдено`}
+                subtitle={courseOpen
+                    ? `${done} из ${currentModule.lessons.length} уроков пройдено`
+                    : `${currentModule.lessons.length} ${currentModule.lessons.length === 1 ? 'урок' : currentModule.lessons.length < 5 ? 'урока' : 'уроков'} в модуле`}
             >
                 <div className="rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden
                                 divide-y divide-[hsl(142_22%_13%)]"
                     style={{ background: 'hsl(140 26% 8%)' }}
                 >
-                    {currentModule.lessons.map((item, index) => (
-                        <TerminalRow
-                            key={item.id}
-                            index={index}
-                            icon={
-                                item.isCompleted
-                                    ? <GraffitiCheck className="w-[19px] h-[19px]" delay={0.06 + index * 0.04} />
-                                    : <span className="font-mono text-[13px] tabular-nums">{index + 1}</span>
-                            }
-                            tone="green"
-                            title={item.title}
-                            caption={item.duration ?? 'Урок'}
-                            value={item.isCompleted ? 'пройден' : undefined}
-                            valueLive={item.isCompleted}
-                            locked={item.isLocked}
-                            onClick={item.isLocked ? undefined : () => setLesson(item)}
-                        />
-                    ))}
+                    {currentModule.lessons.map((item, index) => {
+                        const lessonLocked = !courseOpen || item.isLocked;
+
+                        return (
+                            <TerminalRow
+                                key={item.id}
+                                index={index}
+                                icon={
+                                    item.isCompleted
+                                        ? <GraffitiCheck className="w-[19px] h-[19px]" delay={0.06 + index * 0.04} />
+                                        : <span className="font-mono text-[13px] tabular-nums">{index + 1}</span>
+                                }
+                                tone="green"
+                                title={item.title}
+                                caption={item.duration ?? 'Урок'}
+                                value={item.isCompleted ? 'пройден' : undefined}
+                                valueLive={item.isCompleted}
+                                locked={lessonLocked}
+                                onClick={
+                                    !lessonLocked ? () => setLesson(item)
+                                        // Замок из-за доступа ведёт на экран
+                                        // доступа, замок по порядку уроков -
+                                        // никуда: там просто рано
+                                        : (!courseOpen && !awaiting ? onLocked : undefined)
+                                }
+                            />
+                        );
+                    })}
                 </div>
             </ModalWindow>
         );
@@ -157,12 +175,6 @@ export function LearningModal({
     // Модули курса
     if (course) {
         const done = completedByCourse[course.id] ?? 0;
-        const courseState = access[course.id] ?? 'closed';
-        // Направление без доступа тоже открывается: человек видит, из чего
-        // оно состоит, и решает, стоит ли оно счёта. Закрыт материал, а
-        // не витрина
-        const courseOpen = courseState === 'open';
-
         return (
             <ModalWindow
                 open={open}
@@ -198,9 +210,10 @@ export function LearningModal({
                             lockedNote={courseState === 'pending'
                                 ? 'ID отправлен, ждём подтверждения'
                                 : 'Откроется после предыдущего модуля'}
-                            onClick={courseOpen
-                                ? () => setModule(item)
-                                : (courseState === 'pending' ? undefined : onLocked)}
+                            // Модуль открывается всегда, кроме ожидания
+                            // подтверждения: внутри виден список уроков,
+                            // и замки стоят уже на них
+                            onClick={awaiting ? undefined : () => setModule(item)}
                         />
                     );
                 })}
