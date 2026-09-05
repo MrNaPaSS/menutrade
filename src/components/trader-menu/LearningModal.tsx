@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { Target } from 'lucide-react';
 import { GraffitiCheck } from '@/components/graffiti/Graffiti';
 import { courses, type Course } from '@/data/courses';
 import type { AccessState, CourseId } from '@/lib/courseAccess';
@@ -18,6 +19,9 @@ interface LearningModalProps {
     onLessonComplete: (moduleId: string, lessonId: string) => void;
     /** Нажали на закрытый курс - предлагаем выбрать площадку */
     onLocked: () => void;
+    /** Стратегии - четвёртая карточка в списке направлений */
+    onOpenStrategies: () => void;
+    strategyLessons: number;
 }
 
 const STRATEGY_MODULES = new Set(['module-3', 'module-4', 'module-5']);
@@ -46,6 +50,8 @@ export function LearningModal({
     modules,
     onLessonComplete,
     onLocked,
+    onOpenStrategies,
+    strategyLessons,
 }: LearningModalProps) {
     const [course, setCourse] = useState<Course | null>(null);
     const [module, setModule] = useState<Module | null>(null);
@@ -219,6 +225,19 @@ export function LearningModal({
                     />
                 );
             })}
+
+            {/* Стратегии здесь же: это тот же материал, только без
+                последовательности - отдельной строкой в меню они
+                выглядели как другой раздел */}
+            <ModalCard
+                index={courses.length}
+                icon={<Target className="w-5 h-5" />}
+                title="Торговые стратегии"
+                description="Готовые схемы входа и выхода. Читать можно в любом порядке"
+                footnote={`${strategyLessons} разборов`}
+                action="Открыть"
+                onClick={onOpenStrategies}
+            />
         </ModalWindow>
     );
 }

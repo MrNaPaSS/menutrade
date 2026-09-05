@@ -6,7 +6,7 @@ import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
-import { ArrowLeft, Target, Activity, BookOpen, Calculator, Code, GraduationCap, Brain, Newspaper } from 'lucide-react';
+import { ArrowLeft, Activity, BookOpen, Calculator, Code, GraduationCap, Brain, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
@@ -171,23 +171,14 @@ const TraderMenu = () => {
             <div className={PANEL_CLASS} style={PANEL_STYLE}>
               <TerminalRow
                 index={0}
-                icon={<Target className="w-[18px] h-[18px]" />}
-                tone="cyan"
-                title="Торговые стратегии"
-                caption="Готовые схемы входа и выхода"
-                value={String(STRATEGY_LESSONS)}
-                onClick={() => setStrategiesOpen(true)}
+                icon={<Brain className="w-[18px] h-[18px]" />}
+                tone="green"
+                title="AI-агент"
+                caption="Разбор графика и обучение по трём рынкам"
+                onClick={() => setAgentOpen(true)}
               />
               <TerminalRow
                 index={1}
-                icon={<Activity className="w-[18px] h-[18px]" />}
-                tone="green"
-                title="Куда пойдёт график"
-                caption="Тренажёр на реальных графиках"
-                onClick={() => navigate('/guess-chart')}
-              />
-              <TerminalRow
-                index={2}
                 icon={<Newspaper className="w-[18px] h-[18px]" />}
                 tone="amber"
                 title="Последние новости"
@@ -195,7 +186,7 @@ const TraderMenu = () => {
                 onClick={() => navigate('/news')}
               />
               <TerminalRow
-                index={3}
+                index={2}
                 icon={<BookOpen className="w-[18px] h-[18px]" />}
                 tone="amber"
                 title="Библиотека"
@@ -204,29 +195,29 @@ const TraderMenu = () => {
                 onClick={() => navigate('/library')}
               />
               <TerminalRow
-                index={4}
-                icon={<Brain className="w-[18px] h-[18px]" />}
-                tone="green"
-                title="AI-агент"
-                caption="Разбор графика и обучение по трём рынкам"
-                onClick={() => setAgentOpen(true)}
-              />
-              <TerminalRow
-                index={5}
+                index={3}
                 icon={<Calculator className="w-[18px] h-[18px]" />}
                 tone="cyan"
-                title="Калькулятор позиции"
-                caption="Объём от риска и стопа - для трёх рынков"
+                title="Калькулятор сделки"
+                caption="Объём, риск и цель по одной формуле"
                 onClick={() => setCalcOpen(true)}
               />
               <TerminalRow
-                index={6}
+                index={4}
                 icon={<Code className="w-[18px] h-[18px]" />}
                 tone="violet"
                 title="Наш софт"
                 caption="Индикатор, расширение, платформа"
                 value={String(softwareItems.length)}
                 onClick={() => setSoftwareOpen(true)}
+              />
+              <TerminalRow
+                index={5}
+                icon={<Activity className="w-[18px] h-[18px]" />}
+                tone="green"
+                title="Куда пойдёт график"
+                caption="Тренажёр на реальных графиках"
+                onClick={() => navigate('/guess-chart')}
               />
             </div>
           </div>
@@ -248,9 +239,16 @@ const TraderMenu = () => {
 
       <PositionCalculator open={calcOpen} onClose={() => setCalcOpen(false)} />
 
+      {/* Стратегии живут внутри обучения: это тот же материал, только
+          без последовательности. Возврат ведёт обратно в направления,
+          а не закрывает всё разом */}
       <StrategiesModal
         open={strategiesOpen && !locked}
         onClose={() => setStrategiesOpen(false)}
+        onBackToLearning={() => {
+          setStrategiesOpen(false);
+          setCoursesOpen(true);
+        }}
         hasAccess={hasFullAccess}
         onLocked={() => setLocked('стратегии')}
       />
@@ -262,6 +260,11 @@ const TraderMenu = () => {
         modules={modules}
         onLessonComplete={completeLesson}
         onLocked={() => setLocked('обучение')}
+        onOpenStrategies={() => {
+          setCoursesOpen(false);
+          setStrategiesOpen(true);
+        }}
+        strategyLessons={STRATEGY_LESSONS}
       />
 
       {locked && <AccessDeniedScreen feature={locked} onBack={() => setLocked(null)} />}

@@ -1,115 +1,97 @@
 /**
- * Расчёт размера позиции.
+ * Расчёт сделки от риска.
  *
- * Вынесено из компонента: формулы одинаковы для всех трёх рынков в
- * части «сколько денег в риске», а дальше расходятся, и держать это
- * в разметке значит потерять их из виду при первой же правке вёрстки.
+ * Один расчёт на все рынки: цена входа, цена стопа и допустимый риск
+ * задают объём везде одинаково - в крипте, на форексе и на акциях.
+ * Разница только в том, как этот объём называют, поэтому объём выдаём
+ * сразу в трёх видах: в единицах актива, в лотах и в деньгах.
  *
- * Все функции чистые и работают с числами - никаких строк из полей
- * ввода. Разбор ввода живёт в компоненте.
+ * Вынесено из компонента: в разметке формулы теряются при первой же
+ * правке вёрстки, а проверять их надо отдельно от неё.
  */
 
-export type CalcMarket = 'binary' | 'forex' | 'crypto';
+/** Стандартный лот - сто тысяч единиц базовой валюты */
+const UNITS_PER_LOT = 100_000;
 
-/** Сколько денег в риске на одну сделку */
-export function riskMoney(deposit: number, riskPercent: number): number {
-    if (!(deposit > 0) || !(riskPercent > 0)) return 0;
-    return (deposit * riskPercent) / 100;
+export interface TradeInput {
+    deposit: number;
+    riskPercent: number;
+    entry: number;
+    stop: number;
+    /** Цель. Ноль - не задана, тогда прибыль и отношение не считаем */
+    target: number;
+    /** Плечо. Влияет только на залог и ликвидацию, не на риск */
+    leverage: number;
 }
 
-export interface BinaryResult {
-    stake: number;
-    /** Сколько убыточных сделок подряд выдержит счёт при этой ставке */
-    lossesToHalf: number;
-}
-
-/**
- * Бинарные опционы: риск равен ставке, потерять больше нельзя.
- *
- * Серия считается по фиксированной ставке от начального депозита -
- * так её считает большинство, и так её проще проверить в уме.
- */
-export function calcBinary(deposit: number, riskPercent: number): BinaryResult | null {
-    const stake = riskMoney(deposit, riskPercent);
-    if (stake <= 0) return null;
-
-    return {
-        stake,
-        lossesToHalf: Math.floor(deposit / 2 / stake),
-    };
-}
-
-export interface ForexResult {
-    lots: number;
-    /** Цена одного пункта на рассчитанном объёме */
-    pipCost: number;
+export interface TradeResult {
+    /** Направление выводим из того, где стоит стоп */
+    isLong: boolean;
+    /** Сколько денег теряем при срабатывании стопа */
     risk: number;
-}
-
-/**
- * Форекс: объём считается от расстояния до стопа и цены пункта.
- *
- * pipValue - цена пункта на один стандартный лот. Для пар с долларом
- * на конце это 10 $, для остальных зависит от котировки, поэтому
- * значение задаёт человек, а не подставляем вслепую.
- */
-export function calcForex(
-    deposit: number,
-    riskPercent: number,
-    stopPips: number,
-    pipValue: number,
-): ForexResult | null {
-    const risk = riskMoney(deposit, riskPercent);
-    if (risk <= 0 || !(stopPips > 0) || !(pipValue > 0)) return null;
-
-    const lots = risk / (stopPips * pipValue);
-    return { lots, pipCost: lots * pipValue, risk };
-}
-
-export interface CryptoResult {
-    /** Размер позиции в монетах */
+    /** Расстояние до стопа в цене и в процентах от входа */
+    stopDistance: number;
+    stopPercent: number;
+    /** Объём: в единицах актива, в лотах и в деньгах */
     units: number;
-    /** Объём позиции в деньгах */
+    lots: number;
     notional: number;
-    /** Залог при выбранном плече */
+    /** Залог при выбранном плече и во сколько раз объём больше депозита */
     margin: number;
-    /** Ориентировочная цена ликвидации, изолированная маржа, без комиссий */
+    exposure: number;
+    /** Ориентировочная цена ликвидации. Ноль - плечо не задано */
     liquidation: number;
-    stopDistancePercent: number;
-    risk: number;
+    /** Прибыль по цели и отношение к риску. Ноль - цель не задана */
+    reward: number;
+    riskReward: number;
+    /** Убытков подряд до потери половины счёта при этом риске */
+    lossesToHalf: number;
+    /** Сколько процентов счёта уносит одна такая сделка */
+    accountRiskPercent: number;
 }
 
 /**
- * Крипта: от расстояния до стопа считаем объём, от плеча - залог.
- *
- * Цена ликвидации приблизительная: биржи считают её со своими
- * комиссиями, ставкой финансирования и поддерживающей маржой. Показываем
- * ориентир, а не обещание - в интерфейсе это оговорено.
+ * Считает сделку целиком. Возвращает null, пока не хватает данных для
+ * главного - объёма: без депозита, риска, входа и стопа считать нечего.
  */
-export function calcCrypto(
-    deposit: number,
-    riskPercent: number,
-    entry: number,
-    stop: number,
-    leverage: number,
-): CryptoResult | null {
-    const risk = riskMoney(deposit, riskPercent);
-    const distance = Math.abs(entry - stop);
-    if (risk <= 0 || !(entry > 0) || distance <= 0 || !(leverage > 0)) return null;
+export function calcTrade(input: TradeInput): TradeResult | null {
+    const { deposit, riskPercent, entry, stop, target, leverage } = input;
 
-    const units = risk / distance;
-    const notional = units * entry;
+    const risk = (deposit * riskPercent) / 100;
+    const stopDistance = Math.abs(entry - stop);
+
+    if (!(deposit > 0) || !(riskPercent > 0) || !(entry > 0) || stopDistance <= 0) {
+        return null;
+    }
+
     const isLong = stop < entry;
+    const units = risk / stopDistance;
+    const notional = units * entry;
+
+    // Плечо не задано - считаем как за свои: залог равен объёму,
+    // ликвидации нет
+    const lev = leverage > 0 ? leverage : 1;
+    const margin = notional / lev;
+
+    const reward = target > 0 ? Math.abs(target - entry) * units : 0;
 
     return {
-        units,
-        notional,
-        margin: notional / leverage,
-        liquidation: isLong
-            ? entry * (1 - 1 / leverage)
-            : entry * (1 + 1 / leverage),
-        stopDistancePercent: (distance / entry) * 100,
+        isLong,
         risk,
+        stopDistance,
+        stopPercent: (stopDistance / entry) * 100,
+        units,
+        lots: units / UNITS_PER_LOT,
+        notional,
+        margin,
+        exposure: notional / deposit,
+        liquidation: lev > 1
+            ? (isLong ? entry * (1 - 1 / lev) : entry * (1 + 1 / lev))
+            : 0,
+        reward,
+        riskReward: reward > 0 ? reward / risk : 0,
+        lossesToHalf: Math.floor(deposit / 2 / risk),
+        accountRiskPercent: riskPercent,
     };
 }
 
@@ -117,7 +99,7 @@ export function calcCrypto(
 export function formatNumber(value: number, maxDecimals = 2): string {
     if (!Number.isFinite(value)) return '-';
 
-    // Мелкие величины теряют смысл при округлении до сотых: 0.0004 лота
+    // Мелкие величины теряют смысл при округлении до сотых: 0.0004
     // это не «0.00», а вполне рабочий объём
     const decimals = Math.abs(value) < 1 && value !== 0 ? Math.max(maxDecimals, 6) : maxDecimals;
 

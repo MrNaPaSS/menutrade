@@ -13,6 +13,8 @@ interface StrategiesModalProps {
     hasAccess: boolean;
     /** Нажали на закрытый разбор - предлагаем выбрать площадку */
     onLocked: () => void;
+    /** Возврат в направления обучения: стратегии открываются оттуда */
+    onBackToLearning: () => void;
 }
 
 const TOTAL = strategyModules.reduce((sum, m) => sum + m.lessons.length, 0);
@@ -39,7 +41,7 @@ function plural(n: number, one: string, few: string, many: string): string {
  * Без подтверждённого счёта блоки видны, но закрыты: человек должен
  * знать, что внутри, - иначе непонятно, ради чего открывать доступ.
  */
-export function StrategiesModal({ open, onClose, hasAccess, onLocked }: StrategiesModalProps) {
+export function StrategiesModal({ open, onClose, hasAccess, onLocked, onBackToLearning }: StrategiesModalProps) {
     const [module, setModule] = useState<Module | null>(null);
     const [lesson, setLesson] = useState<Lesson | null>(null);
 
@@ -111,6 +113,7 @@ export function StrategiesModal({ open, onClose, hasAccess, onLocked }: Strategi
         <ModalWindow
             open={open}
             onClose={close}
+            onBack={onBackToLearning}
             title="Стратегии"
             subtitle={hasAccess
                 ? `${TOTAL} ${plural(TOTAL, 'разбор', 'разбора', 'разборов')} в ${strategyModules.length} блоках. Читать можно в любом порядке`
