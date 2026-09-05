@@ -211,16 +211,19 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-5"
         >
-          <div className="flex items-start gap-3">
-            <BackButton onClick={() => setStep('welcome')} />
-            <div className="min-w-0 flex-1">
-              <h1 className="font-display font-bold text-[19px] tracking-tight text-foreground">
-                Выберите брокера
-              </h1>
-              <p className="text-[12.5px] text-muted-foreground leading-relaxed mt-1">
-                Оба открывают полный доступ. Выбирайте тот, что ближе по стилю торговли.
-              </p>
+          {/* Заголовок по центру, стрелка absolute слева: на шаге
+              выбора нет ничего, кроме двух карточек, и текст, прижатый
+              к левому краю, выглядел началом списка, а не заголовком */}
+          <div className="relative text-center px-10">
+            <div className="absolute left-0 top-0">
+              <BackButton onClick={() => setStep('welcome')} />
             </div>
+            <h1 className="font-display font-bold text-[19px] tracking-tight text-foreground">
+              Выберите брокера
+            </h1>
+            <p className="text-[12.5px] text-muted-foreground leading-relaxed mt-1.5">
+              Оба открывают полный доступ. Выбирайте тот, что ближе по стилю торговли.
+            </p>
           </div>
 
           <StepStrip current={1} />
