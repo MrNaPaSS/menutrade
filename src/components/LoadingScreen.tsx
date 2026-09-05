@@ -9,6 +9,18 @@ interface LoadingScreenProps {
 
 const basePath = () => import.meta.env.BASE_URL || '/';
 
+/** Силуэт из файла красим цветом здесь: один файл на любой оттенок */
+const maskOf = (file: string) => ({
+  WebkitMaskImage: `url(${basePath()}graffiti/${file})`,
+  maskImage: `url(${basePath()}graffiti/${file})`,
+  WebkitMaskSize: 'contain',
+  maskSize: 'contain',
+  WebkitMaskRepeat: 'no-repeat',
+  maskRepeat: 'no-repeat',
+  WebkitMaskPosition: 'center',
+  maskPosition: 'center',
+} as const);
+
 /**
  * Экран загрузки.
  *
@@ -37,22 +49,39 @@ export function LoadingScreen({ message = 'Загрузка...', imagePath }: Lo
               форму контейнера, и на экране двигался зелёный квадрат.
               Солнце нарисовано тем же рваным краем, что и кромки полос,
               и хранится маской: цвет задаётся здесь */}
+          {/* Деньги пылью: сильно размытые $ и zł на 7%. Именно
+              размытыми - читаемые значки валют превращают экран в
+              обещание лёгких денег, а у нас академия про обратное */}
           <motion.div
             aria-hidden="true"
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-                       w-[135%] aspect-square pointer-events-none"
+            className="absolute left-1/2 top-1/2 w-[190%] aspect-square pointer-events-none"
             style={{
               background: 'hsl(142 76% 52%)',
-              WebkitMaskImage: `url(${basePath()}graffiti/torn-sun.png)`,
-              maskImage: `url(${basePath()}graffiti/torn-sun.png)`,
-              WebkitMaskSize: 'contain',
-              maskSize: 'contain',
-              WebkitMaskRepeat: 'no-repeat',
-              maskRepeat: 'no-repeat',
-              WebkitMaskPosition: 'center',
-              maskPosition: 'center',
+              ...maskOf('money-dust.png'),
             }}
-            animate={{ scale: [1, 1.06, 1], opacity: [0.26, 0.4, 0.26], rotate: [0, 360] }}
+            initial={{ x: '-50%', y: '-50%', opacity: 0 }}
+            animate={{ x: '-50%', y: '-50%', opacity: [0.05, 0.09, 0.05] }}
+            transition={{ opacity: { duration: 7, repeat: Infinity, ease: 'easeInOut' } }}
+          />
+
+          <motion.div
+            aria-hidden="true"
+            className="absolute left-1/2 top-1/2 w-[135%] aspect-square pointer-events-none"
+            style={{
+              background: 'hsl(142 76% 52%)',
+              ...maskOf('torn-sun.png'),
+            }}
+            /* Смещение к центру задаём через x/y самого motion, а не
+               классами -translate-*: motion собирает transform сам и
+               затирает классы - солнце уезжало вправо вниз */
+            initial={{ x: '-50%', y: '-50%' }}
+            animate={{
+              x: '-50%',
+              y: '-50%',
+              scale: [1, 1.06, 1],
+              opacity: [0.2, 0.32, 0.2],
+              rotate: [0, 360],
+            }}
             transition={{
               scale: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
               opacity: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
