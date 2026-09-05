@@ -254,31 +254,16 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                     >
                         <button
                             onClick={() => setShowModeSelector(!showModeSelector)}
-                            className="flex flex-col items-center text-center px-3 py-0.5 rounded-lg
-                                       transition-colors hover:bg-white/[0.05]
+                            className="flex items-center gap-1.5 px-3 py-0.5 rounded-lg
+                                       font-display font-bold text-[17px] tracking-tight
+                                       neon-text-subtle transition-colors hover:bg-white/[0.05]
                                        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                         >
-                            <span className="text-sm neon-text-subtle flex items-center gap-1.5">
-                                AI {currentMode === 'teacher' ? 'Ментор' : 'Аналитик'}
-                                <ChevronDown className={cn(
-                                    'w-3.5 h-3.5 transition-transform',
-                                    showModeSelector && 'rotate-180'
-                                )} />
-                            </span>
-                            <span className="text-[9.5px] text-muted-foreground flex items-center gap-1">
-                                {currentMode === 'teacher' ? (
-                                    <><GraduationCap className="w-3 h-3" /> Обучение</>
-                                ) : (
-                                    <><BarChart3 className="w-3 h-3" /> Анализ рынка</>
-                                )}
-                                {/* Рынок видно сразу: иначе непонятно, по чьим
-                                    правилам агент посчитает сделку */}
-                                <span className="opacity-60">
-                                    · {currentMarket === 'auto'
-                                        ? 'любой рынок'
-                                        : MARKET_META[currentMarket].label.toLowerCase()}
-                                </span>
-                            </span>
+                            AI {currentMode === 'teacher' ? 'Ментор' : 'Аналитик'}
+                            <ChevronDown className={cn(
+                                'w-4 h-4 transition-transform',
+                                showModeSelector && 'rotate-180'
+                            )} />
                         </button>
 
                         <ModeSelector
@@ -294,7 +279,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                     <div className="relative flex items-center justify-between">
                         {/* Слева: назад в академию и фото - оно же вход в
                             историю чатов */}
-                        <div className="flex items-center gap-1.5 min-w-[80px]">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
                             {onBack && (
                                 <button
                                     onClick={onBack}
@@ -328,6 +313,24 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                                     </span>
                                 )}
                             </button>
+
+                            {/* Режим и рынок - вровень с фото и стрелкой:
+                                в полосе кнопок Telegram помещается только
+                                название, а строкой ниже есть место */}
+                            <span className="flex items-center gap-1 min-w-0 text-[11px] text-muted-foreground">
+                                {currentMode === 'teacher' ? (
+                                    <><GraduationCap className="w-3.5 h-3.5 flex-shrink-0" /> Обучение</>
+                                ) : (
+                                    <><BarChart3 className="w-3.5 h-3.5 flex-shrink-0" /> Анализ рынка</>
+                                )}
+                                {/* Рынок видно сразу: иначе непонятно, по чьим
+                                    правилам агент посчитает сделку */}
+                                <span className="opacity-60 truncate">
+                                    · {currentMarket === 'auto'
+                                        ? 'любой рынок'
+                                        : MARKET_META[currentMarket].label.toLowerCase()}
+                                </span>
+                            </span>
                         </div>
 
 

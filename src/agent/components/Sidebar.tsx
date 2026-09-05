@@ -1,7 +1,7 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Trash2, MessageSquare } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { MessageSquare, Plus, Trash2, X } from 'lucide-react';
 import { ChatSession } from '@/agent/hooks/useChatHistory';
-import { GraffitiSpray } from '@/components/graffiti/Graffiti';
+import { GraffitiSpray, GraffitiTornPanel } from '@/components/graffiti/Graffiti';
 import { cn } from '@/lib/utils';
 
 import type { TelegramUser } from '@/hooks/useTelegram';
@@ -23,6 +23,19 @@ const GROUPS: Array<[string, string]> = [
     ['analyst', 'Аналитик'],
 ];
 
+const PANEL_BG = 'hsl(140 26% 8%)';
+
+/**
+ * История чатов.
+ *
+ * Оформлена как остальные разделы: сплошные панели вместо стекла,
+ * строки терминала вместо плиток, рваная кромка сверху и снизу - те же,
+ * что у шапки и поля ввода.
+ *
+ * Осталась шторкой, а не окном: это навигация по чатам сбоку от
+ * переписки, и открывается она жестом от края. Окно посреди экрана
+ * оборвало бы этот жест.
+ */
 export function Sidebar({
     isOpen,
     onClose,
@@ -33,6 +46,8 @@ export function Sidebar({
     onDeleteSession,
     user,
 }: SidebarProps) {
+    const reduced = useReducedMotion();
+
     const handleNewChat = () => {
         onNewChat();
         onClose();
@@ -48,158 +63,183 @@ export function Sidebar({
         const now = new Date();
         const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
-        if (diffDays === 0) return 'Сегодня';
-        if (diffDays === 1) return 'Вчера';
+        if (diffDays === 0) return 'сегодня';
+        if (diffDays === 1) return 'вчера';
         if (diffDays < 7) return `${diffDays} дн. назад`;
         return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
     };
+
+    const name = [user?.first_name, user?.last_name].filter(Boolean).join(' ') || 'Трейдер';
 
     return (
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50"
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0 bg-black/72 z-50"
                         onClick={onClose}
                     />
 
-                    {/* Sidebar */}
                     <motion.div
                         initial={{ x: '-100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '-100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="absolute left-0 top-0 bottom-0 w-[280px] max-w-[80%] bg-background border-r border-border/30 z-50 flex flex-col"
-                        /* Отступ сверху считает и системную строку, и полосу
-                           кнопок Telegram: без --tg-content-top шапка шторки
-                           уезжает под «Закрыть» */
+                        transition={reduced
+                            ? { duration: 0.15 }
+                            : { type: 'spring', damping: 26, stiffness: 320 }}
+                        className="absolute left-0 top-0 bottom-0 w-[290px] max-w-[82%] z-50
+                                   flex flex-col border-r border-[hsl(142_26%_15%)]"
                         style={{
-                            paddingTop:
-                                'calc(env(safe-area-inset-top, 0px) + var(--tg-content-top, 0px))',
+                            background: 'linear-gradient(180deg, hsl(142 22% 10%) 0%, hsl(140 28% 6%) 100%)',
+                            // Полоса кнопок Telegram: без неё шапка шторки
+                            // уезжает под «Закрыть»
+                            paddingTop: 'calc(env(safe-area-inset-top, 0px) + var(--tg-content-top, 0px))',
                             paddingBottom: 'env(safe-area-inset-bottom, 0px)',
                         }}
                     >
-                        {/* Header */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-border/30">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 border border-primary/30 flex items-center justify-center overflow-hidden relative font-bold text-primary text-xs">
-                                    {user?.photo_url ? (
-                                        <img
-                                            src={user.photo_url}
-                                            alt={user.first_name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <span>{user?.first_name?.[0] || 'U'}</span>
-                                    )}
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-semibold truncate max-w-[150px]">
-                                        {user?.first_name || 'Пользователь'} {user?.last_name || ''}
+                        {/* Кто вы */}
+                        <div className="relative flex items-center gap-3 px-4 py-3.5 flex-shrink-0">
+                            <GraffitiTornPanel side="top" className="-bottom-3" />
+
+                            <span className="relative w-10 h-10 rounded-full flex-shrink-0 p-[3px]
+                                             flex items-center justify-center overflow-hidden
+                                             bg-background/60 border border-border/30">
+                                {user?.photo_url ? (
+                                    <img src={user.photo_url} alt="" className="w-full h-full rounded-full object-cover" />
+                                ) : (
+                                    <span className="font-display font-bold text-primary text-sm">
+                                        {name[0]?.toUpperCase() ?? 'Т'}
                                     </span>
-                                    {user?.username && (
-                                        <span className="text-[10px] text-muted-foreground">@{user.username}</span>
-                                    )}
-                                </div>
+                                )}
+                            </span>
+
+                            <div className="relative min-w-0 flex-1">
+                                <p className="text-[14px] font-semibold text-foreground truncate">{name}</p>
+                                {user?.username && (
+                                    <p className="text-[11px] text-muted-foreground truncate">@{user.username}</p>
+                                )}
                             </div>
+
                             <button
                                 onClick={onClose}
-                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
+                                aria-label="Закрыть"
+                                className="relative w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                                           border border-white/[0.08] bg-white/[0.04] text-muted-foreground
+                                           transition-colors hover:bg-white/[0.09] hover:text-foreground
+                                           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        {/* New Chat Button */}
-                        <div className="p-3 pt-2">
+                        <div className="px-3 pt-3 pb-2 flex-shrink-0">
                             <button
                                 onClick={handleNewChat}
-                                className="w-full py-2.5 px-4 rounded-xl btn-premium text-primary-foreground font-medium text-sm flex items-center justify-center gap-2"
+                                className="w-full min-h-[42px] rounded-xl flex items-center justify-center gap-2
+                                           bg-primary text-primary-foreground font-semibold text-[13.5px]
+                                           transition-transform duration-100 active:scale-[0.98]
+                                           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                             >
                                 <Plus className="w-4 h-4" />
                                 Новый чат
                             </button>
                         </div>
 
-                        {/* Chat List */}
-                        <div className="flex-1 overflow-y-auto px-3 pb-3">
+                        <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-3">
                             {GROUPS.map(([mode, groupTitle]) => {
-                                const groupSessions = sessions.filter(
-                                    (s) => (s.mode || 'teacher') === mode
-                                );
+                                const groupSessions = sessions.filter(s => (s.mode || 'teacher') === mode);
                                 if (groupSessions.length === 0) return null;
 
                                 return (
-                            <div key={mode} className="space-y-1 mb-4">
-                                <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                    {groupTitle} · {groupSessions.length}
-                                </p>
-                                {groupSessions.map((session) => (
-                                    <motion.div
-                                        key={session.id}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className={cn(
-                                            'group relative rounded-xl p-3 cursor-pointer transition-colors',
-                                            session.id === activeSessionId
-                                                ? 'bg-primary/10 border border-primary/30'
-                                                : 'hover:bg-white/5 border border-transparent'
-                                        )}
-                                        onClick={() => handleSelectSession(session.id)}
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            <div className={cn(
-                                                'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
-                                                session.id === activeSessionId
-                                                    ? 'bg-primary/20 text-primary'
-                                                    : 'bg-muted/30 text-muted-foreground'
-                                            )}>
-                                                <MessageSquare className="w-4 h-4" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium truncate text-foreground">
-                                                    {session.title}
-                                                </p>
-                                                <p className="text-[10px] text-muted-foreground mt-0.5">
-                                                    {session.messages.length} сообщ. · {formatDate(session.updatedAt)}
-                                                </p>
-                                            </div>
-                                        </div>
+                                    <div key={mode}>
+                                        <p className="px-1 pb-1.5 text-[10px] font-semibold uppercase
+                                                      tracking-[0.09em] text-muted-foreground">
+                                            {groupTitle} · {groupSessions.length}
+                                        </p>
 
-                                        {/* Delete button */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onDeleteSession(session.id);
-                                            }}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                                        <div className="rounded-[16px] border border-[hsl(142_26%_15%)] overflow-hidden
+                                                        divide-y divide-[hsl(142_22%_13%)]"
+                                            style={{ background: PANEL_BG }}
                                         >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    </motion.div>
-                                ))}
-                            </div>
+                                            {groupSessions.map(session => {
+                                                const active = session.id === activeSessionId;
+
+                                                return (
+                                                    <div
+                                                        key={session.id}
+                                                        className={cn(
+                                                            'group relative flex items-center gap-2.5 px-3 py-2.5',
+                                                            'transition-colors',
+                                                            active ? 'bg-primary/[0.09]' : 'hover:bg-white/[0.035]'
+                                                        )}
+                                                    >
+                                                        <button
+                                                            onClick={() => handleSelectSession(session.id)}
+                                                            className="flex items-center gap-2.5 min-w-0 flex-1 text-left
+                                                                       focus:outline-none focus-visible:ring-2
+                                                                       focus-visible:ring-primary/40 rounded-lg"
+                                                        >
+                                                            <span
+                                                                className={cn(
+                                                                    'w-8 h-8 rounded-[10px] flex items-center justify-center',
+                                                                    'flex-shrink-0 border border-white/[0.07]'
+                                                                )}
+                                                                style={{
+                                                                    background: active
+                                                                        ? 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 13%))'
+                                                                        : 'hsl(142 20% 12%)',
+                                                                    color: active ? 'hsl(142 76% 62%)' : 'hsl(142 15% 42%)',
+                                                                }}
+                                                            >
+                                                                <MessageSquare className="w-4 h-4" />
+                                                            </span>
+
+                                                            <span className="min-w-0 flex-1">
+                                                                <span className="block text-[13.5px] font-medium truncate text-foreground">
+                                                                    {session.title}
+                                                                </span>
+                                                                <span className="block text-[11px] text-muted-foreground tabular-nums">
+                                                                    {session.messages.length} сообщ. · {formatDate(session.updatedAt)}
+                                                                </span>
+                                                            </span>
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => onDeleteSession(session.id)}
+                                                            aria-label="Удалить чат"
+                                                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                                                                       text-muted-foreground transition-colors
+                                                                       hover:bg-destructive/10 hover:text-destructive
+                                                                       focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
                                 );
                             })}
 
                             {/* За пустотой мазок: перекрывать тут нечего,
                                 а голая строка по центру выглядит как сбой */}
                             {sessions.length === 0 && (
-                                <div className="relative text-center py-12 text-muted-foreground text-sm">
+                                <div className="relative text-center py-12 text-[13px] text-muted-foreground">
                                     <GraffitiSpray className="inset-0" opacity={0.12} />
-                                    <span className="relative">Нет сохранённых чатов</span>
+                                    <span className="relative">Пока ни одного чата</span>
                                 </div>
                             )}
                         </div>
 
-                        {/* Footer */}
-                        <div className="p-3 border-t border-border/30 text-center">
-                            <p className="text-[10px] text-muted-foreground">
-                                AI Ментор Академия Здравого Трейдера
+                        <div className="relative px-3 py-3 flex-shrink-0 text-center">
+                            <GraffitiTornPanel side="bottom" className="-top-3" />
+                            <p className="relative text-[10.5px] text-muted-foreground">
+                                AI Ментор Академии здравого трейдера
                             </p>
                         </div>
                     </motion.div>
