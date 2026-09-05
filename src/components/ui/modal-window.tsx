@@ -117,10 +117,19 @@ export function ModalWindow({
     return createPortal(
         <AnimatePresence>
             {open && (
-                <div className={cn(
-                    "fixed inset-0 z-[90] flex items-center justify-center",
-                    fullscreen ? "p-0" : "p-4"
-                )}>
+                <div
+                    className={cn(
+                        "fixed inset-x-0 z-[90] flex items-center justify-center",
+                        fullscreen ? "p-0" : "p-4"
+                    )}
+                    /* Держимся видимой части экрана, а не всего окна: при
+                       открытой клавиатуре окно центрировалось по области,
+                       половина которой уже под клавиатурой, и уезжало вниз */
+                    style={{
+                        top: 'var(--app-vtop, 0px)',
+                        height: 'var(--app-vh, 100dvh)',
+                    }}
+                >
                     <motion.div
                         className="absolute inset-0 bg-black/72 backdrop-blur-[6px]"
                         initial={{ opacity: 0 }}
@@ -140,7 +149,7 @@ export function ModalWindow({
                                 ? "w-full h-full rounded-none border-0"
                                 : cn(
                                     "w-full rounded-[26px]",
-                                    wide ? "max-w-3xl h-[86dvh] md:h-[80vh]" : "max-w-md max-h-[82dvh]"
+                                    wide ? "max-w-3xl h-[86%]" : "max-w-md max-h-[92%]"
                                 )
                         )}
                         style={{

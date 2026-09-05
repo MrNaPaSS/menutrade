@@ -19,6 +19,7 @@ import { usePrefetchRoutes } from "./hooks/usePrefetchRoutes";
 import { BackNavigationProvider } from "./contexts/BackNavigationContext";
 import { SwipeBackGesture } from "./components/SwipeBackGesture";
 import { installTapHaptics } from "./lib/haptics";
+import { installFocusScroll, installViewportVars } from "./lib/viewport";
 
 // Экраны грузятся по требованию. Раньше приложение одним куском
 // тянуло все страницы разом - вместе с данными курса, стратегиями и
@@ -50,6 +51,11 @@ const RoutedContent = () => {
   // Вибро-отклик на нажатия по всему приложению: один обработчик на
   // документе вместо вызова в каждой кнопке
   useEffect(installTapHaptics, []);
+
+  // Видимая часть экрана при открытой клавиатуре и подтяжка поля под
+  // курсором. Оба нужны везде, где есть ввод, поэтому ставятся один раз
+  useEffect(installViewportVars, []);
+  useEffect(installFocusScroll, []);
 
   const goBack = () => {
     if (location.pathname === '/home' || location.pathname === '/') return;
