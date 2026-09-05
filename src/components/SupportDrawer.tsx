@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, MessageCircle } from 'lucide-react';
-import {
-    Drawer,
-    DrawerContent,
-    DrawerDescription,
-    DrawerHeader,
-    DrawerTitle,
-} from '@/components/ui/drawer';
+import { ModalWindow } from '@/components/ui/modal-window';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const MANAGER_URL = 'https://t.me/NMNH_MANAGER';
 
@@ -58,6 +54,8 @@ const FAQ = [
     },
 ];
 
+const PANEL_BG = { background: 'hsl(140 26% 8%)' } as const;
+
 function openManager(): void {
     const tg = (window as { Telegram?: { WebApp?: { openTelegramLink?: (u: string) => void } } })
         .Telegram?.WebApp;
@@ -73,74 +71,73 @@ interface SupportDrawerProps {
     onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Поддержка.
+ *
+ * Окно, как и остальные разделы. Вопросы раскрываются на месте: ответы
+ * короткие, и уводить ради каждого на отдельный шаг незачем - человек
+ * потеряет список из виду.
+ */
 export function SupportDrawer({ open, onOpenChange }: SupportDrawerProps) {
     const [openId, setOpenId] = useState<string | null>(null);
 
     return (
-        <Drawer open={open} onOpenChange={onOpenChange}>
-            <DrawerContent className="h-[70vh] border-primary/20 bg-background/95 backdrop-blur-xl">
-                <div className="mx-auto flex h-full w-full max-w-md flex-col pb-6">
-                    <DrawerHeader className="text-center">
-                        <DrawerTitle className="font-display text-xl">Поддержка</DrawerTitle>
-                        <DrawerDescription className="text-xs">
-                            Ответы на частые вопросы - или напиши напрямую
-                        </DrawerDescription>
-                    </DrawerHeader>
+        <ModalWindow
+            open={open}
+            onClose={() => onOpenChange(false)}
+            title="Поддержка"
+            subtitle="Ответы на частые вопросы - или напиши напрямую"
+        >
+            <Button className="w-full min-h-[44px]" onClick={openManager}>
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Написать в поддержку
+            </Button>
 
-                    <div className="px-4 pb-3">
+            {FAQ.map(item => {
+                const isOpen = openId === item.id;
+
+                return (
+                    <div
+                        key={item.id}
+                        className="rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden"
+                        style={PANEL_BG}
+                    >
                         <button
-                            onClick={openManager}
-                            className="w-full rounded-xl bg-primary text-primary-foreground font-medium
-                                       py-3 flex items-center justify-center gap-2
-                                       transition-transform duration-100 active:scale-[0.98]"
+                            onClick={() => setOpenId(isOpen ? null : item.id)}
+                            aria-expanded={isOpen}
+                            className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left
+                                       transition-colors hover:bg-white/[0.035]
+                                       focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
+                                       focus-visible:ring-inset"
                         >
-                            <MessageCircle className="w-4 h-4" />
-                            Написать в поддержку
+                            <span className="text-[14px] font-medium text-foreground">{item.question}</span>
+                            <ChevronDown
+                                className={cn(
+                                    'w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform duration-200',
+                                    isOpen && 'rotate-180'
+                                )}
+                            />
                         </button>
-                    </div>
 
-                    <div className="flex-1 overflow-y-auto px-4 space-y-2">
-                        {FAQ.map((item) => {
-                            const isOpen = openId === item.id;
-                            return (
-                                <div
-                                    key={item.id}
-                                    className="glass-card rounded-xl border border-border/40 overflow-hidden"
+                        <AnimatePresence initial={false}>
+                            {isOpen && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                                    className="overflow-hidden"
                                 >
-                                    <button
-                                        onClick={() => setOpenId(isOpen ? null : item.id)}
-                                        aria-expanded={isOpen}
-                                        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
-                                    >
-                                        <span className="text-sm font-medium">{item.question}</span>
-                                        <ChevronDown
-                                            className={`w-4 h-4 flex-shrink-0 text-muted-foreground
-                                                        transition-transform duration-200
-                                                        ${isOpen ? 'rotate-180' : ''}`}
-                                        />
-                                    </button>
-
-                                    <AnimatePresence initial={false}>
-                                        {isOpen && (
-                                            <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                                                className="overflow-hidden"
-                                            >
-                                                <p className="px-4 pb-3 text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
-                                                    {item.answer}
-                                                </p>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            );
-                        })}
+                                    <p className="px-4 pb-3.5 text-[12.5px] text-muted-foreground
+                                                  leading-relaxed whitespace-pre-line">
+                                        {item.answer}
+                                    </p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
-                </div>
-            </DrawerContent>
-        </Drawer>
+                );
+            })}
+        </ModalWindow>
     );
 }

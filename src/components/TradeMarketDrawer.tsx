@@ -1,13 +1,9 @@
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Bitcoin, TrendingUp } from 'lucide-react';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+import { useCallback, useState } from 'react';
+import { Bitcoin, Check, TrendingUp } from 'lucide-react';
+import { ModalWindow } from '@/components/ui/modal-window';
+import { ModalCard } from '@/components/trader-menu/ModalCard';
+import { TerminalRow } from '@/components/trader-menu/TerminalRow';
+import { Button } from '@/components/ui/button';
 import { platformLinks } from '@/data/traderMenu';
 
 type Market = 'forex' | 'crypto';
@@ -66,6 +62,9 @@ const MARKET_META: Record<Market, { label: string; hint: string; icon: typeof Tr
   crypto: { label: 'CRYPTO', hint: 'Биткоин, альткоины, фьючерсы', icon: Bitcoin },
 };
 
+const PANEL = 'rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden divide-y divide-[hsl(142_22%_13%)]';
+const PANEL_BG = { background: 'hsl(140 26% 8%)' } as const;
+
 function openLink(url: string): void {
   const tg = (window as { Telegram?: { WebApp?: { openLink?: (u: string) => void } } }).Telegram?.WebApp;
   if (tg?.openLink) {
@@ -80,146 +79,120 @@ interface TradeMarketDrawerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Где торговать.
+ *
+ * Окно с шагами, как обучение и стратегии: рынок, площадка, описание.
+ * Раньше поднималась шторка снизу - на телефоне в неё помещалось три
+ * карточки, а шаг назад приходилось рисовать отдельной ссылкой внизу
+ * списка. У окна шаг назад в шапке, и он же ловит жест от края.
+ */
 export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps) {
   const [market, setMarket] = useState<Market | null>(null);
   const [broker, setBroker] = useState<Broker | null>(null);
 
-  // Сбрасываем шаги при закрытии, чтобы шторка всегда открывалась с начала
-  const handleOpenChange = (next: boolean) => {
-    onOpenChange(next);
-    if (!next) {
-      setTimeout(() => {
-        setMarket(null);
-        setBroker(null);
-      }, 200);
-    }
-  };
+  const close = useCallback(() => {
+    onOpenChange(false);
+    // Сбрасываем шаги после закрытия: следующий заход начинается с рынков
+    setTimeout(() => {
+      setMarket(null);
+      setBroker(null);
+    }, 300);
+  }, [onOpenChange]);
 
-  const step = broker ? 'broker' : market ? 'list' : 'markets';
-
-  const title = broker ? broker.name : market ? MARKET_META[market].label : 'Где будем торговать';
-  const hint = broker
-    ? 'Открой счёт по нашей ссылке - так аккаунт привяжется к Академии'
-    : market
-      ? 'Выбери площадку'
-      : 'Выбери рынок - покажу подходящие площадки';
-
-  return (
-    <Drawer open={open} onOpenChange={handleOpenChange}>
-      <DrawerContent className="h-[60vh] border-primary/20 bg-background/95 backdrop-blur-xl">
-        <div className="mx-auto flex h-full w-full max-w-md flex-col pb-6">
-          <DrawerHeader className="text-center">
-            <DrawerTitle className="font-display text-xl">{title}</DrawerTitle>
-            <DrawerDescription className="text-xs">{hint}</DrawerDescription>
-          </DrawerHeader>
-
-          <div className="flex-1 overflow-y-auto px-4">
-            <AnimatePresence initial={false}>
-              <motion.div
-                  key={step}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
-                  className="space-y-3"
-                >
-                  {step === 'markets' && (Object.keys(MARKET_META) as Market[]).map((key) => {
-                    const meta = MARKET_META[key];
-                    const Icon = meta.icon;
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => setMarket(key)}
-                        className="w-full glass-card neon-border rounded-xl p-4 flex items-center gap-3 text-left
-                                   transition-transform duration-100 active:scale-[0.98]"
-                      >
-                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/25 to-accent/20
-                                        border border-primary/30 flex items-center justify-center flex-shrink-0">
-                          <Icon className="w-5 h-5 text-primary" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-sm">{meta.label}</p>
-                          <p className="text-xs text-muted-foreground">{meta.hint}</p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      </button>
-                    );
-                  })}
-
-                  {step === 'list' && market && BROKERS[market].map((item) => (
-                    <button
-                      key={item.name}
-                      onClick={() => setBroker(item)}
-                      className="w-full glass-card neon-border rounded-xl p-4 text-left
-                                 transition-transform duration-100 active:scale-[0.98]"
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <p className="font-bold text-sm">{item.name}</p>
-                        <span className="text-[10px] font-mono text-primary border border-primary/30
-                                         rounded-full px-2 py-0.5 flex-shrink-0">
-                          {item.minDeposit}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">{item.tagline}</p>
-                    </button>
-                  ))}
-
-                  {step === 'list' && (
-                    <button
-                      onClick={() => setMarket(null)}
-                      className="w-full flex items-center justify-center gap-1 text-sm text-muted-foreground
-                                 py-2 transition-colors hover:text-foreground"
-                    >
-                      <ArrowLeft className="w-4 h-4" /> К выбору рынка
-                    </button>
-                  )}
-
-                  {step === 'broker' && broker && (
-                    <>
-                  <div className="glass-card neon-border rounded-xl p-4">
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <p className="text-xs text-muted-foreground">Минимальный депозит</p>
-                      <span className="text-xs font-mono text-primary border border-primary/30
-                                       rounded-full px-2 py-0.5">
-                        {broker.minDeposit}
-                      </span>
-                    </div>
-
-                    <ul className="space-y-2">
-                      {broker.pitch.map((line) => (
-                        <li key={line} className="text-xs text-muted-foreground flex gap-2">
-                          <span className="text-primary flex-shrink-0">•</span>
-                          {line}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <button
-                    onClick={() => openLink(broker.url)}
-                    className="w-full rounded-xl bg-primary text-primary-foreground font-medium
-                               py-3 transition-transform duration-100 active:scale-[0.98]"
-                  >
-                    Зарегистрироваться
-                  </button>
-
-                  <button
-                    onClick={() => setBroker(null)}
-                    className="w-full flex items-center justify-center gap-1 text-sm text-muted-foreground
-                               py-2 transition-colors hover:text-foreground"
-                  >
-                    <ArrowLeft className="w-4 h-4" /> К площадкам
-                  </button>
-                    </>
-                  )}
-                </motion.div>
-            </AnimatePresence>
-
-            <p className="text-[11px] text-muted-foreground text-center mt-4">
-              Регистрируйся по нашей ссылке - иначе аккаунт не привяжется к Академии
-            </p>
+  // Описание площадки
+  if (broker) {
+    return (
+      <ModalWindow
+        open={open}
+        onClose={close}
+        onBack={() => setBroker(null)}
+        title={broker.name}
+        subtitle="Открой счёт по нашей ссылке - так аккаунт привяжется к Академии"
+      >
+        <div className="rounded-[18px] border border-[hsl(142_26%_15%)] p-4" style={PANEL_BG}>
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="text-[12px] text-muted-foreground">Минимальный депозит</span>
+            <span className="font-mono font-bold text-[13px] tabular-nums text-primary">
+              {broker.minDeposit}
+            </span>
           </div>
+
+          <ul className="space-y-2">
+            {broker.pitch.map(line => (
+              <li key={line} className="flex items-start gap-2 text-[12.5px] text-muted-foreground">
+                <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-      </DrawerContent>
-    </Drawer>
+
+        <Button className="w-full min-h-[44px]" onClick={() => openLink(broker.url)}>
+          Зарегистрироваться
+        </Button>
+
+        <p className="text-[11.5px] text-muted-foreground leading-relaxed px-1 pb-1">
+          Регистрируйся по нашей ссылке - иначе аккаунт не привяжется к Академии, и доступ
+          не откроется.
+        </p>
+      </ModalWindow>
+    );
+  }
+
+  // Площадки рынка
+  if (market) {
+    return (
+      <ModalWindow
+        open={open}
+        onClose={close}
+        onBack={() => setMarket(null)}
+        title={MARKET_META[market].label}
+        subtitle={MARKET_META[market].hint}
+      >
+        <div className={PANEL} style={PANEL_BG}>
+          {BROKERS[market].map((item, index) => (
+            <TerminalRow
+              key={item.name}
+              index={index}
+              icon={<span className="font-mono text-[13px]">{item.name[0]}</span>}
+              tone="green"
+              title={item.name}
+              caption={item.tagline}
+              value={item.minDeposit}
+              onClick={() => setBroker(item)}
+            />
+          ))}
+        </div>
+      </ModalWindow>
+    );
+  }
+
+  // Рынки
+  return (
+    <ModalWindow
+      open={open}
+      onClose={close}
+      title="Где будем торговать"
+      subtitle="Выбери рынок - покажу подходящие площадки"
+    >
+      {(Object.keys(MARKET_META) as Market[]).map((key, index) => {
+        const meta = MARKET_META[key];
+        const Icon = meta.icon;
+
+        return (
+          <ModalCard
+            key={key}
+            index={index}
+            icon={<Icon className="w-5 h-5" />}
+            title={meta.label}
+            description={meta.hint}
+            footnote={`${BROKERS[key].length} ${BROKERS[key].length === 1 ? 'площадка' : 'площадки'}`}
+            action="Открыть"
+            onClick={() => setMarket(key)}
+          />
+        );
+      })}
+    </ModalWindow>
   );
 }
