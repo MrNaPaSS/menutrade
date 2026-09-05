@@ -43,7 +43,7 @@ export function Header() {
       <motion.img
         src={`${basePath()}nmnh_graffiti.png`}
         alt="NO MONEY - NO HONEY"
-        className="block mx-auto w-[min(132px,36vw)] h-auto object-contain select-none"
+        className="block mx-auto w-[min(96px,26vw)] h-auto object-contain select-none"
         draggable={false}
         initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -51,7 +51,7 @@ export function Header() {
       />
 
       <motion.div
-        className="flex items-center justify-between gap-2 mt-1"
+        className="flex items-center justify-between gap-2 mt-0.5"
         initial={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.06, ease: [0.23, 1, 0.32, 1] }}

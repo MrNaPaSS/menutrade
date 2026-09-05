@@ -12,6 +12,8 @@ import { useCountUp } from '@/hooks/useCountUp';
 import { courses } from '@/data/courses';
 import { cn } from '@/lib/utils';
 
+const basePath = () => import.meta.env.BASE_URL || '/';
+
 const CARD_STYLE = {
   background: 'linear-gradient(162deg, hsl(142 20% 12%) 0%, hsl(140 26% 7%) 62%)',
   boxShadow: '0 12px 30px -18px hsl(0 0% 0% / 0.9), inset 0 1px 0 hsl(142 40% 40% / 0.14)',
@@ -164,7 +166,7 @@ const Home = () => {
                   <span className="text-[10px] text-muted-foreground mt-0.5">пройдено</span>
                 </ProgressRing>
 
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <h2 className="font-semibold text-[15.5px] text-foreground">Ваш прогресс</h2>
                   <p className="text-[12px] text-muted-foreground mt-0.5">
                     {openCourses.length > 0
@@ -172,6 +174,22 @@ const Home = () => {
                       : 'Направления откроются после подтверждения счёта'}
                   </p>
                 </div>
+
+                {/* Звезда с лендинга: справа от заголовка пустовало место.
+                    Оригинал чёрный и на нашем фоне не виден - перекрашен
+                    в наш зелёный. Декорация, поэтому скрыта от чтения
+                    с экрана */}
+                <motion.img
+                  src={`${basePath()}graffiti/star-green.png`}
+                  alt=""
+                  aria-hidden="true"
+                  draggable={false}
+                  className="w-11 h-11 flex-shrink-0 object-contain select-none pointer-events-none
+                             opacity-90 -rotate-6"
+                  initial={{ opacity: 0, scale: 0.7, rotate: -24 }}
+                  animate={{ opacity: 0.9, scale: 1, rotate: -6 }}
+                  transition={{ delay: 0.34, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                />
               </div>
 
               <div className={cn('grid gap-2.5', coins ? 'grid-cols-3' : 'grid-cols-2')}>
