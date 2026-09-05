@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -302,14 +302,20 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* ПРОБА: заголовки без Orbitron.
+     Широкий рубленый шрифт из фантастики спорит с рукописным граффити -
+     на экране получаются два разных характера сразу. Характер отдаём
+     граффити, заголовкам оставляем плотный гротеск. Откат - git revert
+     этого коммита */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    font-family: 'Orbitron', sans-serif;
-    letter-spacing: 0.02em;
+    font-family: 'Inter Tight', 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   code,
@@ -341,18 +347,20 @@
   }
 
   /* Premium glass morphism */
+  /* ПРОБА: панель без стекла.
+     backdrop-filter заставляет браузер пересчитывать размытие каждый
+     кадр - внутри окон, которые въезжают с масштабированием, это даёт
+     рывки. Плюс матовое стекло - язык мобильных ОС, а не улицы.
+     Сплошная подложка совпадает с панелями в новых окнах.
+     Откат - git revert этого коммита */
   .glass-card {
-    background: linear-gradient(135deg,
-        hsl(140, 30%, 8%, 0.95) 0%,
-        hsl(140, 30%, 6%, 0.98) 100%);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid hsl(142, 40%, 20%, 0.5);
+    background: linear-gradient(168deg,
+        hsl(142, 22%, 10%) 0%,
+        hsl(140, 26%, 7%) 100%);
+    border: 1px solid hsl(142, 26%, 16%);
     box-shadow:
-      0 8px 32px -8px hsl(142, 76%, 52%, 0.15),
-      inset 0 1px 0 0 hsl(142, 76%, 52%, 0.1);
-    will-change: transform;
-    transform: translateZ(0);
+      0 12px 30px -18px hsl(0, 0%, 0%, 0.9),
+      inset 0 1px 0 0 hsl(142, 40%, 40%, 0.12);
   }
 
   .glass-card-hover {
