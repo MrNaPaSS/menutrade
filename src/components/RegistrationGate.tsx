@@ -171,7 +171,7 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
   // ── Экран ожидания подтверждения ─────────────────────────────────────────
   if (hasSubmittedAccount) {
     return (
-      <Shell>
+      <Shell onDismiss={onBack}>
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -226,7 +226,7 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
   // ── Шаг 1.5: выбор форекс-брокера ─────────────────────────────────────────
   if (step === 'forex-brokers') {
     return (
-      <Shell>
+      <Shell onDismiss={onBack}>
         <motion.div
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
@@ -272,7 +272,7 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
   // ── Шаг 2: инфо-окно раздела (как в боте) + кнопка регистрации ────────────
   if (step === 'info') {
     return (
-      <Shell>
+      <Shell onDismiss={onBack}>
         <AnimatePresence mode="wait">
           <motion.div
             key={`info-${market}`}
@@ -322,7 +322,7 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
     const progress = ((TIMER_SECONDS - secondsLeft) / TIMER_SECONDS) * 100;
 
     return (
-      <Shell>
+      <Shell onDismiss={onBack}>
         <motion.div
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
@@ -441,7 +441,7 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
 
   // ── Шаг 1: приветствие + выбор рынка ─────────────────────────────────────
   return (
-    <Shell>
+    <Shell onDismiss={onBack}>
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -754,14 +754,18 @@ function MarketCard({ icon, label, tagline, onClick }: MarketCardProps) {
  * Верхний отступ считает полосу кнопок Telegram: шлюз открывается на
  * весь экран, и без этого кнопка «Назад» уезжала под «Закрыть».
  */
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({ children, onDismiss }: {
+  children: React.ReactNode;
+  /** Нажатие по затемнению. Не задано - окно закрыть касанием нельзя */
+  onDismiss?: () => void;
+}) {
   return (
     <div className="fixed inset-0 z-[96] overflow-y-auto">
       {/* Подложка как у окон: фон за экраном гаснет и мутнеет, а
           нажатие мимо закрывает - как во всех окнах приложения */}
       <div
         className="absolute inset-0 bg-black/72 backdrop-blur-[6px]"
-        onClick={onBack}
+        onClick={onDismiss}
       />
 
       <div
