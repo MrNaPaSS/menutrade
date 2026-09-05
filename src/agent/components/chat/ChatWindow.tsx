@@ -235,6 +235,10 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                     отделена от неё воздухом, а линия под названием резала
                     экран пополам */}
                 <header className="relative px-3 sm:px-4 pt-[calc(env(safe-area-inset-top)+var(--tg-content-top,0.5rem))] pb-2 flex-shrink-0 z-20">
+                    {/* Та же рваная кромка, что за полем ввода, только не
+                        перевёрнутая: шапка стоит на оторванной полосе, и
+                        экран получается зажат между двумя краями */}
+                    <GraffitiTornPanel side="top" className="-bottom-[18px]" />
                     {/* Название стоит в самой полосе кнопок Telegram - между
                         «Закрыть» слева и «...» справа. Середина полосы всегда
                         пустует, и подпись занимает её, не отнимая высоты у

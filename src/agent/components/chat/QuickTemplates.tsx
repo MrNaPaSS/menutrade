@@ -17,33 +17,33 @@ interface Template {
 
 // Общие шаблоны: работают на любом рынке
 const TEACHER_TEMPLATES: Template[] = [
-    { icon: BookOpen, text: '🎓 Начать обучение', message: 'Начать обучение работе с Black Mirror Ultra с нуля' },
-    { icon: Target, text: '📝 Продолжить урок', message: 'Продолжить обучение, дай следующее задание' },
-    { icon: HelpCircle, text: '❓ Как читать сигналы?', message: 'Объясни как правильно читать сигналы BM↑ и BM↓' },
-    { icon: CheckCircle, text: '✅ Проверить работу', message: 'Проверь мою работу и дай обратную связь' },
-    { icon: Zap, text: '⚡ Что такое Score?', message: 'Объясни что такое BM Score и как его использовать' },
+    { icon: BookOpen, text: 'Начать обучение', message: 'Начать обучение работе с Black Mirror Ultra с нуля' },
+    { icon: Target, text: 'Продолжить урок', message: 'Продолжить обучение, дай следующее задание' },
+    { icon: HelpCircle, text: 'Как читать сигналы?', message: 'Объясни как правильно читать сигналы BM↑ и BM↓' },
+    { icon: CheckCircle, text: 'Проверить работу', message: 'Проверь мою работу и дай обратную связь' },
+    { icon: Zap, text: 'Что такое Score?', message: 'Объясни что такое BM Score и как его использовать' },
 ];
 
 const ANALYST_TEMPLATES: Template[] = [
-    { icon: BarChart3, text: '📊 Анализ графика', message: 'Прикрепи скриншот графика для анализа' },
-    { icon: TrendingUp, text: '📈 Куда пойдёт цена?', message: 'Оцени текущую ситуацию на рынке' },
-    { icon: Target, text: '🎯 Точка входа', message: 'Найди оптимальную точку входа на графике' },
-    { icon: Zap, text: '⚡ Сигнал BM', message: 'Какой сейчас сигнал Black Mirror?' },
-    { icon: HelpCircle, text: '🔍 Уровни', message: 'Покажи ключевые уровни поддержки и сопротивления' },
+    { icon: BarChart3, text: 'Анализ графика', message: 'Прикрепи скриншот графика для анализа' },
+    { icon: TrendingUp, text: 'Куда пойдёт цена?', message: 'Оцени текущую ситуацию на рынке' },
+    { icon: Target, text: 'Точка входа', message: 'Найди оптимальную точку входа на графике' },
+    { icon: Zap, text: 'Сигнал BM', message: 'Какой сейчас сигнал Black Mirror?' },
+    { icon: HelpCircle, text: 'Уровни', message: 'Покажи ключевые уровни поддержки и сопротивления' },
 ];
 
 // Шестой шаблон свой у каждого рынка: вопрос про экспирацию бессмыслен
 // на форексе, а вопрос про плечо - на бинарках
 const TEACHER_BY_MARKET: Record<TradingMarket, Template> = {
-    binary: { icon: TrendingUp, text: '📈 Про время экспирации', message: 'Научи выбирать правильное время экспирации' },
-    forex: { icon: Shield, text: '🛡 Стоп и размер лота', message: 'Научи ставить стоп-лосс и считать объём позиции от риска' },
-    crypto: { icon: Shield, text: '🛡 Плечо и ликвидация', message: 'Объясни, как выбирать плечо и где будет цена ликвидации' },
+    binary: { icon: TrendingUp, text: 'Про время экспирации', message: 'Научи выбирать правильное время экспирации' },
+    forex: { icon: Shield, text: 'Стоп и размер лота', message: 'Научи ставить стоп-лосс и считать объём позиции от риска' },
+    crypto: { icon: Shield, text: 'Плечо и ликвидация', message: 'Объясни, как выбирать плечо и где будет цена ликвидации' },
 };
 
 const ANALYST_BY_MARKET: Record<TradingMarket, Template> = {
-    binary: { icon: Send, text: '💹 CALL или PUT?', message: 'Что лучше: CALL или PUT в текущей ситуации?' },
-    forex: { icon: Send, text: '💹 Сделка с уровнями', message: 'Дай сделку: вход, стоп-лосс, тейк-профит и риск/прибыль' },
-    crypto: { icon: Send, text: '💹 Лонг или шорт?', message: 'Лонг или шорт? Дай вход, стоп, цели и разумное плечо' },
+    binary: { icon: Send, text: 'CALL или PUT?', message: 'Что лучше: CALL или PUT в текущей ситуации?' },
+    forex: { icon: Send, text: 'Сделка с уровнями', message: 'Дай сделку: вход, стоп-лосс, тейк-профит и риск/прибыль' },
+    crypto: { icon: Send, text: 'Лонг или шорт?', message: 'Лонг или шорт? Дай вход, стоп, цели и разумное плечо' },
 };
 
 export function QuickTemplates({ onSelect, mode, market }: QuickTemplatesProps) {
@@ -56,7 +56,7 @@ export function QuickTemplates({ onSelect, mode, market }: QuickTemplatesProps) 
     return (
         <div className="space-y-2">
             <p className="text-[10px] sm:text-xs text-muted-foreground px-1 mb-2">
-                {mode === 'teacher' ? '📚 Режим Ментора' : '📊 Режим Аналитика'} - выберите действие:
+                {mode === 'teacher' ? 'Режим Ментора' : 'Режим Аналитика'} - выберите действие:
             </p>
             <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                 {templates.map((template, index) => {

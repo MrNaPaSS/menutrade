@@ -42,6 +42,10 @@ export function SoftwareModal({ item, onClose }: SoftwareModalProps) {
         <ModalWindow
             open={!!item}
             onClose={onClose}
+            /* Стрелка вместо крестика: закрытие карточки возвращает к
+               списку продуктов, а не выходит из раздела. Серый крестик
+               над меткой доступа обещал выход и сбивал с толку */
+            onBack={onClose}
             title={item?.name ?? ''}
             subtitle={item?.kind}
         >

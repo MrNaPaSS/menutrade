@@ -164,22 +164,34 @@ export function GraffitiBackdrop({ className }: { className?: string }) {
 }
 
 /**
- * Нижняя панель с рваным верхним краем.
+ * Полоса с рваным краем.
  *
- * Тот же шов с лендинга, что и сверху, только маска перевёрнута -
- * зубцы смотрят вверх, к содержимому. Наклон исходника снят: на
- * лендинге край поднимается слева направо на 381px по ширине, и на
- * горизонтальной панели это читается как перекос.
+ * Тот же шов с лендинга, что и в фоне. Наклон исходника снят: там край
+ * поднимается слева направо на 381px по ширине, и на горизонтальной
+ * полосе это читается как перекос.
  *
- * Ставится слоем под содержимым панели. Выступать выше панели должна
- * чуть-чуть: иначе рваная кромка залезает на экран и режет то, что под
- * ней прокручивается.
+ * side="bottom" - сплошное внизу, рвётся кверху: нижняя панель и поле
+ * ввода. side="top" - та же маска без переворота, рвётся книзу: шапка.
+ *
+ * Ставится слоем под содержимым полосы. Выступать за неё должна
+ * чуть-чуть: иначе кромка залезает на экран и режет то, что под ней
+ * прокручивается.
  */
-export function GraffitiTornPanel({ className }: { className?: string }) {
+export function GraffitiTornPanel({
+    className,
+    side = 'bottom',
+}: {
+    className?: string;
+    side?: 'top' | 'bottom';
+}) {
     return (
         <span
             aria-hidden="true"
-            className={cn('absolute inset-x-0 bottom-0 pointer-events-none select-none', className)}
+            className={cn(
+                'absolute inset-x-0 pointer-events-none select-none',
+                side === 'bottom' ? 'bottom-0' : 'top-0',
+                className
+            )}
             style={{
                 background: 'hsl(0 0% 2%)',
                 WebkitMaskImage: `url(${basePath()}graffiti/torn-edge.png)`,
@@ -188,7 +200,9 @@ export function GraffitiTornPanel({ className }: { className?: string }) {
                 maskSize: '100% 100%',
                 WebkitMaskRepeat: 'no-repeat',
                 maskRepeat: 'no-repeat',
-                transform: 'scaleY(-1)',
+                // Маска нарисована сплошной сверху и рваной снизу.
+                // Нижней полосе её переворачиваем, верхней оставляем как есть
+                transform: side === 'bottom' ? 'scaleY(-1)' : undefined,
             }}
         />
     );
