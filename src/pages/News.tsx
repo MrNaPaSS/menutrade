@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppBackground } from '@/components/AppBackground';
+import { EconomicCalendar } from '@/components/EconomicCalendar';
 import { SimpleMenu } from '@/components/SimpleMenu';
 import { BottomNav } from '@/components/BottomNav';
 import { ArrowLeft, Newspaper, Calendar, TrendingUp, ExternalLink } from 'lucide-react';
@@ -27,17 +28,6 @@ const TICKER_URL =
         displayMode: 'compact',
         colorTheme: 'dark',
         locale: 'ru',
-    }));
-
-const CALENDAR_URL =
-    'https://s.tradingview.com/embed-widget/events/?locale=ru#' +
-    encodeURIComponent(JSON.stringify({
-        colorTheme: 'dark',
-        isTransparent: true,
-        width: '100%',
-        height: '100%',
-        importanceFilter: '-1,0,1',
-        currencyFilter: 'USD,EUR,GBP,JPY,RUB',
     }));
 
 const MARKET_URL =
@@ -210,12 +200,11 @@ const News = () => {
                             </TabsList>
 
                             <TabsContent value="calendar" className="mt-0">
-                                <WidgetFrame
-                                    src={CALENDAR_URL}
-                                    title="Экономический календарь"
-                                    source="https://ru.tradingview.com/economic-calendar/"
-                                    tall
-                                />
+                                {/* Своя вёрстка вместо виджета: из чужой
+                                    страницы в рамке нельзя прочитать ни
+                                    одного события, а значит нельзя и
+                                    предупредить о нём */}
+                                <EconomicCalendar />
                             </TabsContent>
 
                             <TabsContent
