@@ -15,7 +15,7 @@ interface AccessDeniedScreenProps {
 
 /** Чем закрыт раздел и сколько в нём материала */
 const PITCH: Record<LockedFeature, { subject: string; stat: string; statLabel: string }> = {
-    'обучение': { subject: 'Обучение', stat: '48', statLabel: 'уроков в трёх направлениях' },
+    'обучение': { subject: 'Обучение', stat: '73', statLabel: 'урока в трёх направлениях' },
     'стратегии': { subject: 'Стратегии', stat: '4', statLabel: 'блока готовых систем' },
     'форум и live': { subject: 'Форум и live', stat: 'LIVE', statLabel: 'сессии с трейдером' },
 };

@@ -263,7 +263,7 @@ function LimitCard({ onOpenGate }: { onOpenGate: () => void }) {
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Полный доступ снимает лимит: тренажёр без ограничений,
-            48 уроков, стратегии и закрытый форум.
+            73 урока, стратегии и закрытый форум.
           </p>
         </div>
       </div>

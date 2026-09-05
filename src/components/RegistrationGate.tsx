@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, Bitcoin, ArrowLeft, Clock, CheckCircle2, Loader2,
@@ -12,7 +12,7 @@ import { useTelegram } from '@/hooks/useTelegram';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 
 // 'forex' - Pocket Option (значение сохранено прежним для совместимости с базой бота)
-type Market = 'forex' | 'fxpro' | 'crypto';
+export type Market = 'forex' | 'fxpro' | 'crypto';
 
 const REGISTRATION_LINKS: Record<Market, string> = {
   // Форекс: Pocket Option - та же ссылка, что в боте
@@ -73,12 +73,25 @@ function formatTime(totalSeconds: number): string {
 
 type Step = 'welcome' | 'forex-brokers' | 'info' | 'register';
 
-export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
+interface RegistrationGateProps {
+  onBack?: () => void;
+  /**
+   * Открыть сразу на вводе ID для этой площадки.
+   *
+   * Нужно для раздела «Торгуем здесь»: человек там уже выбрал рынок и
+   * брокера, и проводить его через тот же выбор второй раз незачем.
+   * Ссылку и событие аналитики шлёт всё равно шлюз - иначе они
+   * разъехались бы по двум местам.
+   */
+  autoRegister?: Market;
+}
+
+export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps = {}) {
   const { userId, user } = useTelegram();
   const { hasSubmittedAccount, fetchUserStatus } = useUserAccess();
 
-  const [step, setStep] = useState<Step>('welcome');
-  const [market, setMarket] = useState<Market>('forex');
+  const [step, setStep] = useState<Step>(autoRegister ? 'register' : 'welcome');
+  const [market, setMarket] = useState<Market>(autoRegister ?? 'forex');
   const [accountId, setAccountId] = useState('');
   const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS);
   const [submitting, setSubmitting] = useState(false);
@@ -93,6 +106,16 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
     }, 1000);
     return () => clearInterval(id);
   }, [step, market]);
+
+  // Открываем ссылку и шлём событие один раз - на входе с уже
+  // выбранной площадкой
+  const openedRef = useRef(false);
+  useEffect(() => {
+    if (!autoRegister || openedRef.current) return;
+    openedRef.current = true;
+    sendFbEvent(userId, 'InitiateCheckout', user?.username);
+    openRegistration(REGISTRATION_LINKS[autoRegister]);
+  }, [autoRegister, userId, user?.username]);
 
   const chooseMarket = (selected: Market) => {
     setMarket(selected);
@@ -307,7 +330,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           className="space-y-5"
         >
           <div className="flex items-center gap-3">
-            <BackButton onClick={() => setStep('info')} />
+            <BackButton onClick={() => (autoRegister ? onBack?.() : setStep('info'))} />
             <span
               className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0
                          border border-white/[0.07]"
@@ -476,7 +499,7 @@ export function RegistrationGate({ onBack }: { onBack?: () => void } = {}) {
           </div>
           <div className="flex items-start gap-2.5 text-sm">
             <GraduationCap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-            <span className="text-muted-foreground"><span className="text-foreground font-semibold">48 уроков и стратегии</span> - полная программа обучения</span>
+            <span className="text-muted-foreground"><span className="text-foreground font-semibold">73 урока и стратегии</span> - три направления целиком</span>
           </div>
           <div className="flex items-start gap-2.5 text-sm">
             <Bot className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
