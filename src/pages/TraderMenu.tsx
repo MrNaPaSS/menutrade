@@ -6,12 +6,13 @@ import { useProgress } from '@/hooks/useProgress';
 import { useCourseAccess } from '@/hooks/useCourseAccess';
 import { useCoinBalance } from '@/hooks/useCoinBalance';
 import { useDailyClaim } from '@/hooks/useDailyClaim';
-import { ArrowLeft, Target, Activity, BookOpen, Code, GraduationCap, Brain, Newspaper } from 'lucide-react';
+import { ArrowLeft, Target, Activity, BookOpen, Calculator, Code, GraduationCap, Brain, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusStrip } from '@/components/trader-menu/StatusStrip';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { LearningModal } from '@/components/trader-menu/LearningModal';
 import { StrategiesModal } from '@/components/trader-menu/StrategiesModal';
+import { PositionCalculator } from '@/components/trader-menu/PositionCalculator';
 import { AccessDeniedScreen, type LockedFeature } from '@/components/AccessDeniedScreen';
 import { useUserAccess } from '@/contexts/UserAccessContext';
 import { SoftwareListModal } from '@/components/trader-menu/SoftwareListModal';
@@ -63,6 +64,7 @@ const TraderMenu = () => {
   // возвращается к списку, а не на экран целиком
   const [softwareItem, setSoftwareItem] = useState<SoftwareItem | null>(null);
   const [agentOpen, setAgentOpen] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
   // Нажатие на закрытый раздел ведёт на его витрину: сперва человек
   // видит, что внутри, и только потом - условие доступа. Шлюз с
   // выбором площадки открывается уже оттуда
@@ -211,6 +213,14 @@ const TraderMenu = () => {
               />
               <TerminalRow
                 index={5}
+                icon={<Calculator className="w-[18px] h-[18px]" />}
+                tone="cyan"
+                title="Калькулятор позиции"
+                caption="Объём от риска и стопа - для трёх рынков"
+                onClick={() => setCalcOpen(true)}
+              />
+              <TerminalRow
+                index={6}
                 icon={<Code className="w-[18px] h-[18px]" />}
                 tone="violet"
                 title="Наш софт"
@@ -235,6 +245,8 @@ const TraderMenu = () => {
         onSelect={setSoftwareItem}
       />
       <SoftwareModal item={softwareItem} onClose={() => setSoftwareItem(null)} />
+
+      <PositionCalculator open={calcOpen} onClose={() => setCalcOpen(false)} />
 
       <StrategiesModal
         open={strategiesOpen && !locked}
