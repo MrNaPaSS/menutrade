@@ -14,8 +14,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useTelegram } from '@/hooks/useTelegram';
+import { ProfileModal } from '@/components/ProfileModal';
+import { cn } from '@/lib/utils';
 
 const basePath = () => import.meta.env.BASE_URL || '/';
+
+// Фон один в один с нижней панелью: фото и меню сверху читаются как та
+// же поверхность, что и навигация снизу
+const PANEL = 'bg-background/60 backdrop-blur-2xl border border-border/30';
 
 /**
  * Шапка главной.
@@ -33,6 +39,7 @@ export function Header() {
   const { user } = useTelegram();
   const reduced = useReducedMotion();
   const [language, setLanguage] = useState('ru');
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     setLanguage(localStorage.getItem('app_language') || 'ru');
@@ -71,16 +78,22 @@ export function Header() {
         transition={{ duration: 0.3, delay: 0.06, ease: [0.23, 1, 0.32, 1] }}
       >
         <button
-          onClick={() => navigate('/profile')}
+          onClick={() => setProfileOpen(true)}
           aria-label="Профиль"
-          className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0
-                     border border-primary/25 bg-primary/10
-                     flex items-center justify-center
-                     transition-colors duration-200 hover:border-primary/45
-                     focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          className={cn(
+            'w-10 h-10 rounded-full flex-shrink-0 p-[3px]',
+            'flex items-center justify-center overflow-hidden',
+            'transition-colors duration-200 hover:border-border/60',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+            PANEL
+          )}
         >
           {user?.photo_url ? (
-            <img src={user.photo_url} alt="" className="w-full h-full object-cover" />
+            <img
+              src={user.photo_url}
+              alt=""
+              className="w-full h-full rounded-full object-cover"
+            />
           ) : (
             <span className="font-display font-bold text-primary text-sm">{initial}</span>
           )}
@@ -104,7 +117,7 @@ export function Header() {
               id="header-menu-button"
               variant="ghost"
               size="icon"
-              className="h-10 w-10 flex-shrink-0 rounded-full border border-white/[0.08] hover:bg-white/[0.06]"
+              className={cn('h-10 w-10 flex-shrink-0 rounded-full hover:border-border/60', PANEL)}
             >
               <Menu className="h-[18px] w-[18px]" />
             </Button>
@@ -118,7 +131,7 @@ export function Header() {
               На главную
             </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+            <DropdownMenuItem onClick={() => setProfileOpen(true)} className="cursor-pointer">
               <User className="mr-2 h-4 w-4" />
               Профиль пользователя
             </DropdownMenuItem>
@@ -143,6 +156,8 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </motion.div>
+
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </header>
   );
 }

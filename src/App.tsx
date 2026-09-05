@@ -32,7 +32,6 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Library = lazy(() => import("./pages/Library"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const TraderMenu = lazy(() => import("./pages/TraderMenu"));
-const UserProfile = lazy(() => import("./pages/UserProfile"));
 
 const queryClient = new QueryClient();
 
@@ -66,7 +65,6 @@ const RoutedContent = () => {
         <Route path="/news" element={<News />} />
         <Route path="/library" element={<Library />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/profile" element={<UserProfile />} />
         <Route path="/trader-menu" element={<TraderMenu />} />
         <Route path="/guess-chart" element={<GuessChart />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -10,12 +10,13 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+import { ProfileModal } from '@/components/ProfileModal';
 import { useState, useEffect } from 'react';
 
 export function SimpleMenu() {
   const navigate = useNavigate();
   const [language, setLanguage] = useState<string>('ru');
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('app_language') || 'ru';
@@ -46,7 +47,7 @@ export function SimpleMenu() {
             На главную
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+          <DropdownMenuItem onClick={() => setProfileOpen(true)} className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             Профиль пользователя
           </DropdownMenuItem>
@@ -74,6 +75,8 @@ export function SimpleMenu() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 }
