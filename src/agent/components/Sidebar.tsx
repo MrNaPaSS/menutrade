@@ -117,7 +117,7 @@ export function Sidebar({
                         />
 
                         {/* Кто вы */}
-                        <div className="relative flex items-center gap-3 px-4 py-3.5 flex-shrink-0">
+                        <div className="relative flex items-center gap-3 px-4 pt-1.5 pb-3 flex-shrink-0">
                             <span className="relative w-10 h-10 rounded-full flex-shrink-0 p-[3px]
                                              flex items-center justify-center overflow-hidden
                                              bg-background/60 border border-border/30">

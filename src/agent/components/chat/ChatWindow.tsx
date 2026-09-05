@@ -279,7 +279,7 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
                         />
                     </div>
 
-                    <div className="relative flex items-center justify-center min-h-8">
+                    <div className="relative -mt-1.5 flex items-center justify-center min-h-8">
                         {/* Слева: назад в академию и фото - оно же вход в
                             историю чатов. Края стоят absolute, чтобы подпись
                             между ними была по центру экрана, а не по центру
