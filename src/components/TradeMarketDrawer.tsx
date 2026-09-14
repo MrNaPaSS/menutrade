@@ -5,6 +5,9 @@ import { ModalCard } from '@/components/trader-menu/ModalCard';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { Button } from '@/components/ui/button';
 import { RegistrationGate, type Market as GateMarket } from '@/components/RegistrationGate';
+import {
+  EXCHANGES, cashbackLabel, feesLabel, CRYPTO_MIN_DEPOSIT, type ExchangeCode,
+} from '@/data/exchanges';
 
 type Market = 'forex' | 'crypto';
 
@@ -16,6 +19,8 @@ interface Broker {
   gate: GateMarket;
   /** Чем площадка хороша - показываем на шаге с описанием */
   pitch: string[];
+  /** Для крипты - какая именно биржа: от неё зависят ссылка и возврат */
+  exchange?: ExchangeCode;
 }
 
 const BROKERS: Record<Market, Broker[]> = {
@@ -43,19 +48,22 @@ const BROKERS: Record<Market, Broker[]> = {
       ],
     },
   ],
-  crypto: [
-    {
-      name: 'WEEX',
-      tagline: 'Фьючерсы и спот, более 1000 монет',
-      minDeposit: 'от $100',
-      gate: 'crypto',
-      pitch: [
-        'Фьючерсы и спот, более 1000 монет',
-        'Биржа работает с 2018 года, интерфейс на русском',
-        'Депозит остаётся твоим - вывести можно в любой момент',
-      ],
-    },
-  ],
+  // Биржи берём из общего списка: ссылки и условия не должны разъезжаться
+  // с тем, что показывает шлюз регистрации и бот
+  crypto: EXCHANGES.map(item => ({
+    name: item.label,
+    tagline: `${cashbackLabel(item)} · ${feesLabel(item)}`,
+    minDeposit: `от ${CRYPTO_MIN_DEPOSIT}`,
+    gate: 'crypto' as GateMarket,
+    exchange: item.code,
+    pitch: [
+      item.cashback === null
+        ? 'Возврата комиссии на этой бирже нет - так требует сама биржа'
+        : `Возврат ${item.cashback}% комиссии на счёт за торговлю в терминале`,
+      `Комиссия биржи: ${feesLabel(item)}`,
+      'Депозит остаётся твоим - вывести можно в любой момент',
+    ],
+  })),
 };
 
 const MARKET_META: Record<Market, { label: string; hint: string; icon: typeof TrendingUp }> = {
@@ -85,6 +93,7 @@ export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps
   // Регистрация идёт тем же шлюзом, что и везде: таймер, ссылка и ввод
   // ID счёта. Второй реализации этого шага в приложении быть не должно
   const [registering, setRegistering] = useState<GateMarket | null>(null);
+  const [exchange, setExchange] = useState<ExchangeCode | undefined>(undefined);
 
   const close = useCallback(() => {
     onOpenChange(false);
@@ -93,6 +102,7 @@ export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps
       setMarket(null);
       setBroker(null);
       setRegistering(null);
+      setExchange(undefined);
     }, 300);
   }, [onOpenChange]);
 
@@ -101,6 +111,7 @@ export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps
     return (
       <RegistrationGate
         autoRegister={registering}
+        autoExchange={exchange}
         onBack={() => setRegistering(null)}
       />
     );
@@ -134,7 +145,13 @@ export function TradeMarketDrawer({ open, onOpenChange }: TradeMarketDrawerProps
           </ul>
         </div>
 
-        <Button className="w-full min-h-[44px]" onClick={() => setRegistering(broker.gate)}>
+        <Button
+          className="w-full min-h-[44px]"
+          onClick={() => {
+            setExchange(broker.exchange);
+            setRegistering(broker.gate);
+          }}
+        >
           Зарегистрироваться
         </Button>
 

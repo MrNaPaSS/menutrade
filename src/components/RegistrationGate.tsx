@@ -10,23 +10,35 @@ import { Input } from '@/components/ui/input';
 import { GraffitiSpray, GraffitiStar } from '@/components/graffiti/Graffiti';
 import { useTelegram } from '@/hooks/useTelegram';
 import { useUserAccess } from '@/contexts/UserAccessContext';
+import {
+  EXCHANGES, exchangeByCode, cashbackLabel, feesLabel, CRYPTO_MIN_DEPOSIT,
+  type Exchange, type ExchangeCode,
+} from '@/data/exchanges';
 
 // 'forex' - Pocket Option (значение сохранено прежним для совместимости с базой бота)
 export type Market = 'forex' | 'fxpro' | 'crypto';
 
-const REGISTRATION_LINKS: Record<Market, string> = {
+const FOREX_LINKS: Record<'forex' | 'fxpro', string> = {
   // Форекс: Pocket Option - та же ссылка, что в боте
   forex: 'https://u3.shortink.io/main?utm_campaign=827841&utm_source=affiliate&utm_medium=sr&a=CQQJpdvm2ya9dU&al=1743587&ac=web&cid=948657&code=WELCOME50',
   // Форекс: FxPro
   fxpro: 'https://direct.fxpro.partners/click?pid=8057&offer_id=149',
-  // Крипто - WEEX
-  crypto: 'https://www.weex.com/ru/register?vipCode=kaktotakxme',
 };
+
+/**
+ * Куда отправлять регистрироваться.
+ *
+ * У криптобирж ссылка своя у каждой, и берётся она из общего списка: счёт,
+ * открытый не по ней, к академии не привяжется.
+ */
+function registrationLink(market: Market, exchange: ExchangeCode): string {
+  return market === 'crypto' ? exchangeByCode(exchange).link : FOREX_LINKS[market];
+}
 
 const MARKET_META: Record<Market, { label: string; tagline: string }> = {
   forex: { label: 'POCKET OPTION', tagline: 'Бинарные опционы · бонус +50%' },
   fxpro: { label: 'FXPRO', tagline: 'Классический форекс-брокер' },
-  crypto: { label: 'CRYPTO', tagline: 'Биржа WEEX' },
+  crypto: { label: 'CRYPTO', tagline: 'Пять бирж на выбор' },
 };
 
 const TIMER_SECONDS = 15 * 60;
@@ -71,7 +83,7 @@ function formatTime(totalSeconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-type Step = 'welcome' | 'forex-brokers' | 'info' | 'register';
+type Step = 'welcome' | 'forex-brokers' | 'exchanges' | 'info' | 'register';
 
 interface RegistrationGateProps {
   onBack?: () => void;
@@ -84,15 +96,18 @@ interface RegistrationGateProps {
    * разъехались бы по двум местам.
    */
   autoRegister?: Market;
+  /** Биржа, выбранная снаружи: раздел «Торгуем здесь» уже её показал */
+  autoExchange?: ExchangeCode;
 }
 
-export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps = {}) {
+export function RegistrationGate({ onBack, autoRegister, autoExchange }: RegistrationGateProps = {}) {
   const { userId, user } = useTelegram();
   const { hasSubmittedAccount, fetchUserStatus } = useUserAccess();
 
   const [step, setStep] = useState<Step>(autoRegister ? 'register' : 'welcome');
   const [market, setMarket] = useState<Market>(autoRegister ?? 'forex');
   const [accountId, setAccountId] = useState('');
+  const [exchange, setExchange] = useState<ExchangeCode>(autoExchange ?? 'weex');
   const [secondsLeft, setSecondsLeft] = useState(TIMER_SECONDS);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,22 +129,30 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
     if (!autoRegister || openedRef.current) return;
     openedRef.current = true;
     sendFbEvent(userId, 'InitiateCheckout', user?.username);
-    openRegistration(REGISTRATION_LINKS[autoRegister]);
-  }, [autoRegister, userId, user?.username]);
+    openRegistration(registrationLink(autoRegister, exchange));
+  }, [autoRegister, exchange, userId, user?.username]);
 
   const chooseMarket = (selected: Market) => {
     setMarket(selected);
+    setError(null);
+    // У крипты сперва биржа: от неё зависят ссылка, возврат комиссии и
+    // номер счёта, который человек пришлёт
+    setStep(selected === 'crypto' ? 'exchanges' : 'info');
+  };
+
+  const chooseExchange = (selected: ExchangeCode) => {
+    setExchange(selected);
     setError(null);
     setStep('info');
   };
 
   // Шаг назад из описания брокера: форекс-брокеры возвращают к своему списку
-  const backFromInfo = () => setStep(market === 'crypto' ? 'welcome' : 'forex-brokers');
+  const backFromInfo = () => setStep(market === 'crypto' ? 'exchanges' : 'forex-brokers');
 
   const goRegister = () => {
     // FB InitiateCheckout - нажал "Зарегистрироваться" (аналог "получил ссылку регистрации" в боте)
     sendFbEvent(userId, 'InitiateCheckout', user?.username);
-    openRegistration(REGISTRATION_LINKS[market]);
+    openRegistration(registrationLink(market, exchange));
     setStep('register');
   };
 
@@ -153,7 +176,11 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
         },
-        body: JSON.stringify({ userId, market, accountId: acc, username: user?.username || '' }),
+        // Биржу шлём только для крипты: у форекса площадка и так одна
+        body: JSON.stringify({
+          userId, market, accountId: acc, username: user?.username || '',
+          ...(market === 'crypto' ? { exchange } : {}),
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
@@ -222,6 +249,10 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
 
   const meta = MARKET_META[market];
   const Icon = market === 'crypto' ? Bitcoin : TrendingUp;
+  // На шагах описания и ввода вместо общего слова CRYPTO стоит биржа:
+  // человек должен видеть, куда именно он зарегистрировался
+  const chosen = exchangeByCode(exchange);
+  const title = market === 'crypto' ? chosen.label : meta.label;
 
   // ── Шаг 1.5: выбор форекс-брокера ─────────────────────────────────────────
   if (step === 'forex-brokers') {
@@ -269,6 +300,51 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
     );
   }
 
+  // ── Шаг 1.5: выбор криптобиржи ────────────────────────────────────────────
+  if (step === 'exchanges') {
+    return (
+      <Shell onDismiss={onBack}>
+        <motion.div
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-5"
+        >
+          <div className="relative text-center px-10">
+            <div className="absolute left-0 top-0">
+              <BackButton onClick={() => setStep('welcome')} />
+            </div>
+            <h1 className="font-display font-bold text-[19px] tracking-tight text-foreground">
+              Выберите биржу
+            </h1>
+            <p className="text-[12.5px] text-muted-foreground leading-relaxed mt-1.5">
+              Любая открывает полный доступ. Отличаются возвратом комиссии и ставками.
+            </p>
+          </div>
+
+          <StepStrip current={1} />
+
+          <div className="space-y-3">
+            {EXCHANGES.map(item => (
+              <MarketCard
+                key={item.code}
+                icon={<Bitcoin className="w-6 h-6 text-accent" />}
+                label={item.label}
+                tagline={`${cashbackLabel(item)} · ${feesLabel(item)}`}
+                onClick={() => chooseExchange(item.code)}
+              />
+            ))}
+          </div>
+
+          <p className="text-[11.5px] text-muted-foreground leading-relaxed text-center">
+            Возврат комиссии приходит на ваш счёт: он начисляется за торговлю
+            в терминале NMNH.TRADE по счёту, открытому через академию.
+          </p>
+        </motion.div>
+      </Shell>
+    );
+  }
+
   // ── Шаг 2: инфо-окно раздела (как в боте) + кнопка регистрации ────────────
   if (step === 'info') {
     return (
@@ -296,9 +372,11 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
               </span>
               <div className="min-w-0">
                 <div className="font-display font-bold text-[17px] tracking-tight leading-none text-foreground">
-                  {meta.label}
+                  {title}
                 </div>
-                <div className="text-[12px] text-muted-foreground mt-1.5">{meta.tagline}</div>
+                <div className="text-[12px] text-muted-foreground mt-1.5">
+                  {market === 'crypto' ? chosen.tagline : meta.tagline}
+                </div>
               </div>
             </div>
 
@@ -306,7 +384,7 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
 
             {market === 'forex' && <ForexInfo />}
             {market === 'fxpro' && <FxProInfo />}
-            {market === 'crypto' && <CryptoInfo />}
+            {market === 'crypto' && <CryptoInfo exchange={chosen} />}
 
             <Button className="w-full h-12 font-semibold" onClick={goRegister}>
               Зарегистрироваться
@@ -343,7 +421,7 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
             </span>
             <div className="min-w-0">
               <div className="font-display font-bold text-[17px] tracking-tight leading-none text-foreground">
-                {meta.label}
+                {title}
               </div>
               <div className="text-[12px] text-muted-foreground mt-1.5">ID счёта после пополнения</div>
             </div>
@@ -384,7 +462,7 @@ export function RegistrationGate({ onBack, autoRegister }: RegistrationGateProps
           </div>
 
           <button
-            onClick={() => openRegistration(REGISTRATION_LINKS[market])}
+            onClick={() => openRegistration(registrationLink(market, exchange))}
             className="w-full flex items-center justify-center gap-2 text-sm text-primary/90 hover:text-primary transition-colors"
           >
             <ExternalLink className="w-4 h-4" /> Открыть ссылку регистрации ещё раз
@@ -611,13 +689,19 @@ function FxProInfo() {
 }
 
 // ── Инфо-блок CRYPTO (аналог текста в боте) ────────────────────────────────
-function CryptoInfo() {
+function CryptoInfo({ exchange }: { exchange: Exchange }) {
   const steps = [
-    <>Зарегистрируйтесь на бирже <b className="text-foreground">WEEX</b> (кнопка ниже)</>,
-    <>Пополните счёт от <b className="text-foreground">$100</b></>,
+    <>Зарегистрируйтесь на бирже <b className="text-foreground">{exchange.label}</b> (кнопка ниже)</>,
+    <>Пополните счёт от <b className="text-foreground">{CRYPTO_MIN_DEPOSIT}</b></>,
     <>Введите ID аккаунта на следующем шаге</>,
   ];
-  const perks = ['Без подписок', 'Без скрытых платежей', 'Без дополнительных условий'];
+  const perks = [
+    exchange.cashback === null
+      ? 'Возврата комиссии на этой бирже нет - так требует сама биржа'
+      : `Возврат ${exchange.cashback}% комиссии на ваш счёт за торговлю в терминале`,
+    `Комиссия биржи: ${feesLabel(exchange)}`,
+    'Полный доступ к терминалу NMNH.TRADE',
+  ];
 
   return (
     <div className="space-y-4">
