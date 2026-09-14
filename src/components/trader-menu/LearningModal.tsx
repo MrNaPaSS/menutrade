@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Lock, Play, Target } from 'lucide-react';
+import { Brain, Lock, Play, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { GraffitiCheck } from '@/components/graffiti/Graffiti';
@@ -10,6 +10,7 @@ import { ModalWindow } from '@/components/ui/modal-window';
 import { ModalCard } from '@/components/trader-menu/ModalCard';
 import { TerminalRow } from '@/components/trader-menu/TerminalRow';
 import { LessonContent } from '@/components/LessonContent';
+import { Quiz } from '@/components/Quiz';
 
 interface LearningModalProps {
     open: boolean;
@@ -19,6 +20,8 @@ interface LearningModalProps {
     /** Модули с проставленным прогрессом - из useProgress */
     modules: Module[];
     onLessonComplete: (moduleId: string, lessonId: string) => void;
+    /** Модуль закрыт тестом: засчитываем все его уроки */
+    onModuleComplete: (moduleId: string) => void;
     /** Нажали на закрытый курс - предлагаем выбрать площадку */
     onLocked: () => void;
     /** Стратегии - четвёртая карточка в списке направлений */
@@ -59,6 +62,7 @@ export function LearningModal({
     completedByCourse,
     modules,
     onLessonComplete,
+    onModuleComplete,
     onLocked,
     onOpenStrategies,
     strategyLessons,
@@ -100,6 +104,10 @@ export function LearningModal({
         }, 300);
     }, [onClose]);
 
+    // Тест по модулю - отдельный шаг, а не хвост последнего урока:
+    // человек проходит его, когда сам решил, что готов
+    const [moduleTest, setModuleTest] = useState(false);
+
     const back = lesson
         ? () => setLesson(null)
         : module
@@ -111,7 +119,6 @@ export function LearningModal({
     // Материал урока
     if (lesson && currentModule && course) {
         const index = currentModule.lessons.findIndex(l => l.id === lesson.id);
-        const isLast = index === currentModule.lessons.length - 1;
 
         return (
             <ModalWindow
@@ -131,8 +138,40 @@ export function LearningModal({
                         onLessonComplete(currentModule.id, lesson.id);
                         setLesson(null);
                     }}
-                    offerModuleTest={isLast}
                 />
+            </ModalWindow>
+        );
+    }
+
+    // Тест по модулю
+    if (moduleTest && currentModule && course) {
+        const questions = currentModule.lessons.flatMap(item => item.quiz || []);
+
+        return (
+            <ModalWindow
+                open={open}
+                onClose={close}
+                onBack={() => setModuleTest(false)}
+                title="Тест по модулю"
+                subtitle={`${currentModule.title} · вопросов: ${questions.length}`}
+            >
+                <p className="text-[12px] text-muted-foreground text-center">
+                    Порог прохождения - 70%
+                </p>
+
+                <div className="rounded-[18px] border border-[hsl(142_26%_15%)] p-4"
+                    style={{ background: 'hsl(140 26% 8%)' }}
+                >
+                    <Quiz
+                        questions={questions}
+                        onComplete={() => {
+                            // Тест закрывает модуль целиком: отдельно отмечать
+                            // каждый урок после него человеку незачем
+                            onModuleComplete(currentModule.id);
+                            setModuleTest(false);
+                        }}
+                    />
+                </div>
             </ModalWindow>
         );
     }
@@ -140,6 +179,8 @@ export function LearningModal({
     // Уроки модуля
     if (currentModule && course) {
         const done = currentModule.lessons.filter(l => l.isCompleted).length;
+        const moduleQuestions = currentModule.lessons.flatMap(item => item.quiz || []);
+        const moduleDone = done === currentModule.lessons.length;
 
         return (
             <ModalWindow
@@ -151,6 +192,45 @@ export function LearningModal({
                     ? `${done} из ${currentModule.lessons.length} уроков пройдено`
                     : `${currentModule.lessons.length} ${currentModule.lessons.length === 1 ? 'урок' : currentModule.lessons.length < 5 ? 'урока' : 'уроков'} в модуле`}
             >
+                {/* Тест по модулю стоит над уроками отдельной кнопкой.
+                    Раньше он появлялся хвостом последнего урока, и пройти его
+                    можно было только оттуда - а вернуться к нему потом уже
+                    никак */}
+                {courseOpen && moduleQuestions.length > 0 && (
+                    <button
+                        onClick={() => setModuleTest(true)}
+                        className={cn(
+                            'w-full rounded-[18px] px-4 py-3.5 flex items-center gap-3 text-left',
+                            'border transition-colors focus:outline-none',
+                            'focus-visible:ring-2 focus-visible:ring-primary/50',
+                            moduleDone
+                                ? 'border-primary/30 bg-primary/10'
+                                : 'border-[hsl(142_38%_24%)] bg-[hsl(142_30%_10%)] hover:bg-[hsl(142_32%_12%)]'
+                        )}
+                    >
+                        <span
+                            className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0
+                                       border border-white/[0.07]"
+                            style={{
+                                background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
+                                color: 'hsl(142 76% 62%)',
+                            }}
+                        >
+                            <Brain className="w-5 h-5" />
+                        </span>
+                        <span className="flex-1 min-w-0">
+                            <span className="block font-semibold text-[15px] text-foreground">
+                                {moduleDone ? 'Тест по модулю пройден' : 'Тест по модулю'}
+                            </span>
+                            <span className="block text-[12px] text-muted-foreground mt-0.5">
+                                {moduleDone
+                                    ? 'Можно пройти ещё раз'
+                                    : `${moduleQuestions.length} вопросов по всем урокам`}
+                            </span>
+                        </span>
+                    </button>
+                )}
+
                 <div className="relative rounded-[18px] border border-[hsl(142_26%_15%)] overflow-hidden
                                 divide-y divide-[hsl(142_22%_13%)]"
                     style={{ background: 'hsl(140 26% 8%)' }}
