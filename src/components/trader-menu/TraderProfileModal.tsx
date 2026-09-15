@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Award, BarChart3, CalendarDays, KeyRound, LineChart, ListOrdered, Notebook, PlugZap, WifiOff } from 'lucide-react';
+import {
+    Award, BarChart3, CalendarDays, KeyRound, LineChart, ListOrdered, Notebook, PlugZap, WifiOff,
+} from 'lucide-react';
 import { ModalWindow } from '@/components/ui/modal-window';
+import { TerminalRow, type RowTone } from '@/components/trader-menu/TerminalRow';
 import { Empty } from '@/components/trader-menu/trading/TradingPanels';
-import { openLink } from '@/lib/tradingUi';
 import { SummaryTab } from '@/components/trader-menu/trading/SummaryTab';
 import { DaysTab } from '@/components/trader-menu/trading/DaysTab';
 import { TradesTab } from '@/components/trader-menu/trading/TradesTab';
@@ -10,7 +12,8 @@ import { JournalTab } from '@/components/trader-menu/trading/JournalTab';
 import { CertificateTab } from '@/components/trader-menu/trading/CertificateTab';
 import { useTradingStats } from '@/hooks/useTradingStats';
 import { useJournal } from '@/hooks/useJournal';
-import { TRADING_WINDOWS } from '@/lib/tradingStats';
+import { openLink, PANEL, PANEL_BG, LIST } from '@/lib/tradingUi';
+import { money, pnlColor, tradeWord, TRADING_WINDOWS } from '@/lib/tradingStats';
 import { cn } from '@/lib/utils';
 
 interface TraderProfileModalProps {
@@ -18,50 +21,95 @@ interface TraderProfileModalProps {
     onClose: () => void;
 }
 
-type Tab = 'summary' | 'days' | 'trades' | 'journal' | 'cert';
+type Section = 'summary' | 'days' | 'trades' | 'journal' | 'cert';
+type Step = 'menu' | Section;
 
-const TABS = [
-    ['summary', 'Итог', BarChart3],
-    ['days', 'Дни', CalendarDays],
-    ['trades', 'Сделки', ListOrdered],
-    ['journal', 'Дневник', Notebook],
-    ['cert', 'Сертификат', Award],
-] as const;
+interface SectionMeta {
+    id: Section;
+    icon: typeof BarChart3;
+    tone: RowTone;
+    /** Название в списке и в шапке открытого раздела */
+    title: string;
+    /** Подпись в списке: что внутри */
+    caption: string;
+    /** Строка под названием, когда раздел открыт */
+    subtitle: string;
+}
 
-/** На каких разделах числа считает терминал - там же выбирают окно. */
-const TERMINAL_TABS: Tab[] = ['summary', 'days', 'trades'];
+const SECTIONS: SectionMeta[] = [
+    {
+        id: 'summary',
+        icon: BarChart3,
+        tone: 'green',
+        title: 'Итог торговли',
+        caption: 'Заработок, винрейт и качество сделок',
+        subtitle: 'Ваши сделки через терминал NMNH',
+    },
+    {
+        id: 'days',
+        icon: CalendarDays,
+        tone: 'cyan',
+        title: 'Дни',
+        caption: 'Ритм по дням: терминал и дневник',
+        subtitle: 'Итог каждого дня, а не отдельной сделки',
+    },
+    {
+        id: 'trades',
+        icon: ListOrdered,
+        tone: 'cyan',
+        title: 'Сделки',
+        caption: 'Биржи, пары и последние сделки',
+        subtitle: 'Где и чем вы торгуете',
+    },
+    {
+        id: 'journal',
+        icon: Notebook,
+        tone: 'amber',
+        title: 'Дневник сделок',
+        caption: 'Ваши записи и почему вошли',
+        subtitle: 'То, что вы ведёте сами',
+    },
+    {
+        id: 'cert',
+        icon: Award,
+        tone: 'violet',
+        title: 'Сертификат',
+        caption: 'Документ со статистикой за период',
+        subtitle: 'Что в него попадёт',
+    },
+];
+
+/** Разделы, где числа считает терминал: там же выбирают окно. */
+const TERMINAL_SECTIONS: Step[] = ['summary', 'days', 'trades'];
 
 /**
  * Профиль трейдера.
  *
- * Один экран с разделами вместо списка ссылок на отдельные окна. Всё,
- * что человек про себя смотрит, лежит здесь: итог из терминала, дни,
- * сделки, собственный дневник и будущий сертификат. Раньше каждый из
- * них открывался своим окном, и чтобы сверить запись в дневнике с тем,
- * что показал терминал, нужно было выйти и зайти заново.
+ * Список разделов, каждый открывается шагом внутри того же окна: итог
+ * из терминала, дни, сделки, собственный дневник и будущий сертификат.
  *
- * Разделы, а не длинное полотно с прокруткой: на телефоне до нижней
- * трети такого полотна просто не доезжают.
+ * Списком, а не одним полотном и не вкладками: по списку сразу видно,
+ * что вообще есть внутри, а на телефоне длинная страница прячет нижнюю
+ * половину за прокруткой.
  *
- * Считает цифры платформа - теми же формулами, что и раздел аналитики
+ * Цифры считает платформа - теми же формулами, что и раздел аналитики
  * в кабинете: одни и те же числа на двух экранах, иначе разный винрейт
  * читался бы как поломка.
  */
 export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
-    const [tab, setTab] = useState<Tab>('summary');
+    const [step, setStep] = useState<Step>('menu');
     const { days, setDays, stats, loading, offline, reload } = useTradingStats(open);
     const { trades, add, remove } = useJournal(open);
 
     const close = () => {
         onClose();
-        // Раздел сбрасываем после закрытия: следующий заход начинается с
-        // итога, а не с того места, где вышли
-        setTimeout(() => setTab('summary'), 300);
+        // Шаг сбрасываем после закрытия: следующий заход начинается со
+        // списка, а не с того раздела, из которого вышли
+        setTimeout(() => setStep('menu'), 300);
     };
 
     const cabinet = stats?.cabinetUrl ?? 'https://www.nmnh.trade/login';
     const ready = stats?.state === 'ok' ? stats : null;
-    const showWindow = TERMINAL_TABS.includes(tab);
 
     /** Почему вместо цифр терминала нечего показать. null - всё в порядке. */
     const blocker = (() => {
@@ -79,8 +127,8 @@ export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
         if (!stats) {
             return (
                 <div
-                    className="rounded-[18px] border border-[hsl(142_26%_15%)] p-5 text-center text-[13px] text-muted-foreground"
-                    style={{ background: 'hsl(140 26% 8%)' }}
+                    className={cn(PANEL, 'p-5 text-center text-[13px] text-muted-foreground')}
+                    style={PANEL_BG}
                 >
                     Считаем вашу торговлю...
                 </div>
@@ -122,6 +170,60 @@ export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
         return null;
     })();
 
+    /* ── Открытый раздел ─────────────────────────────────────────── */
+    if (step !== 'menu') {
+        const meta = SECTIONS.find(section => section.id === step)!;
+
+        return (
+            <ModalWindow
+                open={open}
+                onClose={close}
+                onBack={() => setStep('menu')}
+                title={meta.title}
+                subtitle={meta.subtitle}
+            >
+                {TERMINAL_SECTIONS.includes(step) && (
+                    <div className={cn('grid grid-cols-3 gap-2 transition-opacity', loading && 'opacity-60')}>
+                        {TRADING_WINDOWS.map(window => (
+                            <button
+                                key={window}
+                                onClick={() => setDays(window)}
+                                className={cn(
+                                    'h-9 rounded-xl text-[12.5px] font-medium border transition-colors',
+                                    days === window
+                                        ? 'bg-primary/12 border-primary/35 text-primary'
+                                        : 'bg-white/[0.03] border-white/[0.07] text-muted-foreground'
+                                )}
+                            >
+                                {window} дней
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Итог и сделки без цифр терминала показывать нечего.
+                    Дни живут и на записях дневника, поэтому раздел
+                    открыт всегда, а пустой терминал он объясняет сам */}
+                {step === 'summary' && (blocker ?? <SummaryTab stats={ready!} />)}
+                {step === 'trades' && (blocker ?? <TradesTab stats={ready!} />)}
+                {step === 'days' && <DaysTab stats={ready} trades={trades} />}
+                {step === 'journal' && <JournalTab trades={trades} add={add} remove={remove} />}
+                {step === 'cert' && <CertificateTab stats={ready} />}
+            </ModalWindow>
+        );
+    }
+
+    /* ── Список разделов ─────────────────────────────────────────── */
+
+    /** Число справа в строке: список не только ведёт, но и рассказывает. */
+    const valueOf = (id: Section): string | undefined => {
+        if (id === 'summary') return ready ? money(ready.summary.net) : undefined;
+        if (id === 'days') return ready && ready.byDay.length > 0 ? String(ready.byDay.length) : undefined;
+        if (id === 'trades') return ready && ready.summary.trades > 0 ? String(ready.summary.trades) : undefined;
+        if (id === 'journal') return trades && trades.length > 0 ? String(trades.length) : undefined;
+        return undefined;
+    };
+
     return (
         <ModalWindow
             open={open}
@@ -129,55 +231,46 @@ export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
             title="Профиль трейдера"
             subtitle="Ваша торговля, дни и записи"
         >
-            {/* Разделы строкой: пять помещаются на телефон, а при узком
-                экране строка едет вбок - это привычнее, чем перенос на
-                вторую строку, от которого прыгает высота */}
-            <div className="flex gap-1.5 overflow-x-auto -mx-0.5 px-0.5 pb-0.5">
-                {TABS.map(([id, label, Icon]) => (
-                    <button
-                        key={id}
-                        onClick={() => setTab(id)}
-                        className={cn(
-                            'flex shrink-0 items-center gap-1.5 rounded-xl border px-2.5 h-9',
-                            'text-[12px] font-semibold transition-colors',
-                            tab === id
-                                ? 'bg-primary/12 border-primary/35 text-primary'
-                                : 'bg-white/[0.03] border-white/[0.07] text-muted-foreground'
-                        )}
+            {/* Итог сразу над списком: ради этого числа профиль и
+                открывают, и ради него не стоит заходить в раздел */}
+            {ready && (
+                <div
+                    className="rounded-[20px] border border-[hsl(142_34%_22%)] px-4 py-3 flex items-center justify-between gap-3"
+                    style={{ background: 'linear-gradient(168deg, hsl(142 26% 12%), hsl(140 28% 8%))' }}
+                >
+                    <div className="min-w-0">
+                        <p className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground">
+                            Итог за {ready.days} дней
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-1 tabular-nums truncate">
+                            {ready.summary.trades} {tradeWord(ready.summary.trades)} через терминал
+                        </p>
+                    </div>
+                    <span
+                        className="font-mono font-bold text-[19px] tabular-nums whitespace-nowrap flex-shrink-0"
+                        style={{ color: pnlColor(ready.summary.net) }}
                     >
-                        <Icon className="w-3.5 h-3.5 shrink-0" />
-                        {label}
-                    </button>
-                ))}
-            </div>
-
-            {showWindow && (
-                <div className={cn('grid grid-cols-3 gap-2 transition-opacity', loading && 'opacity-60')}>
-                    {TRADING_WINDOWS.map(window => (
-                        <button
-                            key={window}
-                            onClick={() => setDays(window)}
-                            className={cn(
-                                'h-9 rounded-xl text-[12.5px] font-medium border transition-colors',
-                                days === window
-                                    ? 'bg-primary/12 border-primary/35 text-primary'
-                                    : 'bg-white/[0.03] border-white/[0.07] text-muted-foreground'
-                            )}
-                        >
-                            {window} дней
-                        </button>
-                    ))}
+                        {money(ready.summary.net)}
+                    </span>
                 </div>
             )}
 
-            {/* Итог и сделки без цифр терминала показывать нечего.
-                Дни живут и на записях дневника, поэтому раздел открыт
-                всегда, а пустой терминал он объясняет сам */}
-            {tab === 'summary' && (blocker ?? <SummaryTab stats={ready!} />)}
-            {tab === 'trades' && (blocker ?? <TradesTab stats={ready!} />)}
-            {tab === 'days' && <DaysTab stats={ready} trades={trades} />}
-            {tab === 'journal' && <JournalTab trades={trades} add={add} remove={remove} />}
-            {tab === 'cert' && <CertificateTab stats={ready} />}
+            <div className={LIST} style={PANEL_BG}>
+                {SECTIONS.map((section, index) => (
+                    <TerminalRow
+                        key={section.id}
+                        index={index}
+                        icon={<section.icon className="w-[18px] h-[18px]" />}
+                        tone={section.tone}
+                        title={section.title}
+                        caption={section.caption}
+                        value={valueOf(section.id)}
+                        valueLive={section.id === 'summary'}
+                        badge={section.id === 'cert' ? { text: 'Скоро', tone: 'sky' } : undefined}
+                        onClick={() => setStep(section.id)}
+                    />
+                ))}
+            </div>
         </ModalWindow>
     );
 }
