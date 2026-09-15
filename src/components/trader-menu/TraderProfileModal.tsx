@@ -7,11 +7,10 @@ import { TerminalRow, type RowTone } from '@/components/trader-menu/TerminalRow'
 import { Empty } from '@/components/trader-menu/trading/TradingPanels';
 import { SummaryTab } from '@/components/trader-menu/trading/SummaryTab';
 import { DaysTab } from '@/components/trader-menu/trading/DaysTab';
-import { TradesTab } from '@/components/trader-menu/trading/TradesTab';
+import { MarketsTab } from '@/components/trader-menu/trading/MarketsTab';
 import { JournalTab } from '@/components/trader-menu/trading/JournalTab';
 import { CertificateTab } from '@/components/trader-menu/trading/CertificateTab';
 import { useTradingStats } from '@/hooks/useTradingStats';
-import { useJournal } from '@/hooks/useJournal';
 import { openLink, PANEL, PANEL_BG, LIST } from '@/lib/tradingUi';
 import { money, pnlColor, tradeWord, TRADING_WINDOWS } from '@/lib/tradingStats';
 import { cn } from '@/lib/utils';
@@ -21,7 +20,7 @@ interface TraderProfileModalProps {
     onClose: () => void;
 }
 
-type Section = 'summary' | 'days' | 'trades' | 'journal' | 'cert';
+type Section = 'summary' | 'days' | 'markets' | 'journal' | 'cert';
 type Step = 'menu' | Section;
 
 interface SectionMeta {
@@ -50,24 +49,24 @@ const SECTIONS: SectionMeta[] = [
         icon: CalendarDays,
         tone: 'cyan',
         title: 'Дни',
-        caption: 'Ритм по дням: терминал и дневник',
+        caption: 'Ритм торговли и лучшие дни',
         subtitle: 'Итог каждого дня, а не отдельной сделки',
-    },
-    {
-        id: 'trades',
-        icon: ListOrdered,
-        tone: 'cyan',
-        title: 'Сделки',
-        caption: 'Биржи, пары и последние сделки',
-        subtitle: 'Где и чем вы торгуете',
     },
     {
         id: 'journal',
         icon: Notebook,
         tone: 'amber',
         title: 'Дневник сделок',
-        caption: 'Ваши записи и почему вошли',
-        subtitle: 'То, что вы ведёте сами',
+        caption: 'Каждая сделка терминала по дням',
+        subtitle: 'Что записал терминал NMNH',
+    },
+    {
+        id: 'markets',
+        icon: ListOrdered,
+        tone: 'cyan',
+        title: 'Биржи и пары',
+        caption: 'Где и чем вы торгуете',
+        subtitle: 'Итог по каждой бирже и паре',
     },
     {
         id: 'cert',
@@ -80,13 +79,16 @@ const SECTIONS: SectionMeta[] = [
 ];
 
 /** Разделы, где числа считает терминал: там же выбирают окно. */
-const TERMINAL_SECTIONS: Step[] = ['summary', 'days', 'trades'];
+const TERMINAL_SECTIONS: Step[] = ['summary', 'days', 'markets', 'journal'];
 
 /**
  * Профиль трейдера.
  *
- * Список разделов, каждый открывается шагом внутри того же окна: итог
- * из терминала, дни, сделки, собственный дневник и будущий сертификат.
+ * Список разделов, каждый открывается шагом внутри того же окна: итог,
+ * дни, дневник сделок, биржи с парами и будущий сертификат. Всё считает
+ * терминал: ручных записей в профиле больше нет - половину сделок в них
+ * забывали внести, и числа расходились с терминалом настолько, что
+ * верить нельзя было ни тем, ни другим.
  *
  * Списком, а не одним полотном и не вкладками: по списку сразу видно,
  * что вообще есть внутри, а на телефоне длинная страница прячет нижнюю
@@ -99,7 +101,6 @@ const TERMINAL_SECTIONS: Step[] = ['summary', 'days', 'trades'];
 export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
     const [step, setStep] = useState<Step>('menu');
     const { days, setDays, stats, loading, offline, reload } = useTradingStats(open);
-    const { trades, add, remove } = useJournal(open);
 
     const close = () => {
         onClose();
@@ -201,13 +202,13 @@ export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
                     </div>
                 )}
 
-                {/* Итог и сделки без цифр терминала показывать нечего.
-                    Дни живут и на записях дневника, поэтому раздел
-                    открыт всегда, а пустой терминал он объясняет сам */}
+                {/* Все разделы считает терминал: без его ответа
+                    показывать нечего, и вместо пустых нулей человек
+                    видит, почему цифр нет и что с этим делать */}
                 {step === 'summary' && (blocker ?? <SummaryTab stats={ready!} />)}
-                {step === 'trades' && (blocker ?? <TradesTab stats={ready!} />)}
-                {step === 'days' && <DaysTab stats={ready} trades={trades} />}
-                {step === 'journal' && <JournalTab trades={trades} add={add} remove={remove} />}
+                {step === 'markets' && (blocker ?? <MarketsTab stats={ready!} />)}
+                {step === 'days' && (blocker ?? <DaysTab stats={ready} />)}
+                {step === 'journal' && (blocker ?? <JournalTab stats={ready!} />)}
                 {step === 'cert' && <CertificateTab stats={ready} />}
             </ModalWindow>
         );
@@ -219,8 +220,8 @@ export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
     const valueOf = (id: Section): string | undefined => {
         if (id === 'summary') return ready ? money(ready.summary.net) : undefined;
         if (id === 'days') return ready && ready.byDay.length > 0 ? String(ready.byDay.length) : undefined;
-        if (id === 'trades') return ready && ready.summary.trades > 0 ? String(ready.summary.trades) : undefined;
-        if (id === 'journal') return trades && trades.length > 0 ? String(trades.length) : undefined;
+        if (id === 'journal') return ready && ready.lastTrades.length > 0 ? String(ready.lastTrades.length) : undefined;
+        if (id === 'markets') return ready && ready.byExchange.length > 0 ? String(ready.byExchange.length) : undefined;
         return undefined;
     };
 

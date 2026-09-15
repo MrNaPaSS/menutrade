@@ -1,10 +1,7 @@
-import { ArrowUpRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Panel, Row } from '@/components/trader-menu/trading/TradingPanels';
-import { openLink, PANEL, PANEL_BG } from '@/lib/tradingUi';
+import { PANEL, PANEL_BG } from '@/lib/tradingUi';
 import {
-    amount, closedLabel, exchangeLabel, OUTCOME_LABEL, percent, SIDE_LABEL, tradeWord,
-    type TradingStats, type TradingTrade,
+    amount, exchangeLabel, percent, tradeWord, type TradingStats,
 } from '@/lib/tradingStats';
 import { cn } from '@/lib/utils';
 
@@ -23,26 +20,18 @@ function cellCaption(cell: { trades: number; wins: number; losses: number; volum
     return parts.join(' · ');
 }
 
-/** «14 сен, 17:47 · OKX · по цели» */
-function tradeCaption(trade: TradingTrade): string {
-    return [
-        closedLabel(trade.closed_at),
-        trade.exchange ? exchangeLabel(trade.exchange) : '',
-        trade.outcome ? OUTCOME_LABEL[trade.outcome] : '',
-    ].filter(Boolean).join(' · ');
-}
-
 /**
- * Где и чем торгует: биржи, пары и последние сделки.
+ * Где и чем торгует: биржи и пары.
  *
  * Итоги бирж намеренно не складываются в одну строку: у каждой свой
  * счёт, и сумма по ним - это не число, а каша. Общий итог уже посчитан
- * платформой и стоит на вкладке «Итог».
+ * платформой и стоит в разделе «Итог».
+ *
+ * Сами сделки списком лежат в дневнике: здесь вопрос «где и чем», там
+ * «что именно было».
  */
-export function TradesTab({ stats }: { stats: TradingStats }) {
-    const empty = stats.byExchange.length === 0
-        && stats.topSymbols.length === 0
-        && stats.lastTrades.length === 0;
+export function MarketsTab({ stats }: { stats: TradingStats }) {
+    const empty = stats.byExchange.length === 0 && stats.topSymbols.length === 0;
 
     return (
         <>
@@ -78,28 +67,6 @@ export function TradesTab({ stats }: { stats: TradingStats }) {
                 </Panel>
             )}
 
-            {stats.lastTrades.length > 0 && (
-                <Panel title="Последние сделки" note="свежие сверху">
-                    {stats.lastTrades.map((trade, index) => (
-                        <Row
-                            key={`${trade.closed_at}-${trade.symbol}-${index}`}
-                            title={`${trade.symbol}${trade.side ? `  ${SIDE_LABEL[trade.side]}` : ''}`}
-                            caption={tradeCaption(trade)}
-                            value={trade.pnl}
-                            mark
-                        />
-                    ))}
-                </Panel>
-            )}
-
-            <Button
-                variant="outline"
-                className="w-full h-11 font-semibold"
-                onClick={() => openLink(stats.cabinetUrl)}
-            >
-                Вся история в кабинете
-                <ArrowUpRight className="w-4 h-4 ml-1.5" />
-            </Button>
         </>
     );
 }
