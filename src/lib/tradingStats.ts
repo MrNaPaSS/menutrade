@@ -133,6 +133,21 @@ const EMPTY_SUMMARY: TradingSummary = {
 const CABINET_URL = 'https://www.nmnh.trade/app/analytics';
 
 /**
+ * Адреса кабинета, которых на сайте нет.
+ *
+ * Ломаный адрес подменяет бот, но пока на сервере старая версия, он
+ * доезжает сюда как есть - и кнопка ведёт на «страница не найдена».
+ * Проверка стоит с обеих сторон: цена её - одна строка, цена промаха -
+ * человек, решивший, что у нас всё сломано.
+ */
+const BROKEN_CABINET = /\/app\/journal\/?$/;
+
+function cabinetUrl(raw: string | undefined): string {
+    if (!raw || BROKEN_CABINET.test(raw)) return CABINET_URL;
+    return raw;
+}
+
+/**
  * Сводка за окно. null - мы вне Telegram, связи нет или платформа
  * молчит: экран в этом случае говорит об этом прямо, а не рисует нули,
  * которые человек примет за свои.
@@ -146,7 +161,7 @@ export async function fetchTradingStats(days: number): Promise<TradingStats | nu
         days: data.days ?? days,
         since: data.since ?? null,
         truncated: !!data.truncated,
-        cabinetUrl: data.cabinet_url || CABINET_URL,
+        cabinetUrl: cabinetUrl(data.cabinet_url),
         visited: !!data.visited,
         summary: data.summary ?? EMPTY_SUMMARY,
         byDay: data.by_day ?? [],
