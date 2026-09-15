@@ -59,7 +59,7 @@ export function TraderProfileModal({ open, onClose }: TraderProfileModalProps) {
         setTimeout(() => setTab('summary'), 300);
     };
 
-    const cabinet = stats?.cabinetUrl ?? 'https://www.nmnh.trade/app/analytics';
+    const cabinet = stats?.cabinetUrl ?? 'https://www.nmnh.trade/login';
     const ready = stats?.state === 'ok' ? stats : null;
     const showWindow = TERMINAL_TABS.includes(tab);
 

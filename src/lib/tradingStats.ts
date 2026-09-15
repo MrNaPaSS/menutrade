@@ -123,29 +123,14 @@ const EMPTY_SUMMARY: TradingSummary = {
 };
 
 /**
- * Куда вести кнопкой «вся история», если бот ссылки не дал.
+ * Куда ведёт кнопка «в кабинет»: всегда на вход.
  *
- * Именно /app/analytics: страницы /app/journal у платформы нет, а
- * /journal - это её страница под поисковый запрос, не кабинет. Бот
- * ломаный адрес подменяет у себя, здесь тот же адрес на случай, когда
- * ответа нет вовсе.
+ * Не на раздел из ответа платформы. Страницы /app/journal, которую она
+ * присылает, у неё нет; а верный раздел встретит незалогиненного
+ * человека пустотой или переадресацией. Со страницы входа кабинет
+ * открывается сам.
  */
-const CABINET_URL = 'https://www.nmnh.trade/app/analytics';
-
-/**
- * Адреса кабинета, которых на сайте нет.
- *
- * Ломаный адрес подменяет бот, но пока на сервере старая версия, он
- * доезжает сюда как есть - и кнопка ведёт на «страница не найдена».
- * Проверка стоит с обеих сторон: цена её - одна строка, цена промаха -
- * человек, решивший, что у нас всё сломано.
- */
-const BROKEN_CABINET = /\/app\/journal\/?$/;
-
-function cabinetUrl(raw: string | undefined): string {
-    if (!raw || BROKEN_CABINET.test(raw)) return CABINET_URL;
-    return raw;
-}
+const CABINET_URL = 'https://www.nmnh.trade/login';
 
 /**
  * Сводка за окно. null - мы вне Telegram, связи нет или платформа
@@ -161,7 +146,8 @@ export async function fetchTradingStats(days: number): Promise<TradingStats | nu
         days: data.days ?? days,
         since: data.since ?? null,
         truncated: !!data.truncated,
-        cabinetUrl: cabinetUrl(data.cabinet_url),
+        // Адрес из ответа намеренно не берём - см. CABINET_URL
+        cabinetUrl: CABINET_URL,
         visited: !!data.visited,
         summary: data.summary ?? EMPTY_SUMMARY,
         byDay: data.by_day ?? [],
