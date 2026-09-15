@@ -138,6 +138,20 @@ export function LearningModal({
                         onLessonComplete(currentModule.id, lesson.id);
                         setLesson(null);
                     }}
+                    /* Последний урок темы заканчивается предложением
+                       сдать тест: возвращаться за ним в список модуля
+                       человеку незачем, он уже здесь и уже дочитал.
+                       Уроки открываются по порядку, поэтому дошедший
+                       сюда закрыл все предыдущие */
+                    offerModuleTest={
+                        index === currentModule.lessons.length - 1
+                        && currentModule.lessons.some(item => (item.quiz || []).length > 0)
+                    }
+                    onModuleTest={() => {
+                        onLessonComplete(currentModule.id, lesson.id);
+                        setLesson(null);
+                        setModuleTest(true);
+                    }}
                 />
             </ModalWindow>
         );
@@ -181,6 +195,7 @@ export function LearningModal({
         const done = currentModule.lessons.filter(l => l.isCompleted).length;
         const moduleQuestions = currentModule.lessons.flatMap(item => item.quiz || []);
         const moduleDone = done === currentModule.lessons.length;
+        const lessonsLeft = currentModule.lessons.length - done;
 
         return (
             <ModalWindow
@@ -195,22 +210,33 @@ export function LearningModal({
                 {/* Тест по модулю стоит над уроками отдельной кнопкой.
                     Раньше он появлялся хвостом последнего урока, и пройти его
                     можно было только оттуда - а вернуться к нему потом уже
-                    никак */}
+                    никак.
+
+                    Открывается он, когда сдан последний урок темы. Тест
+                    спрашивает по всем урокам сразу и закрывает модуль
+                    целиком: пройденный до материала, он и проверять
+                    нечего, и обесценивает сами уроки - их можно просто
+                    пропустить */}
                 {courseOpen && moduleQuestions.length > 0 && (
                     <button
-                        onClick={() => setModuleTest(true)}
+                        onClick={() => moduleDone && setModuleTest(true)}
+                        disabled={!moduleDone}
+                        aria-disabled={!moduleDone}
                         className={cn(
                             'w-full rounded-[18px] px-4 py-3.5 flex items-center gap-3 text-left',
                             'border transition-colors focus:outline-none',
                             'focus-visible:ring-2 focus-visible:ring-primary/50',
                             moduleDone
-                                ? 'border-primary/30 bg-primary/10'
-                                : 'border-[hsl(142_38%_24%)] bg-[hsl(142_30%_10%)] hover:bg-[hsl(142_32%_12%)]'
+                                ? 'border-[hsl(142_38%_24%)] bg-[hsl(142_30%_10%)] hover:bg-[hsl(142_32%_12%)]'
+                                : 'border-[hsl(142_20%_16%)] bg-[hsl(142_16%_8%)] cursor-default'
                         )}
                     >
                         <span
-                            className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0
-                                       border border-white/[0.07]"
+                            className={cn(
+                                'w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0',
+                                'border border-white/[0.07]',
+                                !moduleDone && 'grayscale opacity-45'
+                            )}
                             style={{
                                 background: 'linear-gradient(160deg, hsl(142 55% 20%), hsl(142 50% 12%))',
                                 color: 'hsl(142 76% 62%)',
@@ -219,15 +245,23 @@ export function LearningModal({
                             <Brain className="w-5 h-5" />
                         </span>
                         <span className="flex-1 min-w-0">
-                            <span className="block font-semibold text-[15px] text-foreground">
-                                {moduleDone ? 'Тест по модулю пройден' : 'Тест по модулю'}
+                            <span
+                                className="block font-semibold text-[15px]"
+                                style={{ color: moduleDone ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
+                            >
+                                Тест по модулю
                             </span>
                             <span className="block text-[12px] text-muted-foreground mt-0.5">
                                 {moduleDone
-                                    ? 'Можно пройти ещё раз'
-                                    : `${moduleQuestions.length} вопросов по всем урокам`}
+                                    ? `${moduleQuestions.length} вопросов по всем урокам`
+                                    : lessonsLeft === 1
+                                        ? 'Откроется после последнего урока'
+                                        : `Откроется после уроков: осталось ${lessonsLeft}`}
                             </span>
                         </span>
+                        {!moduleDone && (
+                            <Lock className="w-4 h-4 flex-shrink-0" style={{ color: 'hsl(142 15% 36%)' }} />
+                        )}
                     </button>
                 )}
 
