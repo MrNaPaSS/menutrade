@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Brain, Lock, Play, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { GraffitiCheck } from '@/components/graffiti/Graffiti';
+import { GraffitiCheck, GraffitiStar } from '@/components/graffiti/Graffiti';
 import { courses, type Course } from '@/data/courses';
 import type { AccessState, CourseId } from '@/lib/courseAccess';
 import type { Lesson, Module } from '@/types/lesson';
@@ -22,6 +22,8 @@ interface LearningModalProps {
     onLessonComplete: (moduleId: string, lessonId: string) => void;
     /** Модуль закрыт тестом: засчитываем все его уроки */
     onModuleComplete: (moduleId: string) => void;
+    /** Модули, тест по которым сдан - на них рисуется звезда */
+    testedModules: Set<string>;
     /** Нажали на закрытый курс - предлагаем выбрать площадку */
     onLocked: () => void;
     /** Стратегии - четвёртая карточка в списке направлений */
@@ -63,6 +65,7 @@ export function LearningModal({
     modules,
     onLessonComplete,
     onModuleComplete,
+    testedModules,
     onLocked,
     onOpenStrategies,
     strategyLessons,
@@ -196,6 +199,7 @@ export function LearningModal({
         const moduleQuestions = currentModule.lessons.flatMap(item => item.quiz || []);
         const moduleDone = done === currentModule.lessons.length;
         const lessonsLeft = currentModule.lessons.length - done;
+        const testPassed = testedModules.has(currentModule.id);
 
         return (
             <ModalWindow
@@ -252,16 +256,23 @@ export function LearningModal({
                                 Тест по модулю
                             </span>
                             <span className="block text-[12px] text-muted-foreground mt-0.5">
-                                {moduleDone
-                                    ? `${moduleQuestions.length} вопросов по всем урокам`
-                                    : lessonsLeft === 1
-                                        ? 'Откроется после последнего урока'
-                                        : `Откроется после уроков: осталось ${lessonsLeft}`}
+                                {testPassed
+                                    ? 'Сдан - можно пройти ещё раз'
+                                    : moduleDone
+                                        ? `${moduleQuestions.length} вопросов по всем урокам`
+                                        : lessonsLeft === 1
+                                            ? 'Откроется после последнего урока'
+                                            : `Откроется после уроков: осталось ${lessonsLeft}`}
                             </span>
                         </span>
-                        {!moduleDone && (
+                        {/* Сданный тест отмечает та же звезда, что и
+                            пройденный модуль в списке: одна отметка на
+                            всё обучение читается без объяснений */}
+                        {testPassed ? (
+                            <GraffitiStar className="w-7 h-7 flex-shrink-0" delay={0.1} />
+                        ) : !moduleDone ? (
                             <Lock className="w-4 h-4 flex-shrink-0" style={{ color: 'hsl(142 15% 36%)' }} />
-                        )}
+                        ) : null}
                     </button>
                 )}
 

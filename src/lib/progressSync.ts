@@ -15,6 +15,30 @@ export function lessonKey(moduleId: string, lessonId: string): string {
     return `${moduleId}:${lessonId}`;
 }
 
+/**
+ * Хвост ключа для сданного теста по модулю: «module-1:module-test».
+ *
+ * Тест хранится тем же списком, что и уроки: он проходит ту же
+ * проверку на сервере, так же переживает смену телефона и так же
+ * только прибавляется. Счётчики уроков его не замечают - они ходят по
+ * списку уроков модуля, а такого урока в нём нет.
+ */
+export const MODULE_TEST = 'module-test';
+
+export function moduleTestKey(moduleId: string): string {
+    return `${moduleId}:${MODULE_TEST}`;
+}
+
+/** Модули, тест по которым сдан. */
+export function passedModuleTests(completed: string[]): Set<string> {
+    const passed = new Set<string>();
+    completed.forEach(key => {
+        const [moduleId, tail] = key.split(':');
+        if (moduleId && tail === MODULE_TEST) passed.add(moduleId);
+    });
+    return passed;
+}
+
 /** Ключи всех закрытых уроков - в таком виде прогресс уходит на сервер. */
 export function collectCompleted(modules: Module[]): string[] {
     const keys: string[] = [];

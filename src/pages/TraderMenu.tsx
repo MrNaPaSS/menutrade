@@ -50,7 +50,7 @@ const PANEL_CLASS =
 
 const TraderMenu = () => {
   const navigate = useNavigate();
-  const { completedByCourse, modules, completeLesson, completeModule } = useProgress();
+  const { completedByCourse, modules, completeLesson, completeModule, testedModules } = useProgress();
   const { courses: courseAccess } = useCourseAccess();
   const { coins } = useCoinBalance();
   const { hasFullAccess } = useUserAccess();
@@ -303,6 +303,7 @@ const TraderMenu = () => {
         modules={modules}
         onLessonComplete={completeLesson}
         onModuleComplete={completeModule}
+        testedModules={testedModules}
         onLocked={() => setLocked('обучение')}
         onOpenStrategies={() => {
           setCoursesOpen(false);

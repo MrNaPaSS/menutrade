@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sendCoinEvent } from '@/lib/coins';
 import { fetchProgress, resetProgressOnServer, saveProgress } from '@/lib/progressApi';
-import { applyCompleted, lessonKey, sameCompleted, startedCourses, unionCompleted } from '@/lib/progressSync';
+import {
+  applyCompleted, lessonKey, moduleTestKey, passedModuleTests, sameCompleted,
+  startedCourses, unionCompleted,
+} from '@/lib/progressSync';
 import { loadLocalCompleted, saveLocalCompleted } from '@/lib/localProgress';
 import { courses } from '@/data/courses';
 import { Module } from '@/types/lesson';
@@ -128,8 +131,16 @@ export function useProgress() {
   const completeModule = useCallback((moduleId: string) => {
     const module = openModules.find(m => m.id === moduleId);
     if (!module) return;
-    setCompleted(prev => unionCompleted(prev, module.lessons.map(l => lessonKey(moduleId, l.id))));
+    // Рядом с уроками кладём отметку о самом тесте: по ней на кнопке
+    // рисуется звезда, и переживает она смену телефона так же, как уроки
+    setCompleted(prev => unionCompleted(prev, [
+      ...module.lessons.map(l => lessonKey(moduleId, l.id)),
+      moduleTestKey(moduleId),
+    ]));
   }, [openModules]);
+
+  /** Модули, тест по которым сдан. */
+  const testedModules = useMemo(() => passedModuleTests(completed), [completed]);
 
   const getProgress = useCallback(() => {
     const total = modules.reduce((acc, m) => acc + m.lessons.length, 0);
@@ -185,6 +196,7 @@ export function useProgress() {
     completedByCourse,
     completeLesson,
     completeModule,
+    testedModules,
     getProgress,
     resetProgress,
     isMasterTestCompleted: () => masterTestPassed,
