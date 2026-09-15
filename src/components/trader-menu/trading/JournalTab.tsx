@@ -1,27 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CalendarDays, LineChart, Plus, Trash2 } from 'lucide-react';
-import { ModalWindow } from '@/components/ui/modal-window';
-import { TerminalRow } from '@/components/trader-menu/TerminalRow';
+import { NotebookPen, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Num } from '@/components/trader-menu/trading/TradingPanels';
+import { PANEL, PANEL_BG, LIST } from '@/lib/tradingUi';
 import {
-    calcStats, deleteTrade, loadTrades, newTradeId, pnlByDay, saveTrade, todayKey,
+    calcStats, newTradeId, todayKey,
     type Trade, type TradeDirection, type TradeOutcome,
 } from '@/lib/tradeJournal';
+import { dayLabel, money, pnlColor, tradeWord, FLAT_COLOR, LOSS_COLOR, WIN_COLOR } from '@/lib/tradingStats';
 import { cn } from '@/lib/utils';
 
-interface TradeJournalModalProps {
-    open: boolean;
-    onClose: () => void;
-    /** Возврат в профиль трейдера: дневник открывается оттуда */
-    onBack: () => void;
+interface JournalTabProps {
+    /** null - записи ещё читаются из облака Telegram */
+    trades: Trade[] | null;
+    add: (trade: Trade) => Promise<void>;
+    remove: (id: string) => Promise<void>;
 }
-
-const PANEL = 'rounded-[18px] border border-[hsl(142_26%_15%)]';
-const PANEL_BG = { background: 'hsl(140 26% 8%)' } as const;
-
-const WIN = 'hsl(142 76% 58%)';
-const LOSS = 'hsl(0 72% 62%)';
 
 const INPUT =
     'w-full h-11 rounded-xl px-3 text-[15px] ' +
@@ -29,17 +24,10 @@ const INPUT =
     'outline-none focus:border-primary/50 transition-colors';
 
 const OUTCOMES: Array<[TradeOutcome, string, string]> = [
-    ['win', 'Плюс', WIN],
-    ['loss', 'Минус', LOSS],
-    ['breakeven', 'В ноль', 'hsl(var(--muted-foreground))'],
+    ['win', 'Плюс', WIN_COLOR],
+    ['loss', 'Минус', LOSS_COLOR],
+    ['breakeven', 'В ноль', FLAT_COLOR],
 ];
-
-type View = 'list' | 'add' | 'calendar';
-
-function money(value: number): string {
-    const sign = value > 0 ? '+' : '';
-    return `${sign}${value.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} $`;
-}
 
 function parseNumber(raw: string): number {
     const value = Number(raw.replace(/\s/g, '').replace(',', '.'));
@@ -47,18 +35,20 @@ function parseNumber(raw: string): number {
 }
 
 /**
- * Дневник сделок.
+ * Дневник сделок: то, что человек ведёт сам.
  *
- * Три вида одного и того же: список, добавление и календарь. Разделены
- * шагами внутри окна, а не вкладками - на телефоне вкладки съедают
- * высоту, которой и так мало.
+ * Рядом со статистикой терминала не случайно: терминал знает сделку
+ * точно, а дневник помнит, почему в неё вошли. Ответ на «что я делаю
+ * не так» лежит на пересечении этих двух, и разносить их по разным
+ * окнам значило заставлять человека держать одно в голове, пока он
+ * смотрит на другое.
  *
- * Записи лежат в облаке Telegram: дневник без сохранности бессмыслен,
- * а память телефона чистится вместе с кэшем.
+ * Записи лежат в облаке Telegram: память телефона чистится вместе с
+ * кэшем, а дневник без сохранности бессмыслен.
  */
-export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalProps) {
-    const [view, setView] = useState<View>('list');
-    const [trades, setTrades] = useState<Trade[] | null>(null);
+export function JournalTab({ trades, add, remove }: JournalTabProps) {
+    const [adding, setAdding] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const [date, setDate] = useState(todayKey());
     const [instrument, setInstrument] = useState('');
@@ -67,15 +57,8 @@ export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalPr
     const [pnl, setPnl] = useState('');
     const [r, setR] = useState('');
     const [note, setNote] = useState('');
-    const [saving, setSaving] = useState(false);
-
-    useEffect(() => {
-        if (!open) return;
-        loadTrades().then(setTrades);
-    }, [open]);
 
     const stats = useMemo(() => calcStats(trades ?? []), [trades]);
-    const byDay = useMemo(() => pnlByDay(trades ?? []), [trades]);
 
     const resetForm = useCallback(() => {
         setDate(todayKey());
@@ -89,7 +72,8 @@ export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalPr
 
     const submit = async () => {
         const value = Math.abs(parseNumber(pnl));
-        const trade: Trade = {
+        setSaving(true);
+        await add({
             id: newTradeId(),
             date,
             instrument: instrument.trim() || 'Без инструмента',
@@ -100,35 +84,18 @@ export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalPr
             pnl: outcome === 'loss' ? -value : outcome === 'breakeven' ? 0 : value,
             r: parseNumber(r),
             note: note.trim().slice(0, 200),
-        };
-
-        setSaving(true);
-        await saveTrade(trade);
+        });
         setSaving(false);
-
-        setTrades(prev => [trade, ...(prev ?? [])]);
         resetForm();
-        setView('list');
+        setAdding(false);
     };
 
-    const remove = async (id: string) => {
-        await deleteTrade(id);
-        setTrades(prev => (prev ?? []).filter(t => t.id !== id));
-    };
-
-    /* ── Добавление ──────────────────────────────────────────────── */
-    if (view === 'add') {
+    if (adding) {
         return (
-            <ModalWindow
-                open={open}
-                onClose={onClose}
-                onBack={() => setView('list')}
-                title="Новая сделка"
-                subtitle="Заполните столько, сколько помните"
-            >
+            <>
                 <div className={cn(PANEL, 'p-4 space-y-3')} style={PANEL_BG}>
                     <div className="grid grid-cols-2 gap-3">
-                        <label className="block">
+                        <label className="block min-w-0">
                             <span className="block text-[12px] text-muted-foreground mb-1.5">Дата</span>
                             <input
                                 type="date"
@@ -137,12 +104,12 @@ export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalPr
                                 className={cn(INPUT, 'font-mono tabular-nums')}
                             />
                         </label>
-                        <label className="block">
+                        <label className="block min-w-0">
                             <span className="block text-[12px] text-muted-foreground mb-1.5">Инструмент</span>
                             <input
                                 value={instrument}
                                 onChange={(e) => setInstrument(e.target.value)}
-                                placeholder="EUR/USD"
+                                placeholder="BTCUSDT"
                                 autoComplete="off"
                                 className={INPUT}
                             />
@@ -185,7 +152,7 @@ export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalPr
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <label className="block">
+                        <label className="block min-w-0">
                             <span className="block text-[12px] text-muted-foreground mb-1.5">Результат</span>
                             <div className="relative">
                                 <input
@@ -202,7 +169,7 @@ export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalPr
                                 </span>
                             </div>
                         </label>
-                        <label className="block">
+                        <label className="block min-w-0">
                             <span className="flex items-baseline gap-1.5 mb-1.5">
                                 <span className="text-[12px] text-muted-foreground">В риске</span>
                                 <span className="text-[10.5px] text-muted-foreground/60">можно позже</span>
@@ -236,150 +203,74 @@ export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalPr
                     </label>
                 </div>
 
-                <Button className="w-full h-12 font-semibold" disabled={saving} onClick={submit}>
-                    {saving ? 'Сохраняем...' : 'Записать сделку'}
-                </Button>
-            </ModalWindow>
-        );
-    }
-
-    /* ── Календарь сделок ────────────────────────────────────────── */
-    if (view === 'calendar') {
-        const days = [...byDay.entries()].sort((a, b) => b[0].localeCompare(a[0]));
-
-        return (
-            <ModalWindow
-                open={open}
-                onClose={onClose}
-                onBack={() => setView('list')}
-                title="Календарь сделок"
-                subtitle="Итог каждого дня, а не отдельной сделки"
-            >
-                {days.length === 0 ? (
-                    <div className={cn(PANEL, 'p-6 text-center text-[13px] text-muted-foreground')} style={PANEL_BG}>
-                        Пока нет ни одной записи
-                    </div>
-                ) : (
-                    <div className={cn(PANEL, 'overflow-hidden divide-y divide-[hsl(142_22%_13%)]')} style={PANEL_BG}>
-                        {days.map(([day, sum]) => {
-                            const count = (trades ?? []).filter(t => t.date === day).length;
-                            return (
-                                <div key={day} className="flex items-center justify-between gap-3 px-4 py-3">
-                                    <div className="min-w-0">
-                                        <p className="text-[14px] text-foreground tabular-nums">
-                                            {new Date(day).toLocaleDateString('ru-RU', {
-                                                day: 'numeric', month: 'long', weekday: 'short',
-                                            })}
-                                        </p>
-                                        <p className="text-[11.5px] text-muted-foreground">
-                                            {count} {count === 1 ? 'сделка' : count < 5 ? 'сделки' : 'сделок'}
-                                        </p>
-                                    </div>
-                                    <span
-                                        className="font-mono font-bold text-[15px] tabular-nums flex-shrink-0"
-                                        style={{ color: sum > 0 ? WIN : sum < 0 ? LOSS : 'hsl(var(--muted-foreground))' }}
-                                    >
-                                        {money(sum)}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </ModalWindow>
-        );
-    }
-
-    /* ── Список и статистика ─────────────────────────────────────── */
-    return (
-        <ModalWindow
-            open={open}
-            onClose={onClose}
-            onBack={onBack}
-            title="Дневник сделок"
-            subtitle="Итог, доля прибыльных и все записи"
-        >
-            <div
-                className="rounded-[20px] border border-[hsl(142_34%_22%)] p-4"
-                style={{ background: 'linear-gradient(168deg, hsl(142 26% 12%), hsl(140 28% 8%))' }}
-            >
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <p className="text-[11px] uppercase tracking-[0.09em] text-muted-foreground">Итог</p>
-                        <p
-                            className="font-mono font-bold text-[26px] leading-none tabular-nums mt-1"
-                            style={{ color: stats.pnl > 0 ? WIN : stats.pnl < 0 ? LOSS : 'hsl(142 18% 40%)' }}
-                        >
-                            {stats.total > 0 ? money(stats.pnl) : '--'}
-                        </p>
-                    </div>
-                    <div>
-                        <p className="text-[11px] uppercase tracking-[0.09em] text-muted-foreground">Прибыльных</p>
-                        <p className="font-mono font-bold text-[26px] leading-none tabular-nums mt-1"
-                            style={{ color: stats.total > 0 ? WIN : 'hsl(142 18% 40%)' }}>
-                            {stats.total > 0 ? `${Math.round(stats.winrate)}%` : '--'}
-                        </p>
-                    </div>
+                <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" className="h-11" onClick={() => setAdding(false)}>
+                        Отмена
+                    </Button>
+                    <Button className="h-11 font-semibold" disabled={saving} onClick={submit}>
+                        {saving ? 'Сохраняем...' : 'Записать'}
+                    </Button>
                 </div>
+            </>
+        );
+    }
 
-                {stats.total > 0 && (
-                    <p className="text-[11.5px] text-muted-foreground mt-3 tabular-nums">
-                        {stats.total} {stats.total === 1 ? 'сделка' : stats.total < 5 ? 'сделки' : 'сделок'}
-                        {stats.avgR !== 0 && ` · средний результат ${stats.avgR.toFixed(2)}R`}
-                        {stats.streak !== 0 && ` · серия ${Math.abs(stats.streak)} ${stats.streak > 0 ? 'в плюс' : 'в минус'}`}
-                    </p>
-                )}
-            </div>
+    return (
+        <>
+            {trades !== null && trades.length > 0 && (
+                <div className={cn(PANEL, 'px-4 py-3 flex items-center justify-between gap-3')} style={PANEL_BG}>
+                    <div className="min-w-0">
+                        <p className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground">
+                            Итог по записям
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-1 tabular-nums truncate">
+                            {stats.total} {tradeWord(stats.total)} · {Math.round(stats.winrate)}% в плюс
+                            {stats.streak !== 0 && ` · серия ${Math.abs(stats.streak)} ${stats.streak > 0 ? 'в плюс' : 'в минус'}`}
+                        </p>
+                    </div>
+                    <Num
+                        text={money(stats.pnl)}
+                        sizes={[20, 17, 14]}
+                        tone={pnlColor(stats.pnl)}
+                        className="flex-shrink-0"
+                    />
+                </div>
+            )}
 
-            <div className={cn(PANEL, 'overflow-hidden divide-y divide-[hsl(142_22%_13%)]')} style={PANEL_BG}>
-                <TerminalRow
-                    index={0}
-                    icon={<Plus className="w-[18px] h-[18px]" />}
-                    tone="green"
-                    title="Записать сделку"
-                    caption="Инструмент, исход, результат и почему вошли"
-                    onClick={() => setView('add')}
-                />
-                <TerminalRow
-                    index={1}
-                    icon={<CalendarDays className="w-[18px] h-[18px]" />}
-                    tone="cyan"
-                    title="Календарь сделок"
-                    caption="Итог по дням"
-                    value={byDay.size > 0 ? String(byDay.size) : undefined}
-                    onClick={() => setView('calendar')}
-                />
-            </div>
+            <Button className="w-full h-11 font-semibold" onClick={() => setAdding(true)}>
+                <Plus className="w-4 h-4 mr-1.5" />
+                Записать сделку
+            </Button>
 
-            {trades === null ? (
+            {trades === null && (
                 <div className={cn(PANEL, 'p-5 text-center text-[13px] text-muted-foreground')} style={PANEL_BG}>
                     Читаем дневник...
                 </div>
-            ) : trades.length === 0 ? (
+            )}
+
+            {trades !== null && trades.length === 0 && (
                 <div className={cn(PANEL, 'p-6 text-center')} style={PANEL_BG}>
-                    <LineChart className="w-7 h-7 mx-auto mb-2.5" style={{ color: 'hsl(142 20% 34%)' }} />
+                    <NotebookPen className="w-7 h-7 mx-auto mb-2.5" style={{ color: 'hsl(142 20% 34%)' }} />
                     <p className="text-[13px] text-muted-foreground leading-relaxed">
                         Пусто. Первая запись занимает полминуты, а через месяц по ним видно,
                         что у вас работает, а что кажется работающим.
                     </p>
                 </div>
-            ) : (
-                <div className={cn(PANEL, 'overflow-hidden divide-y divide-[hsl(142_22%_13%)]')} style={PANEL_BG}>
+            )}
+
+            {trades !== null && trades.length > 0 && (
+                <div className={LIST} style={PANEL_BG}>
                     {trades.map((trade, index) => (
                         <motion.div
                             key={trade.id}
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: Math.min(index, 8) * 0.03, duration: 0.22 }}
-                            className="group flex items-start gap-3 px-3.5 py-3"
+                            className="flex items-start gap-3 px-3.5 py-2.5"
                         >
                             <span
                                 className="w-1 self-stretch rounded-full flex-shrink-0"
-                                style={{
-                                    background: trade.outcome === 'win' ? WIN
-                                        : trade.outcome === 'loss' ? LOSS
-                                            : 'hsl(142 18% 30%)',
-                                }}
+                                style={{ background: pnlColor(trade.pnl) }}
                             />
 
                             <div className="min-w-0 flex-1">
@@ -391,26 +282,19 @@ export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalPr
                                         {trade.direction === 'long' ? 'покупка' : 'продажа'}
                                     </span>
                                 </div>
-                                <p className="text-[11.5px] text-muted-foreground tabular-nums mt-0.5">
-                                    {new Date(trade.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                                <p className="text-[11px] text-muted-foreground tabular-nums truncate">
+                                    {dayLabel(trade.date)}
                                     {trade.r !== 0 && ` · ${trade.r > 0 ? '+' : ''}${trade.r}R`}
                                 </p>
                                 {trade.note && (
-                                    <p className="text-[12px] text-muted-foreground/80 mt-1 line-clamp-2">
+                                    <p className="text-[11.5px] text-muted-foreground/80 mt-1 line-clamp-2">
                                         {trade.note}
                                     </p>
                                 )}
                             </div>
 
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                                <span
-                                    className="font-mono font-bold text-[14px] tabular-nums"
-                                    style={{
-                                        color: trade.pnl > 0 ? WIN : trade.pnl < 0 ? LOSS : 'hsl(var(--muted-foreground))',
-                                    }}
-                                >
-                                    {money(trade.pnl)}
-                                </span>
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <Num text={money(trade.pnl)} sizes={[14, 13, 11.5]} tone={pnlColor(trade.pnl)} />
                                 <button
                                     onClick={() => remove(trade.id)}
                                     aria-label="Удалить запись"
@@ -426,6 +310,6 @@ export function TradeJournalModal({ open, onClose, onBack }: TradeJournalModalPr
                     ))}
                 </div>
             )}
-        </ModalWindow>
+        </>
     );
 }

@@ -122,7 +122,15 @@ const EMPTY_SUMMARY: TradingSummary = {
     drawdown: 0, drawdown_pct: 0, hold_minutes: null,
 };
 
-const CABINET_URL = 'https://www.nmnh.trade/app/journal';
+/**
+ * Куда вести кнопкой «вся история», если бот ссылки не дал.
+ *
+ * Именно /app/analytics: страницы /app/journal у платформы нет, а
+ * /journal - это её страница под поисковый запрос, не кабинет. Бот
+ * ломаный адрес подменяет у себя, здесь тот же адрес на случай, когда
+ * ответа нет вовсе.
+ */
+const CABINET_URL = 'https://www.nmnh.trade/app/analytics';
 
 /**
  * Сводка за окно. null - мы вне Telegram, связи нет или платформа
@@ -161,16 +169,50 @@ export function pnlColor(value: number): string {
     return FLAT_COLOR;
 }
 
-/** «+36.35 $», «-18.4 $». Знак у плюса ставим явно: так виден итог. */
-export function money(value: number, digits = 2): string {
+/**
+ * «+36.35 $», «+8 724 $». Знак у плюса ставим явно: так виден итог.
+ *
+ * Копейки показываем только у мелких сумм. У четырёхзначных они не
+ * несут смысла, зато удлиняют число на три знака - а строку на
+ * телефоне оно перерастает быстро.
+ */
+export function money(value: number, digits?: number): string {
+    const places = digits ?? (Math.abs(value) >= 1000 ? 0 : 2);
     const sign = value > 0 ? '+' : value < 0 ? '-' : '';
-    const body = Math.abs(value).toLocaleString('ru-RU', { maximumFractionDigits: digits });
+    const body = Math.abs(value).toLocaleString('ru-RU', { maximumFractionDigits: places });
     return `${sign}${body} $`;
 }
 
 /** Оборот и комиссия - без знака: они всегда положительные. */
 export function amount(value: number, digits = 0): string {
     return `${value.toLocaleString('ru-RU', { maximumFractionDigits: digits })} $`;
+}
+
+/**
+ * Оборот коротко: «9,60M $», «95,9K $».
+ *
+ * Оборот скальпера идёт на миллионы, и полное число не помещается в
+ * плитку ни при каком кегле. Сокращение то же, что в кабинете, - чтобы
+ * два экрана читались одинаково.
+ */
+export function shortAmount(value: number): string {
+    const abs = Math.abs(value);
+    if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(2).replace('.', ',')}M $`;
+    if (abs >= 10_000) return `${(value / 1_000).toFixed(1).replace('.', ',')}K $`;
+    return amount(value, abs >= 1000 ? 0 : 2);
+}
+
+/**
+ * Кегль под длину числа.
+ *
+ * Длинное число на крупном кегле переносится по словам, и знак доллара
+ * уезжает на вторую строку - выглядит как поломка вёрстки. Уменьшить
+ * шрифт честнее, чем обрезать сумму.
+ */
+export function fitSize(text: string, big: number, medium: number, small: number): number {
+    if (text.length <= 9) return big;
+    if (text.length <= 12) return medium;
+    return small;
 }
 
 /** Доля 0..1 в проценты: 0.666667 - это 67%. */
